@@ -3,49 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tickets - Sale Support System</title>
+    <title>ใบงานของฉัน - Sale Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        .table-container { background: white; border-radius: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
+        .glass-card { background: white; border-radius: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     </style>
 </head>
-<body class="flex min-h-screen items-start">
+<body class="flex min-h-screen">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen border-r border-slate-200 bg-white"></aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen"></aside>
 
-    <div class="flex-1 flex flex-col min-w-0 h-full">
-        <header id="topbar-placeholder" class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100"></header>
-
-        <main class="p-8">
-            <div class="flex justify-between items-center mb-8">
+    <div class="flex-1 flex flex-col min-w-0">
+        <main class="p-8 space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">ใบงานของฉัน</h2>
                     <p class="text-slate-400 text-sm">รายการ Ticket ทั้งหมดที่คุณเป็นผู้สร้าง</p>
                 </div>
-                <a href="create-ticket.html" class="bg-[#5c56f1] text-white px-6 py-3 rounded-2xl font-bold hover:bg-[#4a44d1] transition shadow-lg shadow-indigo-100 flex items-center gap-2">
-                    <span>➕</span> สร้าง Ticket ใหม่
+                <a href="create-ticket.html" class="bg-[#5c56f1] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#4a44d1] transition shadow-xl shadow-indigo-100 flex items-center gap-2 w-fit">
+                    <span>➕</span> สร้าง Ticket
                 </a>
             </div>
 
-            <div class="table-container">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                            <th class="p-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">ID</th>
-                            <th class="p-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">หัวข้อปัญหา</th>
-                            <th class="p-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">สถานะ</th>
-                            <th class="p-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">วันที่สร้าง</th>
-                            <th class="p-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticket-list" class="divide-y divide-slate-50">
-                        <tr>
-                            <td colspan="5" class="p-10 text-center text-slate-400">กำลังโหลดข้อมูล...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-100">
+                            <tr>
+                                <th class="p-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">ID</th>
+                                <th class="p-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">หัวข้อปัญหา</th>
+                                <th class="p-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">สถานะ</th>
+                                <th class="p-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">วันที่สร้าง</th>
+                                <th class="p-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticket-list-body" class="divide-y divide-slate-50">
+                            <tr><td colspan="5" class="p-10 text-center text-slate-400">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -55,91 +53,72 @@
         import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Firebase Config ของคุณ
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-            authDomain: "salesupportsystemapp.firebaseapp.com",
-            projectId: "salesupportsystemapp",
-            storageBucket: "salesupportsystemapp.firebasestorage.app",
-            messagingSenderId: "840890441207",
-            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
-        };
-
+        const firebaseConfig = { /* ใส่ Config ของคุณที่นี่ */ };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Load Sidebar & Topbar (ถ้ามีไฟล์แยก)
+        // Load Sidebar
         fetch('sidebar.html').then(r => r.text()).then(h => document.getElementById('sidebar-placeholder').innerHTML = h);
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // ดึงเฉพาะ Ticket ที่ ownerEmail ตรงกับคนล็อกอิน
-                fetchMyTickets(user.email);
+                loadUserTickets(user.email);
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        async function fetchMyTickets(userEmail) {
-            const listElement = document.getElementById('ticket-list');
-            
+        async function loadUserTickets(email) {
+            const tbody = document.getElementById('ticket-list-body');
             try {
-                // สร้าง Query: กรองด้วย Email และเรียงตามวันที่ล่าสุด
+                // ดึงเฉพาะของ User คนนี้ และเรียงลำดับ (ต้องทำ Index ตามที่แจ้งด้านบน)
                 const q = query(
                     collection(db, "tickets"),
-                    where("ownerEmail", "==", userEmail),
+                    where("ownerEmail", "==", email),
                     orderBy("createdAt", "desc")
                 );
 
-                const querySnapshot = await getDocs(q);
-                listElement.innerHTML = '';
+                const snap = await getDocs(q);
+                tbody.innerHTML = '';
 
-                if (querySnapshot.empty) {
-                    listElement.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400">คุณยังไม่มีรายการใบงานในขณะนี้</td></tr>';
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400">คุณยังไม่มีรายการใบงาน</td></tr>';
                     return;
                 }
 
-                querySnapshot.forEach((doc) => {
+                snap.forEach(doc => {
                     const data = doc.data();
-                    const date = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString('th-TH') : '---';
+                    const statusClass = getStatusStyle(data.status);
+                    const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString('th-TH') : '---';
                     
-                    const row = `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-4 text-xs font-bold text-slate-400">#${doc.id.substring(0, 6)}</td>
-                            <td class="p-4">
-                                <p class="font-bold text-slate-700">${data.subject || 'ไม่ระบุหัวข้อ'}</p>
-                                <p class="text-[10px] text-slate-400">${data.category || 'ทั่วไป'}</p>
-                            </td>
-                            <td class="p-4">
-                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusStyle(data.status)}">
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50/50 transition">
+                            <td class="p-6 text-xs font-bold text-slate-400">#${doc.id.substring(0, 6)}</td>
+                            <td class="p-6 font-semibold text-slate-700">${data.subject || 'ไม่ระบุหัวข้อ'}</td>
+                            <td class="p-6">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusClass}">
                                     ${data.status || 'Pending'}
                                 </span>
                             </td>
-                            <td class="p-4 text-sm text-slate-500">${date}</td>
-                            <td class="p-4 text-center">
-                                <button onclick="alert('Ticket ID: ${doc.id}')" class="text-slate-400 hover:text-[#5c56f1] transition">
-                                    👁️ ดูข้อมูล
-                                </button>
+                            <td class="p-6 text-sm text-slate-500">${dateStr}</td>
+                            <td class="p-6 text-center">
+                                <button onclick="location.href='ticket-detail.html?id=${doc.id}'" class="text-[#5c56f1] hover:underline font-bold text-sm">ดูรายละเอียด</button>
                             </td>
                         </tr>
                     `;
-                    listElement.innerHTML += row;
                 });
-            } catch (error) {
-                console.error("Error:", error);
-                listElement.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">เกิดข้อผิดพลาดในการโหลดข้อมูล (ตรวจสอบ Index ใน Firebase)</td></tr>';
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">เกิดข้อผิดพลาด (ตรวจสอบการสร้าง Index ใน Firebase Console)</td></tr>';
             }
         }
 
-        function getStatusStyle(status) {
-            switch(status) {
-                case 'Pending': return 'bg-orange-100 text-orange-600';
-                case 'In Progress': return 'bg-emerald-100 text-emerald-600';
-                case 'Completed': return 'bg-blue-100 text-blue-600';
-                case 'Closed': return 'bg-slate-100 text-slate-500';
-                default: return 'bg-slate-100 text-slate-600';
-            }
+        function getStatusStyle(s) {
+            if (s === 'Pending') return 'bg-orange-100 text-orange-600';
+            if (s === 'In Progress') return 'bg-emerald-100 text-emerald-600';
+            if (s === 'Completed') return 'bg-blue-100 text-blue-600';
+            return 'bg-slate-100 text-slate-500';
         }
     </script>
 </body>
