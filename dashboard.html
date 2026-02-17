@@ -3,37 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Dashboard - Sale Support</title>
+<title>Dashboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
 </head>
 
 <body class="bg-gray-100">
 
-  <!-- ===== MAIN LAYOUT ===== -->
-  <div class="flex h-screen">
+<div class="flex">
 
-      <!-- Sidebar -->
-      <div id="sidebar-container"></div>
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
 
-      <!-- Right Area -->
-      <div class="flex-1 flex flex-col">
+    <!-- Content -->
+    <div class="flex-1 flex flex-col">
 
-          <!-- Topbar -->
-          <div id="topbar-container"></div>
+        <div id="topbar-container"></div>
 
-          <!-- Page Content -->
-          <main class="flex-1 p-6 overflow-auto">
-              <h1 class="text-2xl font-bold mb-4">Dashboard Content</h1>
-          </main>
+        <main class="p-6">
+            Dashboard Content
+        </main>
 
-      </div>
+    </div>
 
-  </div>
+</div>
 
-  <!-- Layout Loader -->
-  <script type="module" src="/Sale-Support-System/js/layout.js"></script>
+<script type="module" src="./js/layout.js"></script>
+
 </body>
 </html>
