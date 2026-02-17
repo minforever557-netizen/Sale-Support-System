@@ -22,12 +22,10 @@
             <div class="w-full max-w-2xl profile-card overflow-hidden">
                 <div class="bg-[#5c56f1] p-10 text-white">
                     <div class="flex items-center gap-5">
-                        <div id="avatar-circle" class="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center text-3xl font-bold backdrop-blur-md border border-white/30">
-                            ?
-                        </div>
+                        <div id="avatar-circle" class="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center text-3xl font-bold backdrop-blur-md border border-white/30">?</div>
                         <div>
                             <h2 class="text-2xl font-bold">แก้ไขข้อมูลส่วนตัว</h2>
-                            <p class="text-indigo-100 text-sm opacity-80">จัดการข้อมูล ชื่อ ทีม และเบอร์โทรศัพท์ของคุณ</p>
+                            <p class="text-indigo-100 text-sm opacity-80">คุณสามารถแก้ไขชื่อ ผู้ใช้งาน อีเมล และรหัสผ่านได้ที่นี่</p>
                         </div>
                     </div>
                 </div>
@@ -39,49 +37,41 @@
                             <input type="text" id="prof-name" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">ชื่อผู้ใช้งาน (Username)</label>
-                            <input type="text" id="prof-username" class="w-full p-4 bg-slate-200 border-2 border-slate-200 rounded-2xl outline-none cursor-not-allowed" readonly>
+                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">ชื่อผู้ใช้งาน (USERNAME)</label>
+                            <input type="text" id="prof-username" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" required>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">อีเมล (Email)</label>
-                            <input type="email" id="prof-email" class="w-full p-4 bg-slate-200 border-2 border-slate-200 rounded-2xl outline-none cursor-not-allowed" readonly>
+                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">อีเมล (EMAIL)</label>
+                            <input type="email" id="prof-email" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">เบอร์โทรศัพท์ (Phone No.)</label>
-                            <input type="text" id="prof-phone" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" placeholder="08x-xxxxxxx">
+                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">เบอร์โทรศัพท์ (PHONE NO.)</label>
+                            <input type="text" id="prof-phone" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all">
                         </div>
+                    </div>
+
+                    <div class="bg-indigo-50/50 p-6 rounded-3xl border-2 border-indigo-100/50">
+                        <label class="block text-[11px] font-black text-[#5c56f1] uppercase tracking-widest mb-2 ml-1">เปลี่ยนรหัสผ่านใหม่ (PASSWORD)</label>
+                        <input type="password" id="prof-password" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน">
+                        <p class="text-[10px] text-slate-400 mt-2 ml-2">* หากเปลี่ยนรหัสผ่าน ระบบจะให้ท่านเข้าสู่ระบบใหม่ในครั้งถัดไป</p>
                     </div>
 
                     <div class="border-t border-slate-100 pt-6">
-                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">ทีมที่สังกัด (Team)</label>
-                        <div class="space-y-3">
-                            <div class="flex flex-wrap gap-4">
-                                <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="checkbox" name="team-choice" value="FBB Telesale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Telesale
-                                </label>
-                                <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="checkbox" name="team-choice" value="FBB Dealer Sale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Dealer Sale
-                                </label>
-                                <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="checkbox" name="team-choice" value="FBB Direct Sale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Direct Sale
-                                </label>
-                            </div>
-                            
-                            <div id="subteam-area" class="hidden mt-4">
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1">กลุ่มย่อย (Sub Team)</label>
-                                <select id="prof-subteam" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none"></select>
-                            </div>
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">ทีมที่สังกัด (TEAM)</label>
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="team-choice" value="FBB Telesale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Telesale</label>
+                            <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="team-choice" value="FBB Dealer Sale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Dealer Sale</label>
+                            <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="team-choice" value="FBB Direct Sale" onchange="syncTeam(this)" class="w-4 h-4 rounded text-[#5c56f1]"> FBB Direct Sale</label>
+                        </div>
+                        <div id="subteam-area" class="hidden">
+                            <select id="prof-subteam" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none"></select>
                         </div>
                     </div>
 
-                    <div class="pt-6">
-                        <button type="submit" id="save-btn" class="w-full py-5 bg-[#5c56f1] text-white rounded-[1.5rem] font-bold text-lg hover:bg-[#4a44d1] shadow-lg shadow-indigo-100 transition-all active:scale-95">
-                            บันทึกการเปลี่ยนแปลง
-                        </button>
-                    </div>
+                    <button type="submit" id="save-btn" class="w-full py-5 bg-[#5c56f1] text-white rounded-[1.5rem] font-bold text-lg hover:bg-[#4a44d1] shadow-lg transition-all active:scale-95">บันทึกการเปลี่ยนแปลง</button>
                 </form>
             </div>
         </main>
@@ -90,7 +80,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, updateEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
@@ -105,81 +95,75 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Load Sidebar/Topbar
         fetch('./components/sidebar.html').then(r => r.text()).then(h => document.getElementById('sidebar-placeholder').innerHTML = h);
         fetch('./components/topbar.html').then(r => r.text()).then(h => document.getElementById('topbar-placeholder').innerHTML = h);
 
-        // --- Logic: Team & SubTeam ---
         window.syncTeam = (el) => {
             const checkboxes = document.getElementsByName('team-choice');
             const subArea = document.getElementById('subteam-area');
             const subSelect = document.getElementById('prof-subteam');
             checkboxes.forEach(cb => { if (cb !== el) cb.checked = false; });
-
             if (el.checked) {
                 subArea.classList.remove('hidden');
-                let opt = '';
-                if (el.value === 'FBB Telesale') {
-                    opt = `<option value="FBB Telesale">FBB Telesale</option>`;
-                } else {
-                    for (let i = 1; i <= 10; i++) opt += `<option value="${el.value} ${i}">${el.value} ${i}</option>`;
-                }
+                let opt = el.value === 'FBB Telesale' ? `<option value="FBB Telesale">FBB Telesale</option>` : '';
+                if(el.value !== 'FBB Telesale') for (let i = 1; i <= 10; i++) opt += `<option value="${el.value} ${i}">${el.value} ${i}</option>`;
                 subSelect.innerHTML = opt;
             } else { subArea.classList.add('hidden'); }
         };
 
-        // --- Logic: Load User Data ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userDoc = await getDoc(doc(db, "admin", user.uid));
                 if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    // เติมข้อมูลลงฟอร์ม
-                    document.getElementById('prof-name').value = data.name || '';
-                    document.getElementById('prof-username').value = data.username || '';
-                    document.getElementById('prof-email').value = data.email || '';
-                    document.getElementById('prof-phone').value = data['Phone No.'] || '';
-                    document.getElementById('avatar-circle').innerText = data.name ? data.name[0].toUpperCase() : '?';
-
-                    // ตั้งค่าทีม
+                    const d = userDoc.data();
+                    document.getElementById('prof-name').value = d.name || '';
+                    document.getElementById('prof-username').value = d.username || '';
+                    document.getElementById('prof-email').value = d.email || '';
+                    document.getElementById('prof-phone').value = d['Phone No.'] || '';
+                    document.getElementById('avatar-circle').innerText = d.name ? d.name[0].toUpperCase() : '?';
                     const cbs = document.getElementsByName('team-choice');
-                    cbs.forEach(cb => {
-                        if (cb.value === data.Team) {
-                            cb.checked = true;
-                            window.syncTeam(cb);
-                            document.getElementById('prof-subteam').value = data['Sub Team'];
-                        }
-                    });
+                    cbs.forEach(cb => { if (cb.value === d.Team) { cb.checked = true; window.syncTeam(cb); document.getElementById('prof-subteam').value = d['Sub Team']; } });
                 }
-            } else {
-                window.location.href = "login.html";
-            }
+            } else { window.location.href = "login.html"; }
         });
 
-        // --- Logic: Update Profile ---
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('save-btn');
+            const user = auth.currentUser;
+            const newEmail = document.getElementById('prof-email').value;
+            const newPass = document.getElementById('prof-password').value;
             const selectedTeam = Array.from(document.getElementsByName('team-choice')).find(cb => cb.checked);
-            
-            if (!selectedTeam) return alert("กรุณาเลือกทีม");
 
             try {
                 btn.disabled = true;
-                btn.innerText = "กำลังบันทึก...";
-                
-                const user = auth.currentUser;
+                btn.innerText = "กำลังอัปเดตข้อมูล...";
+
+                // 1. อัปเดต Email ใน Auth (ถ้าเปลี่ยน)
+                if (newEmail !== user.email) await updateEmail(user, newEmail);
+
+                // 2. อัปเดต Password ใน Auth (ถ้ากรอกใหม่)
+                if (newPass) {
+                    if (newPass.length < 6) throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
+                    await updatePassword(user, newPass);
+                }
+
+                // 3. อัปเดตข้อมูลใน Firestore
                 await updateDoc(doc(db, "admin", user.uid), {
                     name: document.getElementById('prof-name').value,
+                    username: document.getElementById('prof-username').value,
+                    email: newEmail,
                     'Phone No.': document.getElementById('prof-phone').value,
                     Team: selectedTeam.value,
                     'Sub Team': document.getElementById('prof-subteam').value,
-                    updatedAt: serverTimestamp()
+                    updatedAt: serverTimestamp(),
+                    ...(newPass && { password: newPass }) // อัปเดต password field ใน Firestore ด้วย
                 });
 
-                alert("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว!");
+                alert("อัปเดตข้อมูลทั้งหมดเรียบร้อยแล้ว!");
+                if(newPass) alert("ท่านได้เปลี่ยนรหัสผ่าน กรุณาจำรหัสผ่านใหม่ในการเข้าใช้งานครั้งถัดไป");
             } catch (err) {
-                alert("เกิดข้อผิดพลาด: " + err.message);
+                alert("เกิดข้อผิดพลาด: " + err.message + "\n(หากเปลี่ยน Email/Password ไม่ได้ อาจต้อง Logout แล้ว Login ใหม่ก่อนทำรายการ)");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "บันทึกการเปลี่ยนแปลง";
