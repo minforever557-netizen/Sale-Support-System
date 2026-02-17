@@ -1,33 +1,47 @@
-// ===============================
-// LOAD SHARED LAYOUT
-// ===============================
+// ==============================
+// LOAD SIDEBAR + TOPBAR
+// ==============================
 
-async function loadComponent(id, file) {
-    try {
-        const res = await fetch(file);
+async function loadLayout() {
 
-        if (!res.ok) {
-            throw new Error("Load failed : " + file);
-        }
+    // ---------- SIDEBAR ----------
+    const sidebar = await fetch("./components/sidebar.html")
+        .then(res => res.text());
 
-        const html = await res.text();
-        document.getElementById(id).innerHTML = html;
+    document.getElementById("sidebar-container").innerHTML = sidebar;
 
-    } catch (err) {
-        console.error(err);
-    }
+    // ---------- TOPBAR ----------
+    const topbar = await fetch("./components/topbar.html")
+        .then(res => res.text());
+
+    document.getElementById("topbar-container").innerHTML = topbar;
+
+    // หลัง inject HTML ต้อง init
+    initLogout();
+    loadUserToTopbar();
 }
 
-// โหลด sidebar + topbar
-loadComponent(
-  "sidebar-container",
-  "/Sale-Support-System/components/sidebar.html"
-);
 
-loadComponent(
-  "topbar-container",
-  "/Sale-Support-System/components/topbar.html"
-);
+// ==============================
+// LOAD USER TO TOPBAR
+// ==============================
+function loadUserToTopbar() {
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) return;
+
+    const role = document.getElementById("userRole");
+    const fullname = document.getElementById("userFullname");
+    const email = document.getElementById("userEmail");
+
+    if (role) role.innerText = user.role || "User";
+    if (fullname)
+        fullname.innerText =
+            (user.name || "") + " " + (user.lastname || "");
+    if (email) email.innerText = user.email || "-";
+}
+
 
 // ==============================
 // LOGOUT
@@ -40,11 +54,28 @@ function initLogout() {
 
     btn.addEventListener("click", () => {
 
-        // ลบ session
         localStorage.removeItem("user");
 
-        // กลับหน้า login
         window.location.href = "index.html";
     });
 }
 
+
+// ==============================
+// PAGE GUARD
+// ==============================
+function authGuard() {
+
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+        window.location.href = "index.html";
+    }
+}
+
+
+// ==============================
+// START
+// ==============================
+authGuard();
+loadLayout();
