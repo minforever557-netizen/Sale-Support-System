@@ -7,64 +7,84 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
+        .glass-form { background: white; border-radius: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .checkbox-item:checked + label { color: #16a34a; font-weight: 600; }
     </style>
 </head>
-<body class="bg-green-50 flex min-h-screen">
+<body class="flex min-h-screen">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 bg-white border-r border-green-100"></aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-100"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40 h-16 flex items-center px-6"></header>
+        <header id="topbar-placeholder" class="h-16 flex items-center px-8 bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100"></header>
 
-        <main class="p-4 md:p-8 flex justify-center">
-            <div class="w-full max-w-2xl bg-white rounded-[3rem] shadow-xl border border-green-100 overflow-hidden">
-                <div class="bg-green-600 p-8 text-white">
-                    <h2 class="text-2xl font-bold">สร้างใบงานใหม่ (New Ticket)</h2>
-                    <p class="text-green-100 text-sm opacity-80">กรุณากรอกรายละเอียดปัญหาให้ครบถ้วนเพื่อความรวดเร็วในการตรวจสอบ</p>
+        <main class="p-4 md:p-10 flex justify-center">
+            <div class="w-full max-w-3xl glass-form overflow-hidden">
+                <div class="bg-indigo-600 p-10 text-white">
+                    <h2 class="text-3xl font-bold">แจ้งปัญหาใหม่</h2>
+                    <p class="text-indigo-100 mt-2 opacity-80">ระบบจะทำการบันทึกข้อมูลในชื่อคุณอัตโนมัติ</p>
                 </div>
 
-                <form id="ticketForm" class="p-8 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">ผู้สร้างใบงาน</label>
-                            <input type="text" id="display_name" readonly class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-500 outline-none">
+                <form id="ticketForm" class="p-10 space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ผู้แจ้ง (Username)</label>
+                            <input type="text" id="display_name" readonly class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-500 font-bold outline-none">
                         </div>
-                        <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">อีเมลติดต่อ</label>
-                            <input type="text" id="display_email" readonly class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-500 outline-none">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">อีเมล</label>
+                            <input type="text" id="display_email" readonly class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-500 outline-none">
                         </div>
                     </div>
 
-                    <hr class="border-gray-50">
-
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">หัวข้อปัญหา <span class="text-red-500">*</span></label>
-                        <select id="topic" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition cursor-pointer">
-                            <option value="">เลือกหัวข้อปัญหา...</option>
-                            <option value="internet">ปัญหาอินเทอร์เน็ตใช้งานไม่ได้</option>
-                            <option value="billing">สอบถามยอดค้างชำระ / ค่าบริการ</option>
-                            <option value="equipment">อุปกรณ์ชำรุด / เสีย</option>
-                            <option value="other">อื่นๆ</option>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">หัวข้อปัญหา <span class="text-red-500">*</span></label>
+                        <select id="topic" required class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition cursor-pointer">
+                            <option value="">กรุณาเลือกหัวข้อ...</option>
+                            <option value="Internet Connection">ปัญหาอินเทอร์เน็ตใช้งานไม่ได้</option>
+                            <option value="Billing/Payment">สอบถามยอดค้างชำระ</option>
+                            <option value="Equipment/Router">อุปกรณ์ Router มีปัญหา</option>
+                            <option value="Other">อื่นๆ</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">หมายเลข Internet (Internet No.) <span class="text-red-500">*</span></label>
-                        <input type="text" id="id_number" required placeholder="เช่น 88XXXXXXXX หรือหมายเลขบริการ" 
-                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">หมายเลข Internet No. <span class="text-red-500">*</span></label>
+                        <input type="text" id="id_number" required placeholder="เช่น 88XXXXXXXX" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">รายละเอียดเพิ่มเติม</label>
-                        <textarea id="detail" rows="4" placeholder="ระบุรายละเอียดของปัญหา อาการที่พบ หรือช่วงเวลาที่เกิดปัญหา..." 
-                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition"></textarea>
+                    <div class="space-y-4">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">อาการเบื้องต้น (Checklist)</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="chk1" value="ไฟ LOS สีแดง" class="checkbox-item w-5 h-5 accent-indigo-600 cursor-pointer">
+                                <label for="chk1" class="text-sm text-slate-600 cursor-pointer">ไฟ LOS สีแดง</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="chk2" value="เปิด Router ไม่ติด" class="checkbox-item w-5 h-5 accent-indigo-600 cursor-pointer">
+                                <label for="chk2" class="text-sm text-slate-600 cursor-pointer">เปิด Router ไม่ติด</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="chk3" value="เน็ตช้า/หลุดบ่อย" class="checkbox-item w-5 h-5 accent-indigo-600 cursor-pointer">
+                                <label for="chk3" class="text-sm text-slate-600 cursor-pointer">เน็ตช้า/หลุดบ่อย</label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="chk4" value="เชื่อมต่อ WiFi ไม่ได้" class="checkbox-item w-5 h-5 accent-indigo-600 cursor-pointer">
+                                <label for="chk4" class="text-sm text-slate-600 cursor-pointer">เชื่อมต่อ WiFi ไม่ได้</label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="pt-4 flex gap-4">
-                        <button type="button" onclick="window.history.back()" class="flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition">ยกเลิก</button>
-                        <button type="submit" id="submitBtn" class="flex-[2] py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200 disabled:bg-gray-400">
-                            ส่งข้อมูลใบงาน
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ระบุรายละเอียดเพิ่มเติม</label>
+                        <textarea id="detail" rows="4" placeholder="ระบุข้อมูลเพิ่มเติมเพื่อให้เจ้าหน้าที่ตรวจสอบได้รวดเร็วขึ้น..." class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition"></textarea>
+                    </div>
+
+                    <div class="pt-6 flex flex-col md:flex-row gap-4">
+                        <button type="button" onclick="window.history.back()" class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+                        <button type="submit" id="submitBtn" class="flex-[2] py-5 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition shadow-xl shadow-indigo-100">
+                            บันทึกและส่งใบงาน
                         </button>
                     </div>
                 </form>
@@ -77,7 +97,6 @@
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -93,57 +112,58 @@
 
         let currentUser = null;
 
-        // Load UI Components
+        // Load Header/Sidebar Components
         fetch('./components/sidebar.html').then(r => r.text()).then(h => document.getElementById('sidebar-placeholder').innerHTML = h).catch(()=>{});
         fetch('./components/topbar.html').then(r => r.text()).then(h => document.getElementById('topbar-placeholder').innerHTML = h).catch(()=>{});
 
-        // ตรวจสอบสถานะการล็อกอินและเตรียมข้อมูล User
+        // Stamp Username อัตโนมัติ
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('display_name').value = user.displayName || 'ผู้ใช้งานทั่วไป';
+                // ดึงชื่อ Username ถ้าไม่มีให้ใช้อีเมลส่วนหน้า
+                const username = user.displayName || user.email.split('@')[0];
+                document.getElementById('display_name').value = username;
                 document.getElementById('display_email').value = user.email;
             } else {
-                window.location.href = 'login.html'; // ถ้าไม่ได้ล็อกอินให้เด้งไปหน้า Login
+                window.location.href = 'login.html';
             }
         });
 
-        // ฟังก์ชันการบันทึกข้อมูล
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const submitBtn = document.getElementById('submitBtn');
-            const topic = document.getElementById('topic').value;
-            const id_number = document.getElementById('id_number').value;
-            const detail = document.getElementById('detail').value;
-
-            if (!currentUser) return alert('กรุณาเข้าสู่ระบบก่อนดำเนินการ');
+            
+            // รวบรวมข้อมูลจาก Checklist
+            const selectedCheckboxes = Array.from(document.querySelectorAll('.checkbox-item:checked'))
+                                            .map(cb => cb.value);
+            const checklistSummary = selectedCheckboxes.length > 0 
+                                     ? "Checklist: " + selectedCheckboxes.join(', ') 
+                                     : "No Checklist Selected";
 
             submitBtn.disabled = true;
-            submitBtn.innerText = 'กำลังบันทึกข้อมูล...';
+            submitBtn.innerText = 'กำลังส่งข้อมูล...';
 
             try {
-                // บันทึกข้อมูลลง Firestore พร้อมฟิลด์ ownerEmail เพื่อใช้กรองในหน้า My Ticket
+                // บันทึกข้อมูลลง Firestore
                 await addDoc(collection(db, "tickets"), {
-                    topic: topic,
-                    id_number: id_number,
-                    detail: detail,
-                    status: "On Progress",        // สถานะเริ่มต้น
-                    owner: currentUser.displayName || "User",
-                    ownerEmail: currentUser.email, // *** สำคัญมาก: ฟิลด์นี้ใช้สำหรับหน้า My Tickets ***
-                    createdAt: serverTimestamp(),  // บันทึกเวลาเซิร์ฟเวอร์
-                    adminNote: "",
-                    adminName: ""
+                    topic: document.getElementById('topic').value,
+                    id_number: document.getElementById('id_number').value,
+                    detail: document.getElementById('detail').value,
+                    checklist: selectedCheckboxes, // เก็บเป็น Array เพื่อการใช้งานในอนาคต
+                    summary: checklistSummary + " | " + document.getElementById('detail').value, // รวมรายละเอียด
+                    status: "Pending",
+                    ownerName: document.getElementById('display_name').value, // STAMP USERNAME
+                    ownerEmail: currentUser.email, // STAMP EMAIL
+                    createdAt: serverTimestamp()
                 });
 
-                alert('สร้างใบงานสำเร็จ!');
-                window.location.href = 'my-ticket.html'; // ส่งกลับไปหน้า My Ticket เพื่อดูรายการ
-
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                alert('เกิดข้อผิดพลาด: ' + error.message);
+                alert('ส่งใบงานเรียบร้อยแล้ว');
+                window.location.href = 'my-ticket.html';
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'ส่งข้อมูลใบงาน';
+                submitBtn.innerText = 'บันทึกและส่งใบงาน';
             }
         });
     </script>
