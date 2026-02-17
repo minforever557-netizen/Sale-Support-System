@@ -14,14 +14,14 @@
 
     <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm border-b-8 border-green-600">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-black text-green-600 uppercase">Sale</h1>
+            <h1 class="text-4xl font-black text-green-600">SALE</h1>
             <p class="text-orange-500 font-bold tracking-widest uppercase text-sm">Support System</p>
         </div>
 
         <form id="loginForm" class="space-y-5">
             <div>
                 <label class="text-gray-500 text-xs font-bold ml-1 uppercase">Username</label>
-                <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้งาน" 
+                <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" 
                     class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" required>
             </div>
             <div>
@@ -32,7 +32,7 @@
             
             <button type="submit" id="loginBtn" 
                 class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-orange-600 transform hover:-translate-y-1 transition flex justify-center items-center">
-                <span>เข้าสู่ระบบ</span>
+                <span>LOG IN</span>
             </button>
 
             <div class="flex justify-between text-sm pt-2">
@@ -42,6 +42,66 @@
         </form>
     </div>
 
-    <script type="module" src="./js/login.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
+            authDomain: "salesupportsystemapp.firebaseapp.com",
+            projectId: "salesupportsystemapp",
+            storageBucket: "salesupportsystemapp.firebasestorage.app",
+            messagingSenderId: "840890441207",
+            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userVal = document.getElementById('username').value.trim();
+            const passVal = document.getElementById('password').value;
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = "กำลังตรวจสอบ...";
+
+            try {
+                // อ้างอิง Collection 'admin' ตามภาพฐานข้อมูลของคุณ
+                const q = query(collection(db, "admin"), where("username", "==", userVal));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    alert("ไม่พบชื่อผู้ใช้งานนี้");
+                    resetButton();
+                    return;
+                }
+
+                let emailFound = "";
+                querySnapshot.forEach((doc) => { emailFound = doc.data().email; });
+
+                // ทำการ Login
+                await signInWithEmailAndPassword(auth, emailFound, passVal);
+                
+                // สำเร็จ -> ไปหน้า Dashboard
+                window.location.href = "dashboard.html";
+
+            } catch (error) {
+                console.error(error);
+                alert("รหัสผ่านไม่ถูกต้อง หรือเกิดข้อผิดพลาด");
+                resetButton();
+            }
+        });
+
+        function resetButton() {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = "<span>LOG IN</span>";
+        }
+    </script>
 </body>
 </html>
