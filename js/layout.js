@@ -28,3 +28,23 @@ loadComponent(
   "topbar-container",
   "/Sale-Support-System/components/topbar.html"
 );
+
+// ==============================
+// LOGOUT
+// ==============================
+function initLogout() {
+
+    const btn = document.getElementById("logoutBtn");
+
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+
+        // ลบ session
+        localStorage.removeItem("user");
+
+        // กลับหน้า login
+        window.location.href = "index.html";
+    });
+}
+
