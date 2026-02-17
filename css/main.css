@@ -1,5 +1,6 @@
 body{
-  font-family: system-ui;
+  margin:0;
+  font-family: system-ui, Arial;
   background:#f9fafb;
 }
 
@@ -25,6 +26,8 @@ body{
   border-radius:10px;
   width:100%;
   font-weight:600;
+  border:none;
+  cursor:pointer;
 }
 
 .btn-main:hover{
