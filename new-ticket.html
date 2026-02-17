@@ -21,21 +21,20 @@
             <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
                 <div class="bg-orange-500 p-4 text-white font-bold flex justify-between items-center">
                     <span>สร้างใบแจ้งปัญหา</span>
-                    <span class="bg-white text-orange-600 px-3 py-1 rounded-full text-xs uppercase">On Progress</span>
+                    <span class="bg-white text-orange-600 px-3 py-1 rounded-full text-xs uppercase font-bold">Draft</span>
                 </div>
 
                 <form id="ticketForm" class="p-6 md:p-10 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">หัวข้อปัญหา (Topic)</label>
-                            <select id="topic" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none" required>
+                            <select id="topic" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none transition" required>
                                 <option value="">-- กรุณาเลือกหัวข้อ --</option>
                                 <option value="internet">Internet ใช้งานไม่ได้ (SLA 4 ชม.)</option>
                                 <option value="billing">สอบถามยอดค้างชำระ (SLA 24 ชม.)</option>
                                 <option value="installation">ติดตามงานติดตั้ง (SLA 8 ชม.)</option>
                             </select>
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">Internet No. / เลขบัตรประชาชน</label>
                             <input type="text" id="id_number" placeholder="ระบุเลข 88 หรือ เลขบัตร" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none" required>
@@ -43,23 +42,22 @@
                     </div>
 
                     <div id="sla-box" class="hidden p-4 bg-green-50 rounded-xl border border-green-200 flex items-center">
-                        <span class="text-green-700 font-bold text-sm">SLA สำหรับหัวข้อนี้: <span id="sla-val" class="text-orange-600 underline">0</span> ชั่วโมง</span>
+                        <span class="text-green-700 font-bold text-sm">SLA สำหรับหัวข้อนี้: <span id="sla-val" class="text-orange-600 underline font-black">0</span> ชั่วโมง</span>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-2">รายละเอียดปัญหา (กรุณากรอกข้อมูลตามหัวข้อด้านล่าง)</label>
+                        <label class="block text-sm font-bold text-gray-600 mb-2 uppercase tracking-wide">รายละเอียดปัญหา (โปรดกรอกต่อท้ายหัวข้อ)</label>
                         <textarea id="detail" rows="10" 
-                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none transition leading-relaxed" 
-                            placeholder="กรุณาเลือกหัวข้อปัญหาเพื่อแสดง Template..."></textarea>
-                        <p class="text-xs text-gray-400 mt-2">* โปรดพิมพ์ข้อมูลต่อท้ายหัวข้อ ห้ามลบหัวข้อหลัก</p>
+                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none transition leading-relaxed whitespace-pre-wrap" 
+                            placeholder="กรุณาเลือกหัวข้อปัญหาด้านบนก่อน..."></textarea>
                     </div>
 
                     <div class="pt-6 flex gap-4">
                         <button type="submit" id="sendBtn" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transform hover:-translate-y-1 transition duration-300">
                             ส่งใบงาน (SEND)
                         </button>
-                        <button type="button" onclick="window.location.href='dashboard.html'" class="px-8 py-4 bg-gray-100 text-gray-400 rounded-2xl font-bold hover:bg-gray-200 transition">
-                            ยกเลิก
+                        <button type="button" onclick="window.location.href='dashboard.html'" class="px-8 py-4 bg-gray-100 text-gray-400 rounded-2xl font-bold hover:bg-gray-200 transition text-sm">
+                            ย้อนกลับ
                         </button>
                     </div>
                 </form>
@@ -71,7 +69,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Firebase Config (ใช้งานจากที่คุณให้มา)
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -84,22 +81,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Load Sidebar
-        fetch('./components/sidebar.html').then(res => res.text()).then(data => document.getElementById('sidebar-container').innerHTML = data);
+        // Sidebar Loading
+        fetch('./components/sidebar.html').then(res => res.text()).then(data => {
+            document.getElementById('sidebar-container').innerHTML = data;
+        }).catch(err => console.log("Sidebar load skip: running on local/preview"));
 
-        // Data Management
         const templates = {
             internet: {
                 sla: 4,
-                text: "ปัญหาใช้งาน Internet ไม่ได้\nรายละเอียดเพิ่มเติม :\n  - อาการ : \n  - อุปกรณ์ที่ใช้งาน : \n  - จำนวนผู้ใช้งาน : "
+                text: "ปัญหาใช้งาน Internet ไม่ได้\n--------------------------\n- อาการ : \n- อุปกรณ์ที่ใช้งาน : \n- จำนวนผู้ใช้งาน : \n- เบอร์ติดต่อกลับ : "
             },
             billing: {
                 sla: 24,
-                text: "สอบถามยอดค้างชำระ\nรายละเอียดเพิ่มเติม :\n  - รอบบิลที่สงสัย : \n  - จำนวนยอดเงิน : \n  - ช่องทางการชำระที่สะดวก : "
+                text: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- หลักฐานแนบ (ถ้ามี) : "
             },
             installation: {
                 sla: 8,
-                text: "ติดตามงานติดตั้ง\nรายละเอียดเพิ่มเติม :\n  - วัน/เวลาที่สะดวก : \n  - เบอร์โทรติดต่อหน้างาน : \n  - สถานที่ใกล้เคียงจุดติดตั้ง : "
+                text: "ติดตามงานติดตั้ง\n--------------------------\n- วันนัดเดิม : \n- ช่วงเวลาที่สะดวกใหม่ : \n- ชื่อช่างที่นัดไว้ : "
             }
         };
 
@@ -108,66 +106,52 @@
         const slaBox = document.getElementById('sla-box');
         const slaVal = document.getElementById('sla-val');
 
-        // ฟังก์ชันป้องกันการลบ Template (พื้นฐาน)
-        let currentTemplate = "";
+        let protectedHeader = ""; 
 
-topicSelect.addEventListener('change', (e) => {
-    const val = e.target.value;
-    if (val && templates[val]) {
-        protectedText = templates[val].text; // เก็บค่าต้นฉบับที่เป็นหัวข้อไว้
-        detailArea.value = protectedText;
-        // ... (SLA display logic) ...
-    }
-});
-
-// 1. ป้องกันการกดลบ (Backspace/Delete) หรือแก้ไขในส่วนที่ป้องกันไว้
-detailArea.addEventListener('keydown', (e) => {
-    // ตรวจสอบว่าตำแหน่ง Cursor อยู่ในโซนที่ห้ามลบหรือไม่
-    const cursorPosition = detailArea.selectionStart;
-
-    // ถ้ากด Backspace หรือ Delete ในขณะที่ Cursor อยู่ภายในหรือเท่ากับความยาวของหัวข้อ
-    if (cursorPosition <= protectedText.length) {
-        if (e.key === 'Backspace' || e.key === 'Delete') {
-            e.preventDefault(); // สั่งห้ามลบ
-        }
-    }
-});
-
-// 2. ป้องกันการลากคลุมแล้วพิมพ์ทับ หรือการวางข้อความ (Paste) ทับหัวข้อ
-detailArea.addEventListener('input', (e) => {
-    if (!detailArea.value.startsWith(protectedText)) {
-        // ถ้าข้อความเริ่มต้นไม่เหมือนเดิม (ถูกลบหรือแก้) ให้คืนค่ากลับเป็นของเดิมทันที
-        detailArea.value = protectedText + detailArea.value.substring(Math.max(0, detailArea.value.length - (detailArea.value.length - protectedText.length)));
-    }
-});
-
-// 3. เมื่อ User คลิกใน Textarea ให้เลื่อน Cursor ไปต่อท้ายหัวข้อเสมอ ถ้าคลิกโดนหัวข้อ
-detailArea.addEventListener('click', () => {
-    if (detailArea.selectionStart < protectedText.length) {
-        detailArea.setSelectionRange(protectedText.length, protectedText.length);
-    }
-});
-
-// 4. ป้องกันการลากคลุม (Select) ข้อความในส่วนหัวข้อ
-detailArea.addEventListener('select', () => {
-    if (detailArea.selectionStart < protectedText.length) {
-        detailArea.setSelectionRange(protectedText.length, Math.max(protectedText.length, detailArea.selectionEnd));
-    }
-});
-
-        // ดักจับการแก้ไข หากลบจนสั้นกว่า Template ให้คืนค่า Template เดิม
-        detailArea.addEventListener('input', () => {
-            if (detailArea.value.length < currentTemplate.length) {
-                // คุณสามารถใส่ Logic ที่ซับซ้อนขึ้นตรงนี้ได้ แต่พื้นฐานคือเตือนไม่ให้ลบ
+        // 1. เปลี่ยน Template เมื่อเลือก Topic
+        topicSelect.addEventListener('change', () => {
+            const val = topicSelect.value;
+            if (val && templates[val]) {
+                protectedHeader = templates[val].text;
+                detailArea.value = protectedHeader; // แสดง Template ทันที
+                slaBox.classList.remove('hidden');
+                slaVal.innerText = templates[val].sla;
+            } else {
+                protectedHeader = "";
+                detailArea.value = "";
+                slaBox.classList.add('hidden');
             }
         });
 
-        // Submit Logic
+        // 2. Logic ป้องกันการลบหัวข้อ (Read-only Header)
+        detailArea.addEventListener('keydown', (e) => {
+            if (detailArea.selectionStart < protectedHeader.length) {
+                // ถ้า Cursor อยู่ในส่วนหัวข้อ และกดปุ่มที่ไม่ใช่ลูกศร
+                if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    e.preventDefault();
+                    // ดีด Cursor ไปหลังหัวข้อ
+                    detailArea.setSelectionRange(protectedHeader.length, protectedHeader.length);
+                }
+            }
+            // ป้องกันการกด Backspace ลบหัวข้อ
+            if (e.key === 'Backspace' && detailArea.selectionStart <= protectedHeader.length) {
+                e.preventDefault();
+            }
+        });
+
+        // 3. Safety Net: ถ้าลบได้จริง ให้ดีดกลับมา
+        detailArea.addEventListener('input', () => {
+            if (!detailArea.value.startsWith(protectedHeader)) {
+                detailArea.value = protectedHeader + detailArea.value.replace(protectedHeader, "");
+            }
+        });
+
+        // 4. บันทึกข้อมูล
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            btn.innerText = "กำลังส่ง...";
+            btn.innerHTML = "Saving...";
 
             try {
                 const selected = topicSelect.value;
@@ -178,16 +162,16 @@ detailArea.addEventListener('select', () => {
                     sla: templates[selected].sla,
                     status: "On Progress",
                     createdAt: serverTimestamp(),
-                    owner: "User Admin" 
+                    owner: "User Admin"
                 });
 
-                alert("ส่ง Ticket สำเร็จ!");
+                alert("ส่ง Ticket สำเร็จ! สถานะ: On Progress");
                 window.location.href = "my-ticket.html";
             } catch (err) {
                 console.error(err);
-                alert("เกิดข้อผิดพลาด");
+                alert("เกิดข้อผิดพลาดในการบันทึก");
                 btn.disabled = false;
-                btn.innerText = "ส่งใบงาน (SEND)";
+                btn.innerHTML = "ส่งใบงาน (SEND)";
             }
         });
     </script>
