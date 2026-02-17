@@ -10,6 +10,10 @@
         body { font-family: 'Kanit', sans-serif; }
         .modal-animate { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        /* Custom Scrollbar for Modal */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-green-50 flex min-h-screen">
@@ -21,43 +25,45 @@
 
         <main class="p-4 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">รายการใบงานของฉัน</h2>
-                <button onclick="window.location.href='new-ticket.html'" class="bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-700 transition shadow-md flex items-center gap-2">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">รายการใบงานของฉัน</h2>
+                    <p class="text-sm text-gray-500">ติดตามสถานะและรายละเอียดการแจ้งปัญหา</p>
+                </div>
+                <button onclick="window.location.href='new-ticket.html'" class="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-green-700 transition shadow-lg flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     เปิดใบงานใหม่
                 </button>
             </div>
 
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-green-100 mb-6 flex flex-col md:flex-row gap-4">
+            <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-green-100 mb-6 flex flex-col md:flex-row gap-4">
                 <div class="relative flex-1">
                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </span>
-                    <input type="text" id="searchInput" placeholder="ค้นหาหมายเลข Internet หรือเลขบัตรประชาชน..." 
+                    <input type="text" id="searchInput" placeholder="ค้นหาจากหมายเลข Internet หรือเลขบัตร..." 
                         class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition">
                 </div>
-                <div class="flex gap-2">
-                    <select id="sortOrder" class="bg-gray-50 border border-gray-100 text-gray-600 px-4 py-3 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none font-medium">
-                        <option value="desc">จัดเรียง: ใหม่ไปเก่า</option>
-                        <option value="asc">จัดเรียง: เก่าไปใหม่</option>
-                    </select>
-                </div>
+                <select id="sortOrder" class="bg-gray-50 border border-gray-100 text-gray-600 px-6 py-3 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none font-bold">
+                    <option value="desc">ใหม่ไปเก่า</option>
+                    <option value="asc">เก่าไปใหม่</option>
+                </select>
             </div>
 
-            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-green-100">
+            <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-green-100">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left">
                         <thead>
                             <tr class="bg-gray-50/50 border-b border-gray-100">
-                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">วันที่สร้าง</th>
-                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">หัวข้อ</th>
-                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">Internet No.</th>
-                                <th class="p-6 text-sm font-bold text-gray-500 uppercase text-center">สถานะ</th>
-                                <th class="p-6 text-sm font-bold text-gray-500 uppercase text-right">จัดการ</th>
+                                <th class="p-6 text-xs font-black text-gray-400 uppercase tracking-wider">วันเวลาที่สร้าง</th>
+                                <th class="p-6 text-xs font-black text-gray-400 uppercase tracking-wider">หัวข้อปัญหา</th>
+                                <th class="p-6 text-xs font-black text-gray-400 uppercase tracking-wider">Internet No.</th>
+                                <th class="p-6 text-xs font-black text-gray-400 uppercase tracking-wider text-center">สถานะ</th>
+                                <th class="p-6 text-xs font-black text-gray-400 uppercase tracking-wider text-right">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="ticket-list" class="divide-y divide-gray-50">
-                            </tbody>
+                            <tr><td colspan="5" class="p-20 text-center text-gray-400 italic">กำลังดึงข้อมูล...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -66,17 +72,69 @@
 
     <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden modal-animate">
-            <div class="bg-green-600 p-8 text-white flex justify-between items-center">
-                <h3 class="text-xl font-bold">รายละเอียดใบงาน</h3>
-                <button onclick="closeModal()" class="hover:bg-green-700 p-2 rounded-full transition">
+        <div class="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden modal-animate flex flex-col max-h-[90vh]">
+            <div class="bg-green-600 p-8 text-white flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-xl font-bold">รายละเอียดใบงาน</h3>
+                    <p class="text-green-100 text-xs mt-1" id="m-doc-id"></p>
+                </div>
+                <button onclick="closeModal()" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            <div id="modalContent" class="p-8 space-y-6">
+
+            <div class="p-8 space-y-6 overflow-y-auto custom-scroll">
+                <div class="grid grid-cols-2 gap-4 bg-gray-50 p-5 rounded-[2rem] border border-gray-100">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">1. ผู้สร้าง (Created By)</p>
+                        <p id="m-owner" class="text-sm font-bold text-gray-800">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">2. วันเวลาสร้าง</p>
+                        <p id="m-created-at" class="text-sm font-bold text-gray-800">-</p>
+                    </div>
                 </div>
-            <div class="p-6 bg-gray-50 text-right">
-                <button onclick="closeModal()" class="px-8 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-100 transition shadow-sm">ปิด</button>
+
+                <div class="grid grid-cols-2 gap-4 px-2">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">หัวข้อปัญหา</p>
+                        <p id="m-topic" class="text-sm font-bold text-gray-700"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Internet No.</p>
+                        <p id="m-id" class="text-sm font-bold text-gray-700"></p>
+                    </div>
+                </div>
+
+                <div class="px-2">
+                    <p class="text-[10px] text-gray-400 uppercase font-black mb-2">รายละเอียดปัญหาที่แจ้ง</p>
+                    <div id="m-detail" class="bg-white p-5 rounded-2xl border border-gray-100 text-gray-700 whitespace-pre-wrap text-sm leading-relaxed shadow-inner"></div>
+                </div>
+
+                <div class="bg-orange-50 p-6 rounded-[2rem] border border-orange-100 space-y-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                        <p class="text-xs font-black text-orange-700 uppercase tracking-widest">ข้อมูลการปิดงานจากระบบ</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] text-orange-400 uppercase font-black mb-1">4. User Admin ที่ดูแล</p>
+                            <p id="m-admin-name" class="text-sm font-bold text-gray-800">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-orange-400 uppercase font-black mb-1">5. วันเวลาที่ปิด</p>
+                            <p id="m-closed-at" class="text-sm font-bold text-gray-800">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-orange-400 uppercase font-black mb-1">3. หมายเหตุการปิดจาก Admin</p>
+                        <div id="m-admin-note" class="text-sm text-gray-700 italic bg-white/60 p-4 rounded-xl border border-orange-100 mt-1 min-h-[50px]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 text-right border-t border-gray-100 shrink-0">
+                <button onclick="closeModal()" class="px-10 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-100 transition shadow-sm">ปิดหน้าต่าง</button>
             </div>
         </div>
     </div>
@@ -98,111 +156,97 @@
 
         let allTickets = [];
 
-        // ฟังก์ชันโหลด Sidebar & Topbar (แก้ไขเพื่อให้แสดงผลแน่นอน)
+        // โหลด Layout
         const loadLayout = async () => {
             try {
-                const sidebarRes = await fetch('./components/sidebar.html');
-                if (sidebarRes.ok) document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
-
-                const topbarRes = await fetch('./components/topbar.html');
-                if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
-            } catch (err) {
-                console.error("Layout load failed:", err);
-            }
+                const [sb, tb] = await Promise.all([
+                    fetch('./components/sidebar.html').then(r => r.ok ? r.text() : ""),
+                    fetch('./components/topbar.html').then(r => r.ok ? r.text() : "")
+                ]);
+                document.getElementById('sidebar-placeholder').innerHTML = sb;
+                document.getElementById('topbar-placeholder').innerHTML = tb;
+            } catch (err) { console.error("Layout load failed"); }
         };
         loadLayout();
 
-        // ฟังก์ชันแสดงผลตาราง
+        // ฟังก์ชัน Render Table
         const renderTable = (data) => {
             const list = document.getElementById('ticket-list');
             if (data.length === 0) {
-                list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-gray-400">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
+                list.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-gray-400">ไม่พบรายการใบงาน</td></tr>`;
                 return;
             }
 
             list.innerHTML = data.map(t => {
-                const date = t.createdAt ? t.createdAt.toDate().toLocaleDateString('th-TH') : '-';
+                const dateObj = t.createdAt?.toDate();
+                const dateStr = dateObj ? `${dateObj.toLocaleDateString('th-TH')} ${dateObj.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}` : '-';
                 const statusColor = t.status === 'Success' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+                
                 return `
                     <tr class="hover:bg-green-50/50 transition-colors">
-                        <td class="p-6 text-sm text-gray-600">${date}</td>
+                        <td class="p-6 text-sm text-gray-600 font-medium">${dateStr}</td>
                         <td class="p-6 text-sm font-bold text-gray-800">${t.topic}</td>
                         <td class="p-6 text-sm text-gray-600">${t.id_number}</td>
                         <td class="p-6 text-center">
-                            <span class="px-4 py-1.5 rounded-full text-xs font-bold ${statusColor}">${t.status || 'On Progress'}</span>
+                            <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusColor}">
+                                ${t.status || 'On Progress'}
+                            </span>
                         </td>
                         <td class="p-6 text-right">
-                            <button onclick="viewDetail('${t.docId}')" class="text-green-600 font-bold hover:text-green-800 transition underline decoration-2 underline-offset-4">ดูรายละเอียด</button>
+                            <button onclick="viewDetail('${t.docId}')" class="text-green-600 font-bold hover:text-green-800 transition underline underline-offset-4 decoration-2">ดูรายละเอียด</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         };
 
-        // ดึงข้อมูลจาก Firestore
+        // Fetch Data
         const fetchTickets = async (order = "desc") => {
-            const list = document.getElementById('ticket-list');
-            list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">กำลังโหลดข้อมูลจาก Database...</td></tr>`;
-            
             try {
                 const q = query(collection(db, "tickets"), orderBy("createdAt", order));
                 const snap = await getDocs(q);
                 allTickets = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
                 renderTable(allTickets);
-            } catch (err) {
-                list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
-            }
+            } catch (err) { console.error(err); }
         };
 
-        // ค้นหา (Search)
+        // Search Logic
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allTickets.filter(t => 
-                (t.id_number && String(t.id_number).toLowerCase().includes(term)) || 
-                (t.id_card && String(t.id_card).toLowerCase().includes(term))
+                String(t.id_number || "").toLowerCase().includes(term) || 
+                String(t.id_card || "").toLowerCase().includes(term)
             );
             renderTable(filtered);
         });
 
-        // จัดเรียง (Sort)
-        document.getElementById('sortOrder').addEventListener('change', (e) => {
-            fetchTickets(e.target.value);
-        });
+        // Sort Logic
+        document.getElementById('sortOrder').addEventListener('change', (e) => fetchTickets(e.target.value));
 
-        // ดูรายละเอียด (Modal)
+        // View Detail Modal
         window.viewDetail = async (id) => {
             const modal = document.getElementById('detailModal');
-            const content = document.getElementById('modalContent');
             modal.classList.remove('hidden');
-            content.innerHTML = `<div class="text-center py-10 text-gray-400">กำลังดึงข้อมูล...</div>`;
-
+            document.getElementById('m-doc-id').innerText = `Ticket ID: ${id}`;
+            
             try {
                 const snap = await getDoc(doc(db, "tickets", id));
                 if (snap.exists()) {
                     const d = snap.data();
-                    content.innerHTML = `
-                        <div class="grid grid-cols-2 gap-8">
-                            <div>
-                                <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-1">หัวข้อปัญหา</p>
-                                <p class="text-lg font-bold text-gray-800">${d.topic}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-1">Internet No.</p>
-                                <p class="text-lg font-bold text-gray-800">${d.id_number}</p>
-                            </div>
-                        </div>
-                        <hr class="border-gray-100">
-                        <div>
-                            <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-3">รายละเอียดเชิงลึก</p>
-                            <div class="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-gray-700 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
-                                ${d.detail || 'ไม่มีรายละเอียดเพิ่มเติม'}
-                            </div>
-                        </div>
-                    `;
+                    const createdStr = d.createdAt ? `${d.createdAt.toDate().toLocaleDateString('th-TH')} ${d.createdAt.toDate().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}` : '-';
+                    const closedStr = d.closedAt ? `${d.closedAt.toDate().toLocaleDateString('th-TH')} ${d.closedAt.toDate().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}` : 'รอดำเนินการ';
+
+                    document.getElementById('m-owner').innerText = d.owner || 'User Admin'; // ข้อ 1
+                    document.getElementById('m-created-at').innerText = createdStr; // ข้อ 2
+                    document.getElementById('m-admin-note').innerText = d.adminNote || 'ยังไม่มีหมายเหตุจากผู้ดูแล'; // ข้อ 3
+                    document.getElementById('m-admin-name').innerText = d.adminName || 'รอรับเรื่อง'; // ข้อ 4
+                    document.getElementById('m-closed-at').innerText = closedStr; // ข้อ 5
+                    
+                    document.getElementById('m-topic').innerText = d.topic;
+                    document.getElementById('m-id').innerText = d.id_number;
+                    document.getElementById('m-detail').innerText = d.detail;
                 }
-            } catch (err) {
-                content.innerHTML = `<div class="text-red-500 font-bold text-center py-10">ไม่สามารถโหลดข้อมูลได้</div>`;
-            }
+            } catch (err) { console.error(err); }
         };
 
         window.closeModal = () => document.getElementById('detailModal').classList.add('hidden');
