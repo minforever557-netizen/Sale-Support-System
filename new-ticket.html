@@ -6,33 +6,27 @@
     <title>New Ticket - Sale Support System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Kanit', sans-serif; }
-        /* ปรับแต่ง Scrollbar ของ Textarea ให้ดูสะอาดตา */
-        textarea::-webkit-scrollbar { width: 8px; }
-        textarea::-webkit-scrollbar-track { background: #f1f1f1; }
-        textarea::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
-    </style>
+    <style>body { font-family: 'Kanit', sans-serif; }</style>
 </head>
 <body class="bg-green-50 flex min-h-screen">
 
     <aside id="sidebar-placeholder" class="hidden lg:block w-64 bg-white border-r border-green-100"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40"></header>
+        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40 h-16 flex items-center px-6"></header>
 
         <main class="p-4 md:p-8">
-            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
+            <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-green-100">
                 <div class="bg-orange-500 p-4 text-white font-bold flex justify-between items-center">
-                    <span>สร้างใบแจ้งปัญหา</span>
-                    <span class="bg-white text-orange-600 px-3 py-1 rounded-full text-xs uppercase font-bold">Draft</span>
+                    <span>สร้างใบแจ้งปัญหาใหม่</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs uppercase tracking-widest">New Entry</span>
                 </div>
 
                 <form id="ticketForm" class="p-6 md:p-10 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">หัวข้อปัญหา (Topic)</label>
-                            <select id="topic" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none transition-all" required>
+                            <select id="topic" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-green-400 outline-none" required>
                                 <option value="">-- กรุณาเลือกหัวข้อ --</option>
                                 <option value="internet">Internet ใช้งานไม่ได้ (SLA 4 ชม.)</option>
                                 <option value="billing">สอบถามยอดค้างชำระ (SLA 24 ชม.)</option>
@@ -41,25 +35,35 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">Internet No. / เลขบัตรประชาชน</label>
-                            <input type="text" id="id_number" placeholder="88XXXXXXXX" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none" required>
+                            <input type="text" id="id_number" placeholder="กรอกเลขเพื่อตรวจสอบประวัติ..." 
+                                class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-green-400 outline-none font-bold" required>
+                        </div>
+                    </div>
+
+                    <div id="duplicate-check" class="hidden space-y-3">
+                        <div class="p-4 bg-orange-50 border border-orange-200 rounded-2xl flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                                <p class="text-sm font-bold text-orange-800">พบรายการแจ้งปัญหาค้างในระบบ!</p>
+                                <p class="text-xs text-orange-600" id="duplicate-info"></p>
+                                <button type="button" onclick="window.location.href='my-ticket.html'" class="mt-2 text-xs font-bold text-orange-700 underline decoration-2">คลิกเพื่อดูรายละเอียดเดิม</button>
+                            </div>
                         </div>
                     </div>
 
                     <div>
                         <div class="flex justify-between items-end mb-2">
                             <label class="text-sm font-bold text-gray-600">รายละเอียดปัญหา (พิมพ์ต่อท้ายเครื่องหมาย : )</label>
-                            <button type="button" id="resetDetailBtn" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all">
-                                ล้างข้อความ/เริ่มใหม่
-                            </button>
+                            <button type="button" id="resetDetailBtn" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all">ล้างข้อความ</button>
                         </div>
-                        <textarea id="detail" rows="10" 
-                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none leading-relaxed text-gray-700 font-medium transition-all" 
-                            placeholder="กรุณาเลือกหัวข้อปัญหา..."></textarea>
-                        <p class="text-xs text-gray-400 mt-2 italic">* ห้ามลบหัวข้อหลัก ระบบจะล็อคตำแหน่งการพิมพ์ให้อัตโนมัติ</p>
+                        <textarea id="detail" rows="8" 
+                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none leading-relaxed text-gray-700 font-medium"></textarea>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" id="sendBtn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transform hover:scale-[1.01] transition-all">
+                        <button type="submit" id="sendBtn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-all transform hover:scale-[1.01]">
                             ส่งใบงาน (SEND)
                         </button>
                     </div>
@@ -70,9 +74,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -84,21 +87,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- เริ่มต้นโหลด Sidebar และ Topbar ---
-        const loadComponents = async () => {
-            try {
-                const sidebarRes = await fetch('./components/sidebar.html');
-                if (sidebarRes.ok) document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
+        // โหลด Layout (Sidebar/Topbar)
+        fetch('./components/sidebar.html').then(r => r.text()).then(h => document.getElementById('sidebar-placeholder').innerHTML = h).catch(() => {});
 
-                const topbarRes = await fetch('./components/topbar.html');
-                if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
-            } catch (err) {
-                console.error("Component load error:", err);
-            }
-        };
-        loadComponents();
-
-        // --- ระบบ Template & Logic ---
         const templates = {
             internet: "ปัญหาใช้งาน Internet ไม่ได้\n--------------------------\n- อาการ : \n- อุปกรณ์ที่ใช้งาน : \n- จำนวนผู้ใช้งาน : \n- เบอร์ติดต่อกลับ : ",
             billing: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- ช่องทางที่ชำระ : ",
@@ -107,37 +98,59 @@
 
         const topicSelect = document.getElementById('topic');
         const detailArea = document.getElementById('detail');
-        const resetBtn = document.getElementById('resetDetailBtn');
+        const idInput = document.getElementById('id_number');
+        const duplicateBox = document.getElementById('duplicate-check');
+        const duplicateInfo = document.getElementById('duplicate-info');
 
         topicSelect.addEventListener('change', () => {
             if (topicSelect.value) detailArea.value = templates[topicSelect.value];
         });
 
-        resetBtn.addEventListener('click', () => {
-            const val = topicSelect.value;
-            if (val && templates[val]) {
-                if(confirm("ล้างข้อมูลและเริ่มใหม่ตามต้นฉบับใช่หรือไม่?")) detailArea.value = templates[val];
+        // --- ส่วนที่เพิ่มใหม่: ฟังก์ชันตรวจสอบการส่งซ้ำ ---
+        idInput.addEventListener('blur', async () => {
+            const val = idInput.value.trim();
+            if (val.length < 4) return;
+
+            try {
+                // ค้นหาเคสล่าสุดของหมายเลขนี้ ที่สถานะยังไม่เป็น Success
+                const q = query(
+                    collection(db, "tickets"), 
+                    where("id_number", "==", val),
+                    where("status", "==", "On Progress"),
+                    orderBy("createdAt", "desc"),
+                    limit(1)
+                );
+                
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const latest = snap.docs[0].data();
+                    const date = latest.createdAt?.toDate().toLocaleDateString('th-TH');
+                    duplicateBox.classList.remove('hidden');
+                    duplicateInfo.innerText = `หมายเลขนี้มีการแจ้งเรื่อง "${latest.topic}" ไว้เมื่อวันที่ ${date || '-'} สถานะ: ${latest.status}`;
+                } else {
+                    duplicateBox.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error("Check duplicate error:", err);
             }
         });
 
-        // ป้องกันการลบหัวข้อ (ฉบับอัปเดต - พิมพ์ได้ลื่นไหล)
+        // ระบบป้องกันการลบ Header (เหมือนเดิม)
         detailArea.addEventListener('keydown', (e) => {
             const cursor = detailArea.selectionStart;
             const text = detailArea.value;
             const lineStart = text.lastIndexOf('\n', cursor - 1) + 1;
             const lineEnd = text.indexOf('\n', cursor);
             const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
-            
             if (currentLine.includes(' : ')) {
-                const headerLimit = lineStart + currentLine.indexOf(' : ') + 3;
-                if (e.key === 'Backspace' && cursor <= headerLimit) e.preventDefault();
-                if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && cursor < headerLimit) {
-                    detailArea.setSelectionRange(headerLimit, headerLimit);
+                const limit = lineStart + currentLine.indexOf(' : ') + 3;
+                if (e.key === 'Backspace' && cursor <= limit) e.preventDefault();
+                if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key) && cursor < limit) {
+                    detailArea.setSelectionRange(limit, limit);
                 }
             }
         });
 
-        // บันทึกลง Firestore
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('sendBtn');
@@ -147,15 +160,16 @@
             try {
                 await addDoc(collection(db, "tickets"), {
                     topic: topicSelect.value,
-                    id_number: document.getElementById('id_number').value,
+                    id_number: idInput.value,
                     detail: detailArea.value,
                     status: "On Progress",
+                    owner: "User Admin", // สามารถเปลี่ยนเป็นตัวแปรชื่อ User จริงได้
                     createdAt: serverTimestamp()
                 });
-                alert("บันทึกสำเร็จ!");
+                alert("ส่งใบงานเรียบร้อย!");
                 window.location.href = "my-ticket.html";
             } catch (err) {
-                alert("เกิดข้อผิดพลาดในการบันทึก");
+                alert("เกิดข้อผิดพลาด");
                 btn.disabled = false;
                 btn.innerText = "ส่งใบงาน (SEND)";
             }
