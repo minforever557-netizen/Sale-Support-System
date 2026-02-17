@@ -41,15 +41,10 @@
                         </div>
                     </div>
 
-                    <div id="sla-box" class="hidden p-4 bg-green-50 rounded-xl border border-green-200">
-                        <span class="text-green-700 font-bold text-sm">SLA: <span id="sla-val" class="text-orange-600 font-black">0</span> ชม.</span>
-                    </div>
-
                     <div>
                         <div class="flex justify-between items-end mb-2">
                             <label class="text-sm font-bold text-gray-600">รายละเอียดปัญหา (พิมพ์ต่อท้ายเครื่องหมาย : )</label>
                             <button type="button" id="resetDetailBtn" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 ล้างข้อความ/เริ่มใหม่
                             </button>
                         </div>
@@ -58,8 +53,8 @@
                             placeholder="กรุณาเลือกหัวข้อปัญหา..."></textarea>
                     </div>
 
-                    <div class="pt-6 flex flex-col sm:flex-row gap-4">
-                        <button type="submit" id="sendBtn" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition">
+                    <div class="pt-6">
+                        <button type="submit" id="sendBtn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition">
                             ส่งใบงาน (SEND)
                         </button>
                     </div>
@@ -69,6 +64,7 @@
     </div>
 
     <script type="module">
+        // Firebase Config (คงเดิมตามที่คุณใช้)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -80,97 +76,87 @@
             messagingSenderId: "840890441207",
             appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         const templates = {
-            internet: { sla: 4, text: "ปัญหาใช้งาน Internet ไม่ได้\n--------------------------\n- อาการ : \n- อุปกรณ์ที่ใช้งาน : \n- จำนวนผู้ใช้งาน : \n- เบอร์ติดต่อกลับ : " },
-            billing: { sla: 24, text: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- ช่องทางที่ชำระ : " },
-            installation: { sla: 8, text: "ติดตามงานติดตั้ง\n--------------------------\n- วันนัดหมายเดิม : \n- ช่วงเวลาที่สะดวกใหม่ : \n- ชื่อช่างหน้างาน : " }
+            internet: "ปัญหาใช้งาน Internet ไม่ได้\n--------------------------\n- อาการ : \n- อุปกรณ์ที่ใช้งาน : \n- จำนวนผู้ใช้งาน : \n- เบอร์ติดต่อกลับ : ",
+            billing: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- ช่องทางที่ชำระ : ",
+            installation: "ติดตามงานติดตั้ง\n--------------------------\n- วันนัดหมายเดิม : \n- ช่วงเวลาที่สะดวกใหม่ : \n- ชื่อช่างหน้างาน : "
         };
 
         const topicSelect = document.getElementById('topic');
         const detailArea = document.getElementById('detail');
-        const slaBox = document.getElementById('sla-box');
-        const slaVal = document.getElementById('sla-val');
         const resetBtn = document.getElementById('resetDetailBtn');
 
-        let lockHeader = "";
-
-        topicSelect.addEventListener('change', () => {
+        // ฟังก์ชันล้าง/เริ่มใหม่
+        resetBtn.addEventListener('click', () => {
             const val = topicSelect.value;
             if (val && templates[val]) {
-                lockHeader = templates[val].text;
-                detailArea.value = lockHeader;
-                slaBox.classList.remove('hidden');
-                slaVal.innerText = templates[val].sla;
+                if(confirm("ต้องการล้างข้อมูลและเริ่มใหม่หรือไม่?")) detailArea.value = templates[val];
             }
         });
 
-        // ปุ่ม Reset คืนค่า Template
-        resetBtn.addEventListener('click', () => {
-            if(lockHeader !== "") {
-                if(confirm("ต้องการล้างข้อมูลที่พิมพ์มาทั้งหมด และเริ่มใหม่ใช่หรือไม่?")) {
-                    detailArea.value = lockHeader;
-                }
-            } else {
-                alert("กรุณาเลือกหัวข้อปัญหาก่อนครับ");
-            }
+        topicSelect.addEventListener('change', () => {
+            if (topicSelect.value) detailArea.value = templates[topicSelect.value];
         });
 
-        // แก้ไข Bug การ Duplicate (ใช้การ Check ป้องกันการลบแทนการเขียนทับ)
+        // LOGIC ใหม่: อนุญาตให้พิมพ์ได้ปกติ แต่ห้ามลบหัวข้อ
         detailArea.addEventListener('keydown', (e) => {
             const cursor = detailArea.selectionStart;
-            const lines = detailArea.value.split('\n');
+            const text = detailArea.value;
             
-            // หาว่าตอนนี้ Cursor อยู่บรรทัดไหน
-            let currentPos = 0;
-            let lineIdx = 0;
-            for(let i=0; i<lines.length; i++) {
-                if(cursor <= currentPos + lines[i].length) {
-                    lineIdx = i;
-                    break;
-                }
-                currentPos += lines[i].length + 1;
-            }
-
-            const templateLines = lockHeader.split('\n');
-            const currentLineText = lines[lineIdx] || "";
-            const headerPart = templateLines[lineIdx] || "";
-
-            // ถ้า Cursor อยู่ในโซนของ Header (ก่อนหรือเท่ากับเครื่องหมาย :)
-            if (headerPart.includes(':') && (cursor - currentPos) <= headerPart.length) {
-                // อนุญาตให้กดลูกศรได้ แต่ห้ามพิมพ์หรือลบ
-                if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            // หาจุดเริ่มต้นของบรรทัดปัจจุบัน
+            const lineStart = text.lastIndexOf('\n', cursor - 1) + 1;
+            const lineEnd = text.indexOf('\n', cursor);
+            const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+            
+            // ตรวจสอบว่าบรรทัดนี้มีหัวข้อที่เป็นเครื่องหมาย : หรือไม่
+            if (currentLine.includes(' : ')) {
+                const headerLimit = lineStart + currentLine.indexOf(' : ') + 3; // ตำแหน่งหลัง : 
+                
+                // ถ้าพยายามกด Backspace ลบโดนหัวข้อ
+                if (e.key === 'Backspace' && cursor <= headerLimit) {
                     e.preventDefault();
-                    // ดีดไปหลัง :
-                    const jumpPos = currentPos + headerPart.length;
-                    detailArea.setSelectionRange(jumpPos, jumpPos);
+                }
+                
+                // ถ้าเผลอคลิกไปพิมพ์ทับในส่วนหัวข้อ
+                if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && cursor < headerLimit) {
+                    // ดีด Cursor ไปจุดที่พิมพ์ได้ล่าสุดของบรรทัดนั้น
+                    detailArea.setSelectionRange(headerLimit, headerLimit);
                 }
             }
         });
 
+        // ป้องกันการลากคลุมหัวข้อแล้วกดลบทิ้งทั้งหมด
+        detailArea.addEventListener('input', (e) => {
+            const val = topicSelect.value;
+            if (val && !detailArea.value.startsWith(templates[val].split('\n')[0])) {
+                detailArea.value = templates[val];
+                alert("ขออภัย ระบบไม่อนุญาตให้ลบหัวข้อหลักครับ");
+            }
+        });
+
+        // Submit Logic (คงเดิม)
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            btn.innerText = "Saving...";
+            btn.innerText = "กำลังส่ง...";
             try {
                 await addDoc(collection(db, "tickets"), {
                     topic: topicSelect.value,
                     id_number: document.getElementById('id_number').value,
                     detail: detailArea.value,
-                    sla: templates[topicSelect.value].sla,
                     status: "On Progress",
-                    createdAt: serverTimestamp(),
-                    owner: "User Admin"
+                    createdAt: serverTimestamp()
                 });
                 alert("ส่งใบงานสำเร็จ!");
                 window.location.href = "my-ticket.html";
             } catch (err) {
-                alert("Error");
+                alert("เกิดข้อผิดพลาด");
                 btn.disabled = false;
+                btn.innerText = "ส่งใบงาน (SEND)";
             }
         });
     </script>
