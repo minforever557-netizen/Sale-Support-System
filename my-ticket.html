@@ -17,7 +17,7 @@
     <aside id="sidebar-placeholder" class="hidden lg:block w-64 bg-white border-r border-green-100"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40 h-16 flex items-center px-6"></header>
+        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40"></header>
 
         <main class="p-4 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -28,32 +28,32 @@
                 </button>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-green-100 mb-6 flex flex-col md:flex-row gap-4">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-green-100 mb-6 flex flex-col md:flex-row gap-4">
                 <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </span>
                     <input type="text" id="searchInput" placeholder="ค้นหาหมายเลข Internet หรือเลขบัตรประชาชน..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:outline-none transition">
+                        class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition">
                 </div>
                 <div class="flex gap-2">
-                    <select id="sortOrder" class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-medium">
+                    <select id="sortOrder" class="bg-gray-50 border border-gray-100 text-gray-600 px-4 py-3 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none font-medium">
                         <option value="desc">จัดเรียง: ใหม่ไปเก่า</option>
                         <option value="asc">จัดเรียง: เก่าไปใหม่</option>
                     </select>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-green-100">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100">
-                                <th class="p-5 text-sm font-bold text-gray-600">วันที่สร้าง</th>
-                                <th class="p-5 text-sm font-bold text-gray-600">หัวข้อ</th>
-                                <th class="p-5 text-sm font-bold text-gray-600">Internet No.</th>
-                                <th class="p-5 text-sm font-bold text-gray-600 text-center">สถานะ</th>
-                                <th class="p-5 text-sm font-bold text-gray-600 text-center">จัดการ</th>
+                            <tr class="bg-gray-50/50 border-b border-gray-100">
+                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">วันที่สร้าง</th>
+                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">หัวข้อ</th>
+                                <th class="p-6 text-sm font-bold text-gray-500 uppercase">Internet No.</th>
+                                <th class="p-6 text-sm font-bold text-gray-500 uppercase text-center">สถานะ</th>
+                                <th class="p-6 text-sm font-bold text-gray-500 uppercase text-right">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="ticket-list" class="divide-y divide-gray-50">
@@ -66,13 +66,18 @@
 
     <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden modal-animate">
-            <div class="bg-green-600 p-6 text-white flex justify-between items-center">
+        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden modal-animate">
+            <div class="bg-green-600 p-8 text-white flex justify-between items-center">
                 <h3 class="text-xl font-bold">รายละเอียดใบงาน</h3>
-                <button onclick="closeModal()" class="text-white hover:opacity-70 transition">ปิด</button>
+                <button onclick="closeModal()" class="hover:bg-green-700 p-2 rounded-full transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
-            <div id="modalContent" class="p-8">
+            <div id="modalContent" class="p-8 space-y-6">
                 </div>
+            <div class="p-6 bg-gray-50 text-right">
+                <button onclick="closeModal()" class="px-8 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-100 transition shadow-sm">ปิด</button>
+            </div>
         </div>
     </div>
 
@@ -91,10 +96,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let allTickets = []; // เก็บข้อมูลทั้งหมดไว้ทำ Client-side Search
+        let allTickets = [];
 
-        // ฟังก์ชันโหลดและแสดงผล
-        const renderTickets = (data) => {
+        // ฟังก์ชันโหลด Sidebar & Topbar (แก้ไขเพื่อให้แสดงผลแน่นอน)
+        const loadLayout = async () => {
+            try {
+                const sidebarRes = await fetch('./components/sidebar.html');
+                if (sidebarRes.ok) document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
+
+                const topbarRes = await fetch('./components/topbar.html');
+                if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
+            } catch (err) {
+                console.error("Layout load failed:", err);
+            }
+        };
+        loadLayout();
+
+        // ฟังก์ชันแสดงผลตาราง
+        const renderTable = (data) => {
             const list = document.getElementById('ticket-list');
             if (data.length === 0) {
                 list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-gray-400">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
@@ -105,76 +124,89 @@
                 const date = t.createdAt ? t.createdAt.toDate().toLocaleDateString('th-TH') : '-';
                 const statusColor = t.status === 'Success' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
                 return `
-                    <tr class="hover:bg-green-50 transition-colors">
-                        <td class="p-5 text-sm text-gray-600">${date}</td>
-                        <td class="p-5 text-sm font-bold text-gray-800">${t.topic}</td>
-                        <td class="p-5 text-sm text-gray-600">${t.id_number}</td>
-                        <td class="p-5 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${statusColor}">${t.status || 'On Progress'}</span>
+                    <tr class="hover:bg-green-50/50 transition-colors">
+                        <td class="p-6 text-sm text-gray-600">${date}</td>
+                        <td class="p-6 text-sm font-bold text-gray-800">${t.topic}</td>
+                        <td class="p-6 text-sm text-gray-600">${t.id_number}</td>
+                        <td class="p-6 text-center">
+                            <span class="px-4 py-1.5 rounded-full text-xs font-bold ${statusColor}">${t.status || 'On Progress'}</span>
                         </td>
-                        <td class="p-5 text-center">
-                            <button onclick="viewDetail('${t.docId}')" class="text-green-600 font-bold hover:underline">ดูรายละเอียด</button>
+                        <td class="p-6 text-right">
+                            <button onclick="viewDetail('${t.docId}')" class="text-green-600 font-bold hover:text-green-800 transition underline decoration-2 underline-offset-4">ดูรายละเอียด</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         };
 
-        // ดึงข้อมูลจาก Firebase
+        // ดึงข้อมูลจาก Firestore
         const fetchTickets = async (order = "desc") => {
             const list = document.getElementById('ticket-list');
-            list.innerHTML = `<tr><td colspan="5" class="p-10 text-center">กำลังโหลดข้อมูล...</td></tr>`;
+            list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">กำลังโหลดข้อมูลจาก Database...</td></tr>`;
             
             try {
                 const q = query(collection(db, "tickets"), orderBy("createdAt", order));
                 const snap = await getDocs(q);
                 allTickets = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-                renderTickets(allTickets);
+                renderTable(allTickets);
             } catch (err) {
-                console.error(err);
-                list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+                list.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
             }
         };
 
-        // ระบบค้นหา (Search)
+        // ค้นหา (Search)
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allTickets.filter(t => 
-                (t.id_number && t.id_number.toLowerCase().includes(term)) || 
-                (t.id_card && t.id_card.toLowerCase().includes(term))
+                (t.id_number && String(t.id_number).toLowerCase().includes(term)) || 
+                (t.id_card && String(t.id_card).toLowerCase().includes(term))
             );
-            renderTickets(filtered);
+            renderTable(filtered);
         });
 
-        // ระบบจัดเรียง (Sort)
+        // จัดเรียง (Sort)
         document.getElementById('sortOrder').addEventListener('change', (e) => {
             fetchTickets(e.target.value);
         });
 
-        // Modal Logic
+        // ดูรายละเอียด (Modal)
         window.viewDetail = async (id) => {
-            document.getElementById('detailModal').classList.remove('hidden');
-            document.getElementById('modalContent').innerHTML = "กำลังโหลด...";
-            const snap = await getDoc(doc(db, "tickets", id));
-            if (snap.exists()) {
-                const d = snap.data();
-                document.getElementById('modalContent').innerHTML = `
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <p class="text-sm text-gray-500 uppercase">Internet No: <br><b class="text-gray-800">${d.id_number}</b></p>
-                            <p class="text-sm text-gray-500 uppercase">เลขบัตรประชาชน: <br><b class="text-gray-800">${d.id_card || '-'}</b></p>
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            content.innerHTML = `<div class="text-center py-10 text-gray-400">กำลังดึงข้อมูล...</div>`;
+
+            try {
+                const snap = await getDoc(doc(db, "tickets", id));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    content.innerHTML = `
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-1">หัวข้อปัญหา</p>
+                                <p class="text-lg font-bold text-gray-800">${d.topic}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-1">Internet No.</p>
+                                <p class="text-lg font-bold text-gray-800">${d.id_number}</p>
+                            </div>
                         </div>
-                        <hr>
-                        <p class="text-sm text-gray-500 uppercase font-bold">หัวข้อ: <span class="text-gray-800">${d.topic}</span></p>
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 min-h-[100px] whitespace-pre-wrap">${d.detail}</div>
-                    </div>
-                `;
+                        <hr class="border-gray-100">
+                        <div>
+                            <p class="text-xs text-gray-400 uppercase font-black tracking-widest mb-3">รายละเอียดเชิงลึก</p>
+                            <div class="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-gray-700 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
+                                ${d.detail || 'ไม่มีรายละเอียดเพิ่มเติม'}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                content.innerHTML = `<div class="text-red-500 font-bold text-center py-10">ไม่สามารถโหลดข้อมูลได้</div>`;
             }
         };
 
         window.closeModal = () => document.getElementById('detailModal').classList.add('hidden');
 
-        // เริ่มต้นโหลดข้อมูล
         fetchTickets();
     </script>
 </body>
