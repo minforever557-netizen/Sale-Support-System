@@ -1,38 +1,46 @@
-import {
-  auth,
-  db,
-  collection,
-  getDocs,
-  query,
-  where,
-  signInWithEmailAndPassword
-} from "./firebase.js";
+import { auth, db } from './firebase.js';
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const form = document.getElementById("loginForm");
-const message = document.getElementById("message");
+const loginForm = document.getElementById('loginForm');
 
-form?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('loginBtn');
 
-  if (password.length < 4) {
-    message.textContent = "Password ต้องมีอย่างน้อย 4 ตัว";
-    message.className = "text-red-600 text-sm mt-4";
-    return;
-  }
+    // เปลี่ยนสถานะปุ่มขณะกำลังโหลด
+    loginBtn.innerText = "กำลังเข้าสู่ระบบ...";
+    loginBtn.disabled = true;
 
-  try {
-    const userQ = query(collection(db, "users"), where("username", "==", username));
-    const snap = await getDocs(userQ);
-    if (snap.empty) throw new Error("ไม่พบ username");
+    try {
+        // 1. ค้นหา Email จาก Username ใน Firestore (เพราะ Firebase Auth ใช้ Email ในการ Login)
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", username));
+        const querySnapshot = await getDocs(q);
 
-    const userData = snap.docs[0].data();
-    await signInWithEmailAndPassword(auth, userData.email, password);
-    localStorage.setItem("profile", JSON.stringify({ id: snap.docs[0].id, ...userData }));
-    window.location.href = "app.html";
-  } catch (error) {
-    message.textContent = "เข้าสู่ระบบไม่สำเร็จ: " + error.message;
-    message.className = "text-red-600 text-sm mt-4";
-  }
+        if (querySnapshot.empty) {
+            throw new Error("ไม่พบชื่อผู้ใช้งานนี้ในระบบ");
+        }
+
+        let userEmail = "";
+        querySnapshot.forEach((doc) => {
+            userEmail = doc.data().email;
+        });
+
+        // 2. ทำการ Login ด้วย Email ที่หาเจอ
+        await signInWithEmailAndPassword(auth, userEmail, password);
+        
+        // 3. Login สำเร็จ -> ไปที่หน้า Dashboard
+        alert("เข้าสู่ระบบสำเร็จ!");
+        window.location.href = "dashboard.html";
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
+        loginBtn.innerText = "LOG IN";
+        loginBtn.disabled = false;
+    }
 });
