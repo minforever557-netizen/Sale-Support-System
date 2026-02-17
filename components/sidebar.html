@@ -74,3 +74,25 @@
         }
     });
 </script>
+<script type="module">
+    // 1. นำเข้า signOut เพิ่มเติม
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const auth = getAuth();
+
+    // 2. ผูกฟังก์ชันเข้ากับ window เพื่อให้ HTML (ปุ่ม onclick) เรียกใช้งานได้
+    window.logout = async () => {
+        // เพิ่ม confirm เพื่อป้องกันการกดพลาด
+        if (confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+            try {
+                await signOut(auth);
+                console.log("Logout successful");
+                // เด้งไปหน้า login.html
+                window.location.href = "login.html"; 
+            } catch (error) {
+                console.error("Logout Error:", error);
+                alert("เกิดข้อผิดพลาดในการออกจากระบบ: " + error.message);
+            }
+        }
+    };
+</script>
