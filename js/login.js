@@ -1,28 +1,43 @@
-import { auth, db } from './firebase.js';
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
+    authDomain: "salesupportsystemapp.firebaseapp.com",
+    projectId: "salesupportsystemapp",
+    storageBucket: "salesupportsystemapp.firebasestorage.app",
+    messagingSenderId: "840890441207",
+    appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 const loginForm = document.getElementById('loginForm');
+const loginBtn = document.getElementById('loginBtn');
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const loginBtn = document.getElementById('loginBtn');
+    const usernameInput = document.getElementById('username').value.trim();
+    const passwordInput = document.getElementById('password').value;
 
-    // เปลี่ยนสถานะปุ่มขณะกำลังโหลด
-    loginBtn.innerText = "กำลังเข้าสู่ระบบ...";
     loginBtn.disabled = true;
+    loginBtn.innerHTML = "กำลังตรวจสอบ...";
 
     try {
-        // 1. ค้นหา Email จาก Username ใน Firestore (เพราะ Firebase Auth ใช้ Email ในการ Login)
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("username", "==", username));
+        // 1. ค้นหาใน Collectionชื่อ 'admin' (ตามภาพที่คุณส่งมา)
+        const adminRef = collection(db, "admin");
+        const q = query(adminRef, where("username", "==", usernameInput));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            throw new Error("ไม่พบชื่อผู้ใช้งานนี้ในระบบ");
+            alert("ไม่พบชื่อผู้ใช้งานนี้ในระบบ");
+            resetBtn();
+            return;
         }
 
         let userEmail = "";
@@ -30,17 +45,20 @@ loginForm.addEventListener('submit', async (e) => {
             userEmail = doc.data().email;
         });
 
-        // 2. ทำการ Login ด้วย Email ที่หาเจอ
-        await signInWithEmailAndPassword(auth, userEmail, password);
+        // 2. ล็อกอินด้วย Email ที่ค้นพบจาก Firestore
+        await signInWithEmailAndPassword(auth, userEmail, passwordInput);
         
-        // 3. Login สำเร็จ -> ไปที่หน้า Dashboard
-        alert("เข้าสู่ระบบสำเร็จ!");
+        // 3. ไปหน้า Dashboard
         window.location.href = "dashboard.html";
 
     } catch (error) {
         console.error("Login Error:", error);
-        alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
-        loginBtn.innerText = "LOG IN";
-        loginBtn.disabled = false;
+        alert("รหัสผ่านไม่ถูกต้อง หรือเกิดข้อผิดพลาด");
+        resetBtn();
     }
 });
+
+function resetBtn() {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = "<span>เข้าสู่ระบบ</span>";
+}
