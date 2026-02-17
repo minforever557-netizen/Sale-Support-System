@@ -21,7 +21,7 @@
             <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
                 <div class="bg-orange-500 p-4 text-white font-bold flex justify-between items-center">
                     <span>สร้างใบแจ้งปัญหา</span>
-                    <span class="bg-white text-orange-600 px-3 py-1 rounded-full text-xs uppercase font-bold">Draft</span>
+                    <span class="bg-white text-orange-600 px-3 py-1 rounded-full text-xs uppercase font-bold tracking-wider">Draft</span>
                 </div>
 
                 <form id="ticketForm" class="p-6 md:p-10 space-y-6">
@@ -35,6 +35,7 @@
                                 <option value="installation">ติดตามงานติดตั้ง (SLA 8 ชม.)</option>
                             </select>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">Internet No. / เลขบัตรประชาชน</label>
                             <input type="text" id="id_number" placeholder="ระบุเลข 88 หรือ เลขบัตร" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none" required>
@@ -42,21 +43,23 @@
                     </div>
 
                     <div id="sla-box" class="hidden p-4 bg-green-50 rounded-xl border border-green-200 flex items-center">
-                        <span class="text-green-700 font-bold text-sm">SLA สำหรับหัวข้อนี้: <span id="sla-val" class="text-orange-600 underline font-black">0</span> ชั่วโมง</span>
+                        <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse mr-3"></div>
+                        <span class="text-green-700 font-bold text-sm">SLA เป้าหมาย: <span id="sla-val" class="text-orange-600 font-black">0</span> ชั่วโมง</span>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-2 uppercase tracking-wide">รายละเอียดปัญหา (โปรดกรอกต่อท้ายหัวข้อ)</label>
-                        <textarea id="detail" rows="10" 
-                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none transition leading-relaxed whitespace-pre-wrap" 
-                            placeholder="กรุณาเลือกหัวข้อปัญหาด้านบนก่อน..."></textarea>
+                        <label class="block text-sm font-bold text-gray-600 mb-2">รายละเอียดปัญหา (โปรดกรอกข้อมูลต่อท้ายหัวข้อ : )</label>
+                        <textarea id="detail" rows="12" 
+                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none transition leading-relaxed whitespace-pre-wrap font-medium text-gray-700" 
+                            placeholder="กรุณาเลือกหัวข้อปัญหาด้านบน..."></textarea>
+                        <p class="text-xs text-gray-400 mt-3 font-light italic">* ระบบไม่อนุญาตให้ลบหัวข้อคำถาม โปรดพิมพ์ต่อท้ายเท่านั้น</p>
                     </div>
 
-                    <div class="pt-6 flex gap-4">
+                    <div class="pt-6 flex flex-col sm:flex-row gap-4">
                         <button type="submit" id="sendBtn" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transform hover:-translate-y-1 transition duration-300">
-                            ส่งใบงาน (SEND)
+                            ส่งใบงาน (SEND TICKET)
                         </button>
-                        <button type="button" onclick="window.location.href='dashboard.html'" class="px-8 py-4 bg-gray-100 text-gray-400 rounded-2xl font-bold hover:bg-gray-200 transition text-sm">
+                        <button type="button" onclick="window.location.href='dashboard.html'" class="px-8 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition">
                             ย้อนกลับ
                         </button>
                     </div>
@@ -81,11 +84,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Sidebar Loading
-        fetch('./components/sidebar.html').then(res => res.text()).then(data => {
-            document.getElementById('sidebar-container').innerHTML = data;
-        }).catch(err => console.log("Sidebar load skip: running on local/preview"));
+        // โหลด Sidebar
+        fetch('./components/sidebar.html')
+            .then(res => res.text())
+            .then(data => document.getElementById('sidebar-container').innerHTML = data)
+            .catch(() => console.log("Sidebar preview not available"));
 
+        // ข้อมูล Template
         const templates = {
             internet: {
                 sla: 4,
@@ -93,11 +98,11 @@
             },
             billing: {
                 sla: 24,
-                text: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- หลักฐานแนบ (ถ้ามี) : "
+                text: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- ช่องทางที่ชำระ : "
             },
             installation: {
                 sla: 8,
-                text: "ติดตามงานติดตั้ง\n--------------------------\n- วันนัดเดิม : \n- ช่วงเวลาที่สะดวกใหม่ : \n- ชื่อช่างที่นัดไว้ : "
+                text: "ติดตามงานติดตั้ง\n--------------------------\n- วันนัดหมายเดิม : \n- ช่วงเวลาที่สะดวกใหม่ : \n- ชื่อช่างหน้างาน : "
             }
         };
 
@@ -106,52 +111,56 @@
         const slaBox = document.getElementById('sla-box');
         const slaVal = document.getElementById('sla-val');
 
-        let protectedHeader = ""; 
+        let currentTemplate = "";
 
-        // 1. เปลี่ยน Template เมื่อเลือก Topic
+        // เปลี่ยน Template เมื่อเลือกหัวข้อ
         topicSelect.addEventListener('change', () => {
             const val = topicSelect.value;
             if (val && templates[val]) {
-                protectedHeader = templates[val].text;
-                detailArea.value = protectedHeader; // แสดง Template ทันที
+                currentTemplate = templates[val].text;
+                detailArea.value = currentTemplate;
                 slaBox.classList.remove('hidden');
                 slaVal.innerText = templates[val].sla;
             } else {
-                protectedHeader = "";
+                currentTemplate = "";
                 detailArea.value = "";
                 slaBox.classList.add('hidden');
             }
         });
 
-        // 2. Logic ป้องกันการลบหัวข้อ (Read-only Header)
-        detailArea.addEventListener('keydown', (e) => {
-            if (detailArea.selectionStart < protectedHeader.length) {
-                // ถ้า Cursor อยู่ในส่วนหัวข้อ และกดปุ่มที่ไม่ใช่ลูกศร
-                if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                    e.preventDefault();
-                    // ดีด Cursor ไปหลังหัวข้อ
-                    detailArea.setSelectionRange(protectedHeader.length, protectedHeader.length);
-                }
-            }
-            // ป้องกันการกด Backspace ลบหัวข้อ
-            if (e.key === 'Backspace' && detailArea.selectionStart <= protectedHeader.length) {
-                e.preventDefault();
-            }
-        });
-
-        // 3. Safety Net: ถ้าลบได้จริง ให้ดีดกลับมา
+        // Smart Logic: ป้องกันการลบหัวข้อ แต่ให้พิมพ์แทรกได้
         detailArea.addEventListener('input', () => {
-            if (!detailArea.value.startsWith(protectedHeader)) {
-                detailArea.value = protectedHeader + detailArea.value.replace(protectedHeader, "");
+            const lines = detailArea.value.split('\n');
+            const templateLines = currentTemplate.split('\n');
+            let isRestored = false;
+
+            const validatedContent = lines.map((line, i) => {
+                // เช็คเฉพาะบรรทัดที่เป็นหัวข้อ Template (ที่มีเครื่องหมาย :)
+                if (templateLines[i] && templateLines[i].includes(':')) {
+                    const header = templateLines[i];
+                    if (!line.startsWith(header)) {
+                        isRestored = true;
+                        // ถ้าหัวข้อโดนแก้ ให้คืนค่าหัวข้อเดิมแล้วตามด้วยสิ่งที่ User พิมพ์ต่อท้าย
+                        const userText = line.replace(header.trim(), ""); 
+                        return header + userText;
+                    }
+                }
+                return line;
+            });
+
+            if (isRestored) {
+                const start = detailArea.selectionStart;
+                detailArea.value = validatedContent.join('\n');
+                detailArea.setSelectionRange(start, start); // รักษาสมาธิ Cursor
             }
         });
 
-        // 4. บันทึกข้อมูล
+        // บันทึกใบงาน
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            btn.innerHTML = "Saving...";
+            btn.innerText = "กำลังบันทึกใบงาน...";
 
             try {
                 const selected = topicSelect.value;
@@ -162,16 +171,17 @@
                     sla: templates[selected].sla,
                     status: "On Progress",
                     createdAt: serverTimestamp(),
-                    owner: "User Admin"
+                    owner: "User Admin" // สามารถเชื่อมโยงกับ Auth ได้ในอนาคต
                 });
 
-                alert("ส่ง Ticket สำเร็จ! สถานะ: On Progress");
+                alert("ส่งใบงานสำเร็จ! สถานะเป็น On Progress");
                 window.location.href = "my-ticket.html";
-            } catch (err) {
-                console.error(err);
-                alert("เกิดข้อผิดพลาดในการบันทึก");
+
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาดในการส่งใบงาน");
                 btn.disabled = false;
-                btn.innerHTML = "ส่งใบงาน (SEND)";
+                btn.innerText = "ส่งใบงาน (SEND TICKET)";
             }
         });
     </script>
