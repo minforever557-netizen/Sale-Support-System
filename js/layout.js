@@ -24,3 +24,29 @@ function startClock() {
 
 loadLayout();
 loadUserProfile();
+async function loadUserProfile() {
+
+  // อ่าน username จาก session
+  const username = localStorage.getItem("username");
+
+  if (!username) return;
+
+  // firebase db
+  const db = window.db;
+
+  const snapshot = await db
+      .collection("admin")
+      .where("username", "==", username)
+      .get();
+
+  snapshot.forEach(doc => {
+
+      const data = doc.data();
+
+      document.getElementById("userFullname").innerText =
+          data.name || "-";
+
+      document.getElementById("userEmail").innerText =
+          data.email || "-";
+  });
+}
