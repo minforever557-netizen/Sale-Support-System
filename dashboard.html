@@ -1,45 +1,131 @@
-// ================= SESSION CHECK =================
-const user = JSON.parse(localStorage.getItem("user"));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-if (!user) {
-    window.location.href = "login.html";
-}
+<title>Dashboard - Sale Support</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="w-64 bg-white shadow relative">
+
+        <div class="p-5 text-green-600 font-bold text-xl">
+            Sale Support
+        </div>
+
+        <nav class="px-4 space-y-2">
+
+            <div class="bg-green-100 text-green-700 p-3 rounded-lg">
+                Dashboard
+            </div>
+
+            <p class="text-xs text-gray-400 mt-4">TICKET</p>
+
+            <div class="menu">New Ticket</div>
+            <div class="menu">My Ticket</div>
+            <div class="menu">All Ticket</div>
+
+            <p class="text-xs text-gray-400 mt-4">ADMIN</p>
+
+            <div class="menu">User Management</div>
+            <div class="menu">Topic Management</div>
+
+        </nav>
+
+        <!-- LOGOUT -->
+        <div class="absolute bottom-5 w-full px-4">
+            <button id="logoutBtn"
+                class="w-full bg-red-500 hover:bg-red-600
+                text-white py-2 rounded-lg transition">
+                Logout
+            </button>
+        </div>
+
+    </aside>
 
 
-// ================= SHOW USER =================
-document.getElementById("loginUser").innerText =
-    "👤 " + user.name + " (" + user.role + ")";
+    <!-- ================= CONTENT ================= -->
+    <main class="flex-1 flex flex-col">
+
+        <!-- TOP BAR -->
+        <div class="flex justify-between items-center bg-white shadow px-6 py-3">
+
+            <h1 class="text-xl font-semibold">
+                Dashboard
+            </h1>
+
+            <div class="flex items-center gap-6">
+
+                <!-- USER + TIME -->
+                <div class="text-right">
+                    <div id="loginUser" class="font-semibold text-gray-700">
+                        -
+                    </div>
+                    <div id="dateTime" class="text-sm text-gray-400">
+                        -
+                    </div>
+                </div>
+
+                <!-- NOTIFICATION -->
+                <div class="relative cursor-pointer">
+                    <div class="text-2xl hover:scale-110 transition">
+                        🔔
+                    </div>
+
+                    <span id="notiBadge"
+                        class="absolute -top-2 -right-2 bg-red-500
+                        text-white text-xs px-2 rounded-full">
+                        0
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
 
 
-// ================= CLOCK =================
-function updateClock() {
+        <!-- DASHBOARD CONTENT -->
+        <div class="p-6 space-y-6">
 
-    const now = new Date();
+            <div class="bg-white p-5 rounded-xl shadow">
+                ✅ Login Success <br>
+                Welcome to Sale Support System Dashboard
+            </div>
 
-    const date = now.toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    });
+            <div class="grid md:grid-cols-3 gap-6">
 
-    const time = now.toLocaleTimeString("th-TH");
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <p class="text-gray-500">Open Ticket</p>
+                    <h2 class="text-3xl text-green-600 font-bold">12</h2>
+                </div>
 
-    document.getElementById("dateTime").innerText =
-        date + " | " + time;
-}
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <p class="text-gray-500">In Progress</p>
+                    <h2 class="text-3xl text-orange-500 font-bold">5</h2>
+                </div>
 
-setInterval(updateClock, 1000);
-updateClock();
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <p class="text-gray-500">Closed</p>
+                    <h2 class="text-3xl text-blue-500 font-bold">28</h2>
+                </div>
 
+            </div>
 
-// ================= LOGOUT =================
-document.getElementById("logoutBtn")
-.addEventListener("click", () => {
+        </div>
 
-    localStorage.removeItem("user");
-    window.location.href = "login.html";
-});
+    </main>
 
+</div>
 
-// ================= MOCK NOTIFICATION =================
-document.getElementById("notiBadge").innerText = 3;
+<script type="module" src="js/dashboard.js"></script>
+
+</body>
+</html>
