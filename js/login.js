@@ -1,75 +1,74 @@
-import { auth } from "./firebase.js";
+import { db } from "./firebase.js";
+import {
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===============================
-   NOTIFICATION FUNCTION
-================================*/
-function showNotify(message, type = "success") {
+const btn = document.getElementById("loginBtn");
 
-  const area = document.getElementById("notifyArea");
-  if (!area) return;
+function notify(msg, type = "error") {
 
   const box = document.createElement("div");
-  box.className = `notify ${type}`;
-  box.innerText = message;
+  box.className =
+    "fixed top-5 right-5 px-6 py-3 rounded-xl text-white shadow-lg transition-all duration-500 translate-x-full";
 
-  area.appendChild(box);
+  box.style.background =
+    type === "success" ? "#16a34a" : "#dc2626";
 
-  // animate เข้า
+  box.innerText = msg;
+
+  document.body.appendChild(box);
+
   setTimeout(() => {
-    box.classList.add("show");
-  }, 50);
+    box.classList.remove("translate-x-full");
+  }, 100);
 
-  // หายอัตโนมัติ
   setTimeout(() => {
-    box.classList.remove("show");
-    setTimeout(() => box.remove(), 300);
-  }, 3000);
+    box.classList.add("translate-x-full");
+    setTimeout(() => box.remove(), 500);
+  }, 2500);
 }
 
+btn.addEventListener("click", async () => {
 
-/* ===============================
-   LOGIN EVENT
-================================*/
-window.addEventListener("DOMContentLoaded", () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  const btn = document.getElementById("loginBtn");
-
-  if (!btn) {
-    console.error("ไม่พบปุ่ม loginBtn");
+  if (!email || !password) {
+    notify("กรุณากรอกข้อมูล", "error");
     return;
   }
 
-  btn.addEventListener("click", async () => {
+  try {
 
-    const username =
-      document.getElementById("username").value.trim();
+    const querySnapshot = await getDocs(collection(db, "user"));
 
-    const password =
-      document.getElementById("password").value.trim();
+    let loginSuccess = false;
 
-    // ===== VALIDATE =====
-    if (!username) {
-      showNotify("กรุณากรอก Username", "warning");
-      return;
+    querySnapshot.forEach((doc) => {
+      const user = doc.data();
+
+      if (
+        user.email === email &&
+        user.password === password
+      ) {
+        loginSuccess = true;
+
+        notify("Login Success", "success");
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1200);
+      }
+    });
+
+    if (!loginSuccess) {
+      notify("Email หรือ Password ไม่ถูกต้อง", "error");
     }
 
-    if (password.length < 4) {
-      showNotify("Password ต้องอย่างน้อย 4 ตัว", "warning");
-      return;
-    }
-
-    // ===== DEMO STEP (ยังไม่ auth จริง) =====
-    console.log("Login Clicked ✅");
-    console.log("Username:", username);
-
-    showNotify("ระบบพร้อม Login แล้ว ✅", "success");
-
-    // STEP ถัดไปจะใส่ Firebase Login จริงตรงนี้
-    /*
-      await signInWithEmailAndPassword(...)
-      redirect dashboard
-    */
-
-  });
+  } catch (err) {
+    console.error(err);
+    notify("เชื่อมต่อ Firebase ไม่สำเร็จ", "error");
+  }
 
 });
