@@ -1,16 +1,25 @@
-function toggleSidebar(){
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("hidden");
-}
-// โหลด Sidebar
 async function loadLayout() {
 
+  // ===== SIDEBAR =====
   const sidebar = await fetch("components/sidebar.html");
-  const sidebarHTML = await sidebar.text();
+  document.getElementById("sidebar").innerHTML =
+      await sidebar.text();
 
-  document.getElementById("sidebar").innerHTML = sidebarHTML;
+  // ===== TOPBAR =====
+  const topbar = await fetch("components/topbar.html");
+  document.getElementById("topbar").innerHTML =
+      await topbar.text();
 
+  startClock();
+}
+
+// ===== CLOCK =====
+function startClock() {
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById("dateTime").innerText =
+      now.toLocaleString("th-TH");
+  }, 1000);
 }
 
 loadLayout();
-
