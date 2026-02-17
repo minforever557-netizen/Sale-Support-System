@@ -1,30 +1,74 @@
 import { auth } from "./firebase.js";
 
+/* ===============================
+   NOTIFICATION FUNCTION
+================================*/
+function showNotify(message, type = "success") {
+
+  const area = document.getElementById("notifyArea");
+  if (!area) return;
+
+  const box = document.createElement("div");
+  box.className = `notify ${type}`;
+  box.innerText = message;
+
+  area.appendChild(box);
+
+  // animate เข้า
+  setTimeout(() => {
+    box.classList.add("show");
+  }, 50);
+
+  // หายอัตโนมัติ
+  setTimeout(() => {
+    box.classList.remove("show");
+    setTimeout(() => box.remove(), 300);
+  }, 3000);
+}
+
+
+/* ===============================
+   LOGIN EVENT
+================================*/
 window.addEventListener("DOMContentLoaded", () => {
 
   const btn = document.getElementById("loginBtn");
 
-  // กัน error ถ้าหา element ไม่เจอ
-  if(!btn){
-    console.error("ไม่พบ loginBtn");
+  if (!btn) {
+    console.error("ไม่พบปุ่ม loginBtn");
     return;
   }
 
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
 
     const username =
-      document.getElementById("username").value;
+      document.getElementById("username").value.trim();
 
     const password =
-      document.getElementById("password").value;
+      document.getElementById("password").value.trim();
 
-    if(password.length < 4){
-      alert("Password ต้องอย่างน้อย 4 ตัว");
+    // ===== VALIDATE =====
+    if (!username) {
+      showNotify("กรุณากรอก Username", "warning");
       return;
     }
 
+    if (password.length < 4) {
+      showNotify("Password ต้องอย่างน้อย 4 ตัว", "warning");
+      return;
+    }
+
+    // ===== DEMO STEP (ยังไม่ auth จริง) =====
     console.log("Login Clicked ✅");
-    alert("ปุ่มทำงานแล้ว");
+    console.log("Username:", username);
+
+    showNotify("ระบบพร้อม Login แล้ว ✅", "success");
+
+    // STEP ถัดไปจะใส่ Firebase Login จริงตรงนี้
+    /*
+      await signInWithEmailAndPassword(...)
+      redirect dashboard
+    */
 
   });
 
