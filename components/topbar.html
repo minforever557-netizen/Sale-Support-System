@@ -27,9 +27,11 @@
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ใช้ App ที่ initialize ไว้แล้ว หรือ init ใหม่ถ้ายังไม่มี
+    // ป้องกันการ Initialize Firebase ซ้ำซ้อน
     let app;
-    try { app = getApp(); } catch (e) {
+    try { 
+        app = getApp(); 
+    } catch (e) {
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -44,12 +46,13 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // --- Logic นาฬิกา ---
+    // --- 1. ฟังก์ชันนาฬิกา Real-time ---
     function startTopbarClock() {
+        const clockEl = document.getElementById('tp-clock');
+        const dateEl = document.getElementById('tp-date');
+        
         const update = () => {
             const now = new Date();
-            const clockEl = document.getElementById('tp-clock');
-            const dateEl = document.getElementById('tp-date');
             if(clockEl) clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
             if(dateEl) dateEl.innerText = now.toLocaleDateString('th-TH', { 
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
@@ -59,21 +62,30 @@
         update();
     }
 
-    // --- Logic ดึงข้อมูล User ---
+    // --- 2. ดึงข้อมูลผู้ใช้จาก Firestore (Collection: admin) ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const userDoc = await getDoc(doc(db, "admin", user.uid));
-            const data = userDoc.exists() ? userDoc.data() : {};
-            
-            const name = data.name || user.displayName || 'User';
-            const username = data.username || user.email.split('@')[0];
+            try {
+                // ดึงข้อมูลจาก Table admin ตาม UID ของคนที่ Login
+                const userDoc = await getDoc(doc(db, "admin", user.uid));
+                const data = userDoc.exists() ? userDoc.data() : {};
+                
+                // นำข้อมูลมาแสดงผลใน ID ต่างๆ
+                const fullName = data.name || user.displayName || 'Anonymous';
+                const userName = data.username || user.email.split('@')[0];
 
-            if(document.getElementById('tp-fullname')) document.getElementById('tp-fullname').innerText = name;
-            if(document.getElementById('tp-username')) document.getElementById('tp-username').innerText = `@${username}`;
-            if(document.getElementById('tp-email')) document.getElementById('tp-email').innerText = user.email;
-            if(document.getElementById('tp-avatar-circle')) document.getElementById('tp-avatar-circle').innerText = name[0].toUpperCase();
+                if(document.getElementById('tp-fullname')) document.getElementById('tp-fullname').innerText = fullName;
+                if(document.getElementById('tp-username')) document.getElementById('tp-username').innerText = `@${userName}`;
+                if(document.getElementById('tp-email')) document.getElementById('tp-email').innerText = data.email || user.email;
+                if(document.getElementById('tp-avatar-circle')) {
+                    document.getElementById('tp-avatar-circle').innerText = fullName.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
         }
     });
 
+    // เริ่มทำงานทันทีที่โหลดไฟล์สำเร็จ
     startTopbarClock();
 </script>
