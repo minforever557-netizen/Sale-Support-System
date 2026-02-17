@@ -1,23 +1,86 @@
-<div class="w-full bg-white shadow-sm px-6 py-3 flex justify-between items-center">
-
-    <h1 class="text-2xl font-bold">Dashboard</h1>
-
-    <div class="flex items-center gap-6">
-
-        <div class="text-right">
-            <div id="userRole" class="text-sm font-semibold">
-                User
+<div class="w-full bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <div class="flex items-center gap-4">
+            <div id="top-avatar-circle" class="w-12 h-12 bg-[#5c56f1] rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-100 transition-transform hover:scale-105">
+                ?
             </div>
-
-            <div id="userFullname" class="text-xs text-gray-600">
-                Loading...
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <span id="top-fullname" class="text-slate-800 font-bold leading-tight">กำลังโหลด...</span>
+                    <span class="text-slate-300">|</span>
+                    <span id="top-username" class="text-[#5c56f1] text-xs font-black uppercase tracking-wider">@username</span>
+                </div>
+                <span id="top-email" class="text-slate-400 text-xs">email@example.com</span>
             </div>
+        </div>
 
-            <div id="userEmail" class="text-xs text-gray-400">
-                -
+        <div class="flex flex-col md:items-end bg-slate-50 px-6 py-2.5 rounded-[1.25rem] border border-slate-100 shadow-sm">
+            <div id="top-clock" class="text-xl font-bold text-slate-700 tracking-tight leading-none">00:00:00</div>
+            <div id="top-date" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                วันที่กำลังโหลด...
             </div>
         </div>
 
     </div>
-
 </div>
+
+<script type="module">
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // --- 1. ฟังก์ชันอัปเดตเวลา Realtime ---
+    function startRealtimeClock() {
+        const clockEl = document.getElementById('top-clock');
+        const dateEl = document.getElementById('top-date');
+        
+        const update = () => {
+            const now = new Date();
+            // รูปแบบเวลา: 16:30:05
+            clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
+            // รูปแบบวันที่: วันอังคารที่ 17 กุมภาพันธ์ 2569
+            dateEl.innerText = now.toLocaleDateString('th-TH', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+        };
+        
+        setInterval(update, 1000);
+        update();
+    }
+
+    // --- 2. ดึงข้อมูล User มาแสดงผล ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                // อ้างอิงเอกสารในคอลเลกชัน admin ตาม UID ของผู้ใช้
+                const userRef = doc(db, "admin", user.uid);
+                const snap = await getDoc(userRef);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    
+                    // อัปเดต UI ด้วยข้อมูลจริงจาก Firestore
+                    document.getElementById('top-fullname').innerText = data.name || 'ไม่ระบุชื่อ';
+                    document.getElementById('top-username').innerText = `@${data.username || 'user'}`;
+                    document.getElementById('top-email').innerText = data.email || user.email;
+                    
+                    // ทำอักษรย่อสำหรับ Avatar (เช่น Somchai -> S)
+                    if (data.name) {
+                        document.getElementById('top-avatar-circle').innerText = data.name.charAt(0).toUpperCase();
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading topbar data:", error);
+            }
+        }
+    });
+
+    // เริ่มทำงานนาฬิกา
+    startRealtimeClock();
+</script>
