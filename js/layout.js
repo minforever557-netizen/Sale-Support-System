@@ -1,52 +1,113 @@
-async function loadLayout() {
+// ===============================
+// LAYOUT MANAGER (GLOBAL)
+// Load Sidebar + Topbar
+// Auth Guard
+// Load User Info
+// ===============================
 
-  // ===== SIDEBAR =====
-  const sidebar = await fetch("components/sidebar.html");
-  document.getElementById("sidebar").innerHTML =
-      await sidebar.text();
+import { loadUserToTopbar } from "./user.js";
 
-  // ===== TOPBAR =====
-  const topbar = await fetch("components/topbar.html");
-  document.getElementById("topbar").innerHTML =
-      await topbar.text();
 
-  startClock();
+// ===============================
+// LOAD HTML COMPONENT
+// ===============================
+async function loadComponent(elementId, filePath) {
+
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    try {
+        const response = await fetch(filePath);
+        const html = await response.text();
+        el.innerHTML = html;
+    } catch (err) {
+        console.error("Load component error:", filePath, err);
+    }
 }
 
-// ===== CLOCK =====
+
+// ===============================
+// AUTH GUARD
+// ===============================
+function checkAuth() {
+
+    const user = localStorage.getItem("user");
+
+    // ถ้าไม่ได้ login → กลับ login page
+    if (!user) {
+        window.location.href = "/login.html";
+        return false;
+    }
+
+    return true;
+}
+
+
+// ===============================
+// LOGOUT SYSTEM
+// ===============================
+function setupLogout() {
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (!logoutBtn) return;
+
+    logoutBtn.addEventListener("click", () => {
+
+        localStorage.removeItem("user");
+
+        // redirect
+        window.location.href = "/login.html";
+    });
+}
+
+
+// ===============================
+// CLOCK (TOPBAR TIME)
+// ===============================
 function startClock() {
-  setInterval(() => {
-    const now = new Date();
-    document.getElementById("dateTime").innerText =
-      now.toLocaleString("th-TH");
-  }, 1000);
+
+    const timeEl = document.getElementById("dateTime");
+    if (!timeEl) return;
+
+    function updateTime() {
+
+        const now = new Date();
+
+        const formatted =
+            now.toLocaleDateString("th-TH") +
+            " " +
+            now.toLocaleTimeString("th-TH");
+
+        timeEl.innerText = formatted;
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
 }
 
-loadLayout();
-loadUserProfile();
-async function loadUserProfile() {
 
-  // อ่าน username จาก session
-  const username = localStorage.getItem("username");
+// ===============================
+// INIT LAYOUT
+// ===============================
+async function initLayout() {
 
-  if (!username) return;
+    // ✅ ตรวจ login ก่อน
+    if (!checkAuth()) return;
 
-  // firebase db
-  const db = window.db;
+    // ✅ Load Layout
+    await loadComponent("sidebar", "/components/sidebar.html");
+    await loadComponent("topbar", "/components/topbar.html");
 
-  const snapshot = await db
-      .collection("admin")
-      .where("username", "==", username)
-      .get();
+    // ✅ Load User Info
+    loadUserToTopbar();
 
-  snapshot.forEach(doc => {
+    // ✅ Activate Logout
+    setupLogout();
 
-      const data = doc.data();
-
-      document.getElementById("userFullname").innerText =
-          data.name || "-";
-
-      document.getElementById("userEmail").innerText =
-          data.email || "-";
-  });
+    // ✅ Start Clock
+    startClock();
 }
+
+
+// RUN
+initLayout();
