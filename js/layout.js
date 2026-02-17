@@ -1,81 +1,23 @@
 // ===============================
-// LOAD MAIN LAYOUT (SIDEBAR + TOPBAR)
+// LOAD SHARED LAYOUT
 // ===============================
 
-async function loadLayout() {
-  try {
+async function loadComponent(id, file) {
+    try {
+        const res = await fetch(file);
 
-    // ---------- LOAD SIDEBAR ----------
-    const sidebarRes = await fetch("./components/sidebar.html");
-    const sidebarHTML = await sidebarRes.text();
-    document.getElementById("sidebar-container").innerHTML = sidebarHTML;
+        if (!res.ok) {
+            throw new Error("Load failed : " + file);
+        }
 
-    // ---------- LOAD TOPBAR ----------
-    const topbarRes = await fetch("./components/topbar.html");
-    const topbarHTML = await topbarRes.text();
-    document.getElementById("topbar-container").innerHTML = topbarHTML;
+        const html = await res.text();
+        document.getElementById(id).innerHTML = html;
 
-    // ---------- AFTER LOAD COMPLETE ----------
-    setActiveMenu();
-    loadUserToTopbar();
-
-  } catch (error) {
-    console.error("Layout Load Error:", error);
-  }
-}
-
-
-// ===============================
-// ACTIVE MENU AUTO HIGHLIGHT
-// ===============================
-
-function setActiveMenu() {
-
-  const currentPage = window.location.pathname.split("/").pop();
-
-  const links = document.querySelectorAll(".menu-link");
-
-  links.forEach(link => {
-    const linkPage = link.getAttribute("href");
-
-    if (linkPage === currentPage) {
-      link.classList.add(
-        "bg-blue-500",
-        "text-white",
-        "font-semibold"
-      );
+    } catch (err) {
+        console.error(err);
     }
-  });
-
 }
 
-
-// ===============================
-// LOAD USER TO TOPBAR
-// ===============================
-
-function loadUserToTopbar() {
-
-  const userData = JSON.parse(localStorage.getItem("user"));
-
-  if (!userData) return;
-
-  const fullname = document.getElementById("userFullname");
-  const email = document.getElementById("userEmail");
-
-  if (fullname) {
-    fullname.innerText =
-      (userData.name || "") + " " + (userData.lastname || "");
-  }
-
-  if (email) {
-    email.innerText = userData.email || "";
-  }
-}
-
-
-// ===============================
-// START SYSTEM
-// ===============================
-
-document.addEventListener("DOMContentLoaded", loadLayout);
+// โหลด sidebar + topbar
+loadComponent("sidebar-container", "./components/sidebar.html");
+loadComponent("topbar-container", "./components/topbar.html");
