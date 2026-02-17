@@ -37,7 +37,7 @@
 
             <div class="flex justify-between text-sm pt-2">
                 <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500">ลืมรหัสผ่าน?</a>
-                <a href="register.html" class="text-green-600 font-bold hover:underline">สมัครสมาชิก</a>
+                <a href="register.html" class="text-green-600 font-bold hover:underline">สร้างบัญชีใหม่</a>
             </div>
         </form>
     </div>
@@ -69,31 +69,33 @@
             const passVal = document.getElementById('password').value;
 
             loginBtn.disabled = true;
-            loginBtn.innerHTML = "กำลังตรวจสอบ...";
+            loginBtn.innerHTML = "Checking...";
 
             try {
-                // อ้างอิง Collection 'admin' ตามภาพฐานข้อมูลของคุณ
+                // ค้นหาใน Collection 'admin' ตามภาพของคุณ
                 const q = query(collection(db, "admin"), where("username", "==", userVal));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    alert("ไม่พบชื่อผู้ใช้งานนี้");
+                    alert("ไม่พบชื่อผู้ใช้งานนี้ในระบบฐานข้อมูล");
                     resetButton();
                     return;
                 }
 
                 let emailFound = "";
-                querySnapshot.forEach((doc) => { emailFound = doc.data().email; });
+                querySnapshot.forEach((doc) => { 
+                    emailFound = doc.data().email; 
+                });
 
-                // ทำการ Login
+                // ล็อกอินด้วย Email ที่เจอ
                 await signInWithEmailAndPassword(auth, emailFound, passVal);
                 
                 // สำเร็จ -> ไปหน้า Dashboard
                 window.location.href = "dashboard.html";
 
             } catch (error) {
-                console.error(error);
-                alert("รหัสผ่านไม่ถูกต้อง หรือเกิดข้อผิดพลาด");
+                console.error("Login Error:", error);
+                alert("รหัสผ่านไม่ถูกต้อง หรือยังไม่ได้เพิ่ม User ใน Firebase Auth");
                 resetButton();
             }
         });
