@@ -12,9 +12,9 @@
 </head>
 <body class="bg-green-50 flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm border-b-8 border-green-600 transition-all">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm border-b-8 border-green-600">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-black text-green-600">SALE</h1>
+            <h1 class="text-4xl font-black text-green-600 uppercase">Sale</h1>
             <p class="text-orange-500 font-bold tracking-widest uppercase text-sm">Support System</p>
         </div>
 
@@ -22,95 +22,26 @@
             <div>
                 <label class="text-gray-500 text-xs font-bold ml-1 uppercase">Username</label>
                 <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้งาน" 
-                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" 
-                    required>
+                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" required>
             </div>
             <div>
                 <label class="text-gray-500 text-xs font-bold ml-1 uppercase">Password</label>
                 <input type="password" id="password" placeholder="••••" 
-                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" 
-                    required>
+                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" required>
             </div>
             
             <button type="submit" id="loginBtn" 
                 class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-orange-600 transform hover:-translate-y-1 transition flex justify-center items-center">
-                <span>LOG IN</span>
+                <span>เข้าสู่ระบบ</span>
             </button>
 
             <div class="flex justify-between text-sm pt-2">
                 <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500">ลืมรหัสผ่าน?</a>
-                <a href="register.html" class="text-green-600 font-bold hover:underline">สร้างบัญชีใหม่</a>
+                <a href="register.html" class="text-green-600 font-bold hover:underline">สมัครสมาชิก</a>
             </div>
         </form>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Firebase Config จากที่คุณให้มา
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-            authDomain: "salesupportsystemapp.firebaseapp.com",
-            projectId: "salesupportsystemapp",
-            storageBucket: "salesupportsystemapp.firebasestorage.app",
-            messagingSenderId: "840890441207",
-            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-
-            // UI Loading state
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-
-            try {
-                // 1. ค้นหา Email จาก Username ใน Collection 'users'
-                const usersRef = collection(db, "users");
-                const q = query(usersRef, where("username", "==", username));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    throw new Error("ไม่พบ Username นี้ในระบบ");
-                }
-
-                let userEmail = "";
-                querySnapshot.forEach((doc) => {
-                    userEmail = doc.data().email;
-                });
-
-                // 2. ทำการ Login ด้วย Email ที่หาได้
-                await signInWithEmailAndPassword(auth, userEmail, password);
-                
-                // Success
-                window.location.href = "dashboard.html";
-
-            } catch (error) {
-                console.error(error);
-                let errorMsg = "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
-                if (error.code === 'auth/wrong-password') errorMsg = "รหัสผ่านไม่ถูกต้อง";
-                if (error.message === 'ไม่พบ Username นี้ในระบบ') errorMsg = error.message;
-                
-                alert(errorMsg);
-                
-                // Reset Button
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = "<span>LOG IN</span>";
-            }
-        });
-    </script>
+    <script type="module" src="./js/login.js"></script>
 </body>
 </html>
