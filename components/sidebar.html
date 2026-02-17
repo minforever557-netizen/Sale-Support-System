@@ -1,19 +1,34 @@
-<div class="h-screen w-64 bg-white border-r border-green-100 flex flex-col fixed left-0 top-0">
-    <div class="p-6 text-2xl font-bold text-green-700 border-b border-green-50">
-        Menu
+<div class="h-full w-64 bg-white border-r border-green-100 flex flex-col">
+    <div class="p-6 border-b border-green-50 flex items-center space-x-2">
+        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+        <span class="text-xl font-bold text-green-700">SALE APP</span>
     </div>
-    <nav class="flex-1 p-4 space-y-2">
-        <a href="dashboard.html" class="block p-3 rounded-lg bg-green-50 text-green-700 font-bold">Dashboard</a>
-        
-        <div class="pt-4 pb-2 text-xs font-bold text-gray-400 uppercase">Ticket System</div>
-        <a href="new-ticket.html" class="block p-3 rounded-lg hover:bg-orange-50 text-gray-700">เปิดใบงานใหม่ (New)</a>
-        <a href="my-ticket.html" class="block p-3 rounded-lg hover:bg-orange-50 text-gray-700">ใบงานของฉัน (My)</a>
-        
-        <div class="pt-4 pb-2 text-xs font-bold text-gray-400 uppercase">Admin Section</div>
-        <a href="user-management.html" class="block p-3 rounded-lg hover:bg-green-50 text-gray-700">จัดการผู้ใช้งาน</a>
-        <a href="topic-management.html" class="block p-3 rounded-lg hover:bg-green-50 text-gray-700">ตั้งค่าหัวข้อปัญหา</a>
+    
+    <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+        <a href="dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl bg-orange-50 text-orange-600 font-bold">
+            <span>Dashboard</span>
+        </a>
+
+        <div class="pt-4 pb-2 px-3 text-xs font-bold text-gray-400 uppercase">Ticket System</div>
+        <a href="new-ticket.html" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 transition">
+            <span>เปิดใบงานใหม่</span>
+        </a>
+        <a href="my-ticket.html" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 transition">
+            <span>ใบงานของฉัน</span>
+        </a>
+
+        <div class="pt-4 pb-2 px-3 text-xs font-bold text-gray-400 uppercase">Admin Control</div>
+        <a href="user-management.html" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 transition">
+            <span>จัดการผู้ใช้งาน</span>
+        </a>
+        <a href="topic-management.html" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 transition">
+            <span>ตั้งค่าหัวข้อปัญหา</span>
+        </a>
     </nav>
+
     <div class="p-4 border-t border-green-50">
-        <button class="w-full p-2 text-red-500 font-bold hover:bg-red-50 rounded-lg">ออกจากระบบ</button>
+        <button onclick="localStorage.clear(); window.location.href='login.html'" class="w-full flex items-center justify-center space-x-2 p-3 text-red-500 font-bold hover:bg-red-50 rounded-xl transition">
+            <span>ออกจากระบบ</span>
+        </button>
     </div>
 </div>
