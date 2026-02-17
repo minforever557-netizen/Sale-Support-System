@@ -6,16 +6,20 @@
     <title>New Ticket - Sale Support System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Kanit', sans-serif; }</style>
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        /* ปรับแต่ง Scrollbar ของ Textarea ให้ดูสะอาดตา */
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #f1f1f1; }
+        textarea::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
+    </style>
 </head>
 <body class="bg-green-50 flex min-h-screen">
 
-    <aside id="sidebar-container" class="hidden lg:block w-64 bg-white border-r border-green-100"></aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block w-64 bg-white border-r border-green-100"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header class="bg-white shadow-sm border-b border-green-100 h-16 flex items-center px-6 sticky top-0 z-40">
-            <h1 class="text-lg font-bold text-gray-700">เปิดใบงานใหม่ (New Ticket)</h1>
-        </header>
+        <header id="topbar-placeholder" class="bg-white shadow-sm border-b border-green-100 sticky top-0 z-40"></header>
 
         <main class="p-4 md:p-8">
             <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
@@ -28,7 +32,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">หัวข้อปัญหา (Topic)</label>
-                            <select id="topic" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none" required>
+                            <select id="topic" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-green-400 outline-none transition-all" required>
                                 <option value="">-- กรุณาเลือกหัวข้อ --</option>
                                 <option value="internet">Internet ใช้งานไม่ได้ (SLA 4 ชม.)</option>
                                 <option value="billing">สอบถามยอดค้างชำระ (SLA 24 ชม.)</option>
@@ -44,17 +48,18 @@
                     <div>
                         <div class="flex justify-between items-end mb-2">
                             <label class="text-sm font-bold text-gray-600">รายละเอียดปัญหา (พิมพ์ต่อท้ายเครื่องหมาย : )</label>
-                            <button type="button" id="resetDetailBtn" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-1">
+                            <button type="button" id="resetDetailBtn" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all">
                                 ล้างข้อความ/เริ่มใหม่
                             </button>
                         </div>
                         <textarea id="detail" rows="10" 
-                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none leading-relaxed text-gray-700 font-medium" 
+                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 outline-none leading-relaxed text-gray-700 font-medium transition-all" 
                             placeholder="กรุณาเลือกหัวข้อปัญหา..."></textarea>
+                        <p class="text-xs text-gray-400 mt-2 italic">* ห้ามลบหัวข้อหลัก ระบบจะล็อคตำแหน่งการพิมพ์ให้อัตโนมัติ</p>
                     </div>
 
-                    <div class="pt-6">
-                        <button type="submit" id="sendBtn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition">
+                    <div class="pt-4">
+                        <button type="submit" id="sendBtn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transform hover:scale-[1.01] transition-all">
                             ส่งใบงาน (SEND)
                         </button>
                     </div>
@@ -64,10 +69,10 @@
     </div>
 
     <script type="module">
-        // Firebase Config (คงเดิมตามที่คุณใช้)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -79,6 +84,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- เริ่มต้นโหลด Sidebar และ Topbar ---
+        const loadComponents = async () => {
+            try {
+                const sidebarRes = await fetch('./components/sidebar.html');
+                if (sidebarRes.ok) document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
+
+                const topbarRes = await fetch('./components/topbar.html');
+                if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
+            } catch (err) {
+                console.error("Component load error:", err);
+            }
+        };
+        loadComponents();
+
+        // --- ระบบ Template & Logic ---
         const templates = {
             internet: "ปัญหาใช้งาน Internet ไม่ได้\n--------------------------\n- อาการ : \n- อุปกรณ์ที่ใช้งาน : \n- จำนวนผู้ใช้งาน : \n- เบอร์ติดต่อกลับ : ",
             billing: "สอบถามยอดค้างชำระ\n--------------------------\n- รอบบิลที่สงสัย : \n- ยอดเงินโดยประมาณ : \n- ช่องทางที่ชำระ : ",
@@ -89,60 +109,41 @@
         const detailArea = document.getElementById('detail');
         const resetBtn = document.getElementById('resetDetailBtn');
 
-        // ฟังก์ชันล้าง/เริ่มใหม่
-        resetBtn.addEventListener('click', () => {
-            const val = topicSelect.value;
-            if (val && templates[val]) {
-                if(confirm("ต้องการล้างข้อมูลและเริ่มใหม่หรือไม่?")) detailArea.value = templates[val];
-            }
-        });
-
         topicSelect.addEventListener('change', () => {
             if (topicSelect.value) detailArea.value = templates[topicSelect.value];
         });
 
-        // LOGIC ใหม่: อนุญาตให้พิมพ์ได้ปกติ แต่ห้ามลบหัวข้อ
+        resetBtn.addEventListener('click', () => {
+            const val = topicSelect.value;
+            if (val && templates[val]) {
+                if(confirm("ล้างข้อมูลและเริ่มใหม่ตามต้นฉบับใช่หรือไม่?")) detailArea.value = templates[val];
+            }
+        });
+
+        // ป้องกันการลบหัวข้อ (ฉบับอัปเดต - พิมพ์ได้ลื่นไหล)
         detailArea.addEventListener('keydown', (e) => {
             const cursor = detailArea.selectionStart;
             const text = detailArea.value;
-            
-            // หาจุดเริ่มต้นของบรรทัดปัจจุบัน
             const lineStart = text.lastIndexOf('\n', cursor - 1) + 1;
             const lineEnd = text.indexOf('\n', cursor);
             const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
             
-            // ตรวจสอบว่าบรรทัดนี้มีหัวข้อที่เป็นเครื่องหมาย : หรือไม่
             if (currentLine.includes(' : ')) {
-                const headerLimit = lineStart + currentLine.indexOf(' : ') + 3; // ตำแหน่งหลัง : 
-                
-                // ถ้าพยายามกด Backspace ลบโดนหัวข้อ
-                if (e.key === 'Backspace' && cursor <= headerLimit) {
-                    e.preventDefault();
-                }
-                
-                // ถ้าเผลอคลิกไปพิมพ์ทับในส่วนหัวข้อ
+                const headerLimit = lineStart + currentLine.indexOf(' : ') + 3;
+                if (e.key === 'Backspace' && cursor <= headerLimit) e.preventDefault();
                 if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && cursor < headerLimit) {
-                    // ดีด Cursor ไปจุดที่พิมพ์ได้ล่าสุดของบรรทัดนั้น
                     detailArea.setSelectionRange(headerLimit, headerLimit);
                 }
             }
         });
 
-        // ป้องกันการลากคลุมหัวข้อแล้วกดลบทิ้งทั้งหมด
-        detailArea.addEventListener('input', (e) => {
-            const val = topicSelect.value;
-            if (val && !detailArea.value.startsWith(templates[val].split('\n')[0])) {
-                detailArea.value = templates[val];
-                alert("ขออภัย ระบบไม่อนุญาตให้ลบหัวข้อหลักครับ");
-            }
-        });
-
-        // Submit Logic (คงเดิม)
+        // บันทึกลง Firestore
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            btn.innerText = "กำลังส่ง...";
+            btn.innerText = "กำลังบันทึก...";
+            
             try {
                 await addDoc(collection(db, "tickets"), {
                     topic: topicSelect.value,
@@ -151,10 +152,10 @@
                     status: "On Progress",
                     createdAt: serverTimestamp()
                 });
-                alert("ส่งใบงานสำเร็จ!");
+                alert("บันทึกสำเร็จ!");
                 window.location.href = "my-ticket.html";
             } catch (err) {
-                alert("เกิดข้อผิดพลาด");
+                alert("เกิดข้อผิดพลาดในการบันทึก");
                 btn.disabled = false;
                 btn.innerText = "ส่งใบงาน (SEND)";
             }
