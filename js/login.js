@@ -1,11 +1,16 @@
 import { auth } from "./firebase.js";
 
-// รอหน้าโหลดก่อน
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", () => {
 
   const btn = document.getElementById("loginBtn");
 
-  btn.addEventListener("click", async () => {
+  // กัน error ถ้าหา element ไม่เจอ
+  if(!btn){
+    console.error("ไม่พบ loginBtn");
+    return;
+  }
+
+  btn.addEventListener("click", () => {
 
     const username =
       document.getElementById("username").value;
@@ -18,11 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ตอนนี้ทดสอบก่อน
-    console.log("Login Clicked");
-    console.log("Username:", username);
-
-    alert("ปุ่มทำงานแล้ว ✅ (Step ต่อไปจะเชื่อม Firebase Login)");
+    console.log("Login Clicked ✅");
+    alert("ปุ่มทำงานแล้ว");
 
   });
 
