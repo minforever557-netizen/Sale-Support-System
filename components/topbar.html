@@ -1,6 +1,6 @@
 <div class="flex justify-between items-center w-full bg-white/80 backdrop-blur-md px-8 py-4 border-b border-slate-100">
     <div class="flex items-center gap-4">
-        <div id="tp-bg-icon" class="w-12 h-12 bg-[#5c67f2] rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-100 transition-all">
+        <div class="w-12 h-12 bg-[#5c67f2] rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-100">
             <span id="tp-initial">?</span>
         </div>
         <div>
@@ -11,51 +11,35 @@
         </div>
     </div>
 
-    <div class="bg-slate-50 px-6 py-2 rounded-2xl border border-slate-100 flex flex-col items-end min-w-[150px]">
+    <div class="bg-slate-50 px-6 py-2 rounded-2xl border border-slate-100 flex flex-col items-end min-w-[160px]">
         <span class="text-slate-700 font-black text-lg tracking-tight" id="tp-clock">00:00:00</span>
         <span class="text-[9px] text-indigo-400 font-black uppercase tracking-widest" id="tp-date">กำลังโหลดวันเวลา...</span>
     </div>
 </div>
 
 <script type="module">
-    // นำเข้า Firebase ภายใน Topbar เลยเพื่อให้มันจัดการตัวเองได้
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 1. ฟังก์ชันนาฬิกา
-    function startClock() {
-        const update = () => {
-            const now = new Date();
-            const clockEl = document.getElementById('tp-clock');
-            const dateEl = document.getElementById('tp-date');
-            
-            if(clockEl) clockEl.textContent = now.toLocaleTimeString('th-TH', { hour12: false });
-            if(dateEl) dateEl.textContent = now.toLocaleDateString('th-TH', { 
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-            });
-        };
-        setInterval(update, 1000);
-        update();
-    }
-
-    // 2. ฟังก์ชันดึง User (เรียกใช้ Auth)
-    function initUser() {
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const name = user.displayName || user.email.split('@')[0];
-                document.getElementById('tp-name').textContent = name;
-                document.getElementById('tp-email').textContent = user.email;
-                document.getElementById('tp-initial').textContent = name.charAt(0).toUpperCase();
-            } else {
-                // ถ้าไม่มี User ให้เด้งไป Login
-                if(!window.location.href.includes('login.html')) {
-                    window.location.href = 'login.html';
-                }
-            }
+    // ฟังก์ชันนาฬิกา
+    function updateClock() {
+        const now = new Date();
+        const clockEl = document.getElementById('tp-clock');
+        const dateEl = document.getElementById('tp-date');
+        if(clockEl) clockEl.textContent = now.toLocaleTimeString('th-TH', { hour12: false });
+        if(dateEl) dateEl.textContent = now.toLocaleDateString('th-TH', { 
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
         });
     }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    // เริ่มทำงาน
-    startClock();
-    initUser();
+    // ดึงข้อมูล User มาแสดง
+    onAuthStateChanged(getAuth(), (user) => {
+        if (user) {
+            const name = user.displayName || user.email.split('@')[0];
+            document.getElementById('tp-name').textContent = name;
+            document.getElementById('tp-email').textContent = user.email;
+            document.getElementById('tp-initial').textContent = name.charAt(0).toUpperCase();
+        }
+    });
 </script>
