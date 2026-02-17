@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard - Sale Support</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Icon -->
+<script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<!-- ====== MAIN LAYOUT ====== -->
+<div class="flex h-screen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="w-64 bg-white shadow-lg">
+
+    <div class="p-5 border-b">
+      <h1 class="text-xl font-bold text-green-600">
+        Sale Support
+      </h1>
+    </div>
+
+    <nav class="p-4 space-y-2">
+
+      <a href="dashboard.html"
+        class="block p-3 rounded-lg bg-green-100 text-green-700 font-semibold">
+        Dashboard
+      </a>
+
+      <p class="text-xs text-gray-400 mt-4">TICKET</p>
+
+      <a href="#" class="block p-3 rounded-lg hover:bg-gray-100">
+        New Ticket
+      </a>
+
+      <a href="#" class="block p-3 rounded-lg hover:bg-gray-100">
+        My Ticket
+      </a>
+
+      <a href="#" class="block p-3 rounded-lg hover:bg-gray-100">
+        All Ticket
+      </a>
+
+      <p class="text-xs text-gray-400 mt-4">ADMIN</p>
+
+      <a href="#" class="block p-3 rounded-lg hover:bg-gray-100">
+        User Management
+      </a>
+
+      <a href="#" class="block p-3 rounded-lg hover:bg-gray-100">
+        Topic Management
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <!-- ===== CONTENT ===== -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- TOPBAR -->
+    <header class="bg-white shadow p-4 flex justify-between items-center">
+
+      <h2 class="text-xl font-semibold">
+        Dashboard
+      </h2>
+
+      <button onclick="logout()"
+        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+        Logout
+      </button>
+
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <section class="p-6 space-y-6">
+
+      <!-- Welcome Card -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-2">
+          ✅ Login Success
+        </h3>
+        <p class="text-gray-600">
+          Welcome to Sale Support System Dashboard
+        </p>
+      </div>
+
+      <!-- Example Stats -->
+      <div class="grid grid-cols-3 gap-6">
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <p class="text-gray-500">Open Ticket</p>
+          <h1 class="text-3xl font-bold text-green-600">12</h1>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <p class="text-gray-500">In Progress</p>
+          <h1 class="text-3xl font-bold text-yellow-500">5</h1>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <p class="text-gray-500">Closed</p>
+          <h1 class="text-3xl font-bold text-blue-500">28</h1>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+<script>
+feather.replace();
+
+function logout() {
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
