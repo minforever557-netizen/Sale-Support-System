@@ -1,113 +1,81 @@
 // ===============================
-// LAYOUT MANAGER (GLOBAL)
-// Load Sidebar + Topbar
-// Auth Guard
-// Load User Info
+// LOAD MAIN LAYOUT (SIDEBAR + TOPBAR)
 // ===============================
 
-import { loadUserToTopbar } from "./user.js";
+async function loadLayout() {
+  try {
 
+    // ---------- LOAD SIDEBAR ----------
+    const sidebarRes = await fetch("./components/sidebar.html");
+    const sidebarHTML = await sidebarRes.text();
+    document.getElementById("sidebar-container").innerHTML = sidebarHTML;
 
-// ===============================
-// LOAD HTML COMPONENT
-// ===============================
-async function loadComponent(elementId, filePath) {
+    // ---------- LOAD TOPBAR ----------
+    const topbarRes = await fetch("./components/topbar.html");
+    const topbarHTML = await topbarRes.text();
+    document.getElementById("topbar-container").innerHTML = topbarHTML;
 
-    const el = document.getElementById(elementId);
-    if (!el) return;
-
-    try {
-        const response = await fetch(filePath);
-        const html = await response.text();
-        el.innerHTML = html;
-    } catch (err) {
-        console.error("Load component error:", filePath, err);
-    }
-}
-
-
-// ===============================
-// AUTH GUARD
-// ===============================
-function checkAuth() {
-
-    const user = localStorage.getItem("user");
-
-    // ถ้าไม่ได้ login → กลับ login page
-    if (!user) {
-        window.location.href = "/login.html";
-        return false;
-    }
-
-    return true;
-}
-
-
-// ===============================
-// LOGOUT SYSTEM
-// ===============================
-function setupLogout() {
-
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (!logoutBtn) return;
-
-    logoutBtn.addEventListener("click", () => {
-
-        localStorage.removeItem("user");
-
-        // redirect
-        window.location.href = "/login.html";
-    });
-}
-
-
-// ===============================
-// CLOCK (TOPBAR TIME)
-// ===============================
-function startClock() {
-
-    const timeEl = document.getElementById("dateTime");
-    if (!timeEl) return;
-
-    function updateTime() {
-
-        const now = new Date();
-
-        const formatted =
-            now.toLocaleDateString("th-TH") +
-            " " +
-            now.toLocaleTimeString("th-TH");
-
-        timeEl.innerText = formatted;
-    }
-
-    updateTime();
-    setInterval(updateTime, 1000);
-}
-
-
-// ===============================
-// INIT LAYOUT
-// ===============================
-async function initLayout() {
-
-    // ✅ ตรวจ login ก่อน
-    if (!checkAuth()) return;
-
-    // ✅ Load Layout
-    await loadComponent("sidebar", "../components/sidebar.html");
-    await loadComponent("topbar", "../components/topbar.html");
-
-    // ✅ Load User Info
+    // ---------- AFTER LOAD COMPLETE ----------
+    setActiveMenu();
     loadUserToTopbar();
 
-    // ✅ Activate Logout
-    setupLogout();
-
-    // ✅ Start Clock
-    startClock();
+  } catch (error) {
+    console.error("Layout Load Error:", error);
+  }
 }
 
 
-// RUN
-initLayout();
+// ===============================
+// ACTIVE MENU AUTO HIGHLIGHT
+// ===============================
+
+function setActiveMenu() {
+
+  const currentPage = window.location.pathname.split("/").pop();
+
+  const links = document.querySelectorAll(".menu-link");
+
+  links.forEach(link => {
+    const linkPage = link.getAttribute("href");
+
+    if (linkPage === currentPage) {
+      link.classList.add(
+        "bg-blue-500",
+        "text-white",
+        "font-semibold"
+      );
+    }
+  });
+
+}
+
+
+// ===============================
+// LOAD USER TO TOPBAR
+// ===============================
+
+function loadUserToTopbar() {
+
+  const userData = JSON.parse(localStorage.getItem("user"));
+
+  if (!userData) return;
+
+  const fullname = document.getElementById("userFullname");
+  const email = document.getElementById("userEmail");
+
+  if (fullname) {
+    fullname.innerText =
+      (userData.name || "") + " " + (userData.lastname || "");
+  }
+
+  if (email) {
+    email.innerText = userData.email || "";
+  }
+}
+
+
+// ===============================
+// START SYSTEM
+// ===============================
+
+document.addEventListener("DOMContentLoaded", loadLayout);
