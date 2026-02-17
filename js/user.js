@@ -4,17 +4,24 @@
 
 export function loadUserToTopbar() {
 
-    const userData = JSON.parse(localStorage.getItem("user"));
+    const raw = localStorage.getItem("user");
+    if (!raw) return;
 
-    if (!userData) return;
+    const userData = JSON.parse(raw);
 
-    const fullname = document.getElementById("userFullname");
-    const email = document.getElementById("userEmail");
+    // element
+    const fullnameEl = document.getElementById("userFullname");
+    const emailEl = document.getElementById("userEmail");
 
-    if (fullname)
-        fullname.innerText =
-            (userData.name || "") + " " + (userData.lastname || "");
+    // รองรับหลายรูปแบบ field
+    let fullname =
+        userData.fullname ||
+        userData.name ||
+        ((userData.firstname || "") + " " + (userData.lastname || ""));
 
-    if (email)
-        email.innerText = userData.email || "";
+    if (fullnameEl)
+        fullnameEl.innerText = fullname || "Unknown User";
+
+    if (emailEl)
+        emailEl.innerText = userData.email || "-";
 }
