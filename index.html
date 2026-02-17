@@ -41,9 +41,9 @@
         class="w-full p-3 border rounded-lg mb-6 focus:ring-2 focus:ring-green-400"
     />
 
-    <!-- LOGIN BUTTON -->
+    <!-- ✅ LOGIN BUTTON (แก้ตรงนี้สำคัญสุด) -->
     <button
-        id="loginBtn"
+        onclick="login()"
         class="w-full bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg transition"
     >
         Login
@@ -67,7 +67,7 @@ class="fixed top-5 right-5 hidden px-6 py-3 rounded-xl shadow-lg text-white
 transform translate-x-40 opacity-0 transition-all duration-500">
 </div>
 
-<!-- LOGIN SCRIPT -->
+<!-- ✅ ต้องเป็น module -->
 <script type="module" src="js/login.js"></script>
 
 <!-- Notify Animation -->
@@ -77,7 +77,7 @@ function notify(message,type="success"){
 
     box.innerText=message;
 
-    box.className=
+    box.className =
     "fixed top-5 right-5 px-6 py-3 rounded-xl shadow-lg text-white transition-all duration-500";
 
     if(type==="success"){
