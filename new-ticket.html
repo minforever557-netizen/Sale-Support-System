@@ -13,11 +13,6 @@
         .glass-card { background: white; border-radius: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 50px rgba(0,0,0,0.04); }
         textarea { resize: none; line-height: 2; scrollbar-width: none; }
         textarea::-webkit-scrollbar { display: none; }
-        .modal-active { overflow: hidden; }
-        .modal-backdrop-blur { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.5); }
-        .modal-animate { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-        /* Success Overlay */
         #success-overlay {
             display: none;
             position: fixed;
@@ -40,10 +35,8 @@
         <main class="p-4 md:p-8 flex justify-center w-full">
             <div class="w-full max-w-3xl glass-card overflow-hidden">
                 <div class="bg-[#5c67f2] p-10 text-white relative">
-                    <div class="relative z-10">
-                        <h2 class="text-3xl font-bold tracking-tight">สร้าง Ticket ใหม่</h2>
-                        <p class="text-indigo-100 mt-2 opacity-90">กรุณากรอกข้อมูลต่อท้ายหัวข้อที่ระบบเตรียมไว้ให้</p>
-                    </div>
+                    <h2 class="text-3xl font-bold tracking-tight">สร้าง Ticket ใหม่</h2>
+                    <p class="text-indigo-100 mt-2 opacity-90">กรุณากรอกข้อมูลต่อท้ายหัวข้อที่ระบบเตรียมไว้ให้</p>
                 </div>
 
                 <form id="ticketForm" class="p-8 md:p-10 space-y-8">
@@ -58,14 +51,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-3">
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">1. หัวข้อปัญหา</label>
-                            <select id="topic" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] focus:bg-white outline-none transition-all font-semibold text-slate-600">
+                            <select id="topic" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] outline-none transition-all font-semibold text-slate-600">
                                 <option value="">กำลังโหลดหัวข้อ...</option>
                             </select>
                         </div>
                         <div class="space-y-3">
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">2. Internet No.</label>
                             <input type="text" id="id_number" required placeholder="88XXXXXXXX" 
-                                class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] focus:bg-white outline-none transition-all font-semibold">
+                                class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] outline-none transition-all font-semibold">
                         </div>
                     </div>
 
@@ -73,15 +66,14 @@
                         <div class="flex justify-between items-start px-2">
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-2">3. รายละเอียดปัญหา</label>
                             <div id="sla-badge" class="hidden bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-right">
-                                <p class="text-[11px] font-black text-emerald-700 uppercase tracking-tighter" id="sla-hours-text"></p>
+                                <p class="text-[11px] font-black text-emerald-700 uppercase" id="sla-hours-text"></p>
                             </div>
                         </div>
-                        <textarea id="detail-input" rows="10" required 
-                            placeholder="เลือกหัวข้อปัญหาเพื่อดู Checklist..."
-                            class="w-full px-8 py-6 bg-white border-2 border-slate-100 rounded-[2rem] focus:border-[#5c67f2] outline-none transition-all font-sans text-sm text-slate-700 shadow-sm"></textarea>
+                        <textarea id="detail-input" rows="8" required 
+                            class="w-full px-8 py-6 bg-white border-2 border-slate-100 rounded-[2rem] focus:border-[#5c67f2] outline-none transition-all text-slate-700 shadow-sm"></textarea>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full py-5 bg-[#5c67f2] text-white rounded-[2rem] font-bold text-lg hover:bg-[#4a54d4] transition-all shadow-xl flex justify-center items-center gap-3 active:scale-95">
+                    <button type="submit" id="submitBtn" class="w-full py-5 bg-[#5c67f2] text-white rounded-[2rem] font-bold text-lg hover:bg-[#4a54d4] transition-all shadow-xl flex justify-center items-center gap-3">
                         <i class="fa-solid fa-paper-plane text-sm"></i> ยืนยันการส่งข้อมูล
                     </button>
                 </form>
@@ -100,15 +92,14 @@
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300" id="logout-backdrop"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 modal-animate" id="logout-content">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" id="logout-backdrop"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="logout-content">
             <div class="text-center">
-                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-3xl">🚪</span></div>
                 <h3 class="text-2xl font-bold text-slate-800 mb-2">Logout?</h3>
-                <p class="text-slate-500 mb-8 text-sm">ต้องการออกจากระบบใช่หรือไม่?</p>
+                <p class="text-slate-500 mb-8">ต้องการออกจากระบบใช่หรือไม่?</p>
                 <div class="flex gap-3">
-                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg">ยืนยัน</button>
-                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200">ยกเลิก</button>
+                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold">ยืนยัน</button>
+                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">ยกเลิก</button>
                 </div>
             </div>
         </div>
@@ -132,56 +123,50 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const ticketForm = document.getElementById('ticketForm');
-        const topicSelect = document.getElementById('topic');
-        const detailInput = document.getElementById('detail-input');
-        const slaBadge = document.getElementById('sla-badge');
-        
         let topicsData = {};
         let originalLines = [];
         let userDataGlobal = null;
 
-        // --- 1. Auth & Layout ---
+        const ticketForm = document.getElementById('ticketForm');
+        const topicSelect = document.getElementById('topic');
+        const detailInput = document.getElementById('detail-input');
+
+        // --- 1. Auth & Sidebar/Topbar ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const adminDoc = await getDoc(doc(db, "admin", user.uid));
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 userDataGlobal = adminDoc.exists() ? adminDoc.data() : (userDoc.exists() ? userDoc.data() : {});
                 userDataGlobal.uid = user.uid;
-                loadLayout(userDataGlobal, user.email);
+                userDataGlobal.email = user.email;
+                loadLayout(userDataGlobal);
             } else {
                 window.location.replace("login.html");
             }
         });
 
-        async function loadLayout(userData, email) {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
+        async function loadLayout(userData) {
+            const comps = [{ id: 'sidebar-placeholder', url: './components/sidebar.html' }, { id: 'topbar-placeholder', url: './components/topbar.html' }];
             for (const comp of comps) {
                 const res = await fetch(comp.url);
                 if (res.ok) {
                     const el = document.getElementById(comp.id);
                     el.innerHTML = await res.text();
                     el.classList.remove('hidden');
-                    el.querySelectorAll("script").forEach(oldScript => {
-                        const newScript = document.createElement("script");
-                        newScript.type = "module";
-                        newScript.textContent = oldScript.textContent;
-                        document.head.appendChild(newScript);
+                    el.querySelectorAll("script").forEach(s => {
+                        const ns = document.createElement("script"); ns.type = "module"; ns.textContent = s.textContent; document.head.appendChild(ns);
                     });
                 }
             }
             setTimeout(() => {
                 document.getElementById('form-user-name').innerText = userData.name || "User";
                 document.getElementById('form-user-avatar').innerText = (userData.name || "U")[0].toUpperCase();
-                const topName = document.querySelector('#topbar-user-name');
-                if(topName) topName.innerText = userData.name;
+                const tName = document.querySelector('#topbar-user-name');
+                if(tName) tName.innerText = userData.name;
             }, 800);
         }
 
-        // --- 2. Topics & Checklist (Fixed Double Issue) ---
+        // --- 2. Checklist Logic (Fixed Double) ---
         onSnapshot(collection(db, "topics"), (snapshot) => {
             topicSelect.innerHTML = '<option value="">เลือกหัวข้อปัญหา</option>';
             snapshot.forEach(doc => {
@@ -195,59 +180,57 @@
         topicSelect.addEventListener('change', (e) => {
             const topic = topicsData[e.target.value];
             if (topic) {
-                // ล้างค่าเก่าและตั้งค่าเริ่มต้นใหม่
                 originalLines = (topic.checklist || "").split("\n").filter(l => l.trim() !== "");
                 detailInput.value = originalLines.map(line => line + " ").join("\n");
                 document.getElementById('sla-hours-text').innerText = `🕒 SLA: ${topic.sla} ชม.`;
-                slaBadge.classList.remove('hidden');
+                document.getElementById('sla-badge').classList.remove('hidden');
             }
         });
 
         detailInput.addEventListener('input', () => {
             const lines = detailInput.value.split("\n");
-            const restoredLines = lines.map((line, i) => {
-                const original = originalLines[i] ? originalLines[i] + " " : "";
-                if (original && !line.startsWith(original)) {
-                    return original + line.replace(new RegExp('^' + original.trim()), '');
-                }
+            const restored = lines.map((line, i) => {
+                const orig = originalLines[i] ? originalLines[i] + " " : "";
+                if (orig && !line.startsWith(orig)) return orig + line.replace(new RegExp('^' + orig.trim()), '');
                 return line;
             });
-            if (detailInput.value !== restoredLines.join("\n")) {
-                detailInput.value = restoredLines.join("\n");
-            }
+            if (detailInput.value !== restored.join("\n")) detailInput.value = restored.join("\n");
         });
 
-        // --- 3. Submit & Animation (Fixed Database Saving) ---
+        // --- 3. บันทึกข้อมูล (ตรงตาม Format เดิมเป๊ะ) ---
         ticketForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const originalBtn = btn.innerHTML;
-            
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> กำลังบันทึก...`;
 
             try {
                 const selectedTopic = topicsData[topicSelect.value];
                 const slaHours = parseInt(selectedTopic.sla) || 0;
-                const dueDate = new Date();
-                dueDate.setHours(dueDate.getHours() + slaHours);
+                
+                // คำนวณวันครบกำหนด
+                const dDate = new Date();
+                dDate.setHours(dDate.getHours() + slaHours);
 
-                // บันทึกลง "tickets" collection
+                // บันทึกตามโครงสร้างเดิมในรูปที่ 9
                 await addDoc(collection(db, "tickets"), {
-                    subject: selectedTopic.name,
+                    topic: selectedTopic.name,        // ใช้ชื่อ field นี้เพื่อให้หน้า My Ticket เห็น
+                    topicId: topicSelect.value,
                     id_number: document.getElementById('id_number').value.trim(),
-                    details: detailInput.value,
+                    detail: detailInput.value,        // ใช้ detail (ไม่มี s)
                     status: "Pending",
-                    sender_name: userDataGlobal.name || "Unknown",
+                    owner: userDataGlobal.name || "Unknown", // ใช้ owner แทน sender_name
+                    ownerEmail: userDataGlobal.email || "",
                     sender_uid: userDataGlobal.uid,
                     sender_team: userDataGlobal.Team || "N/A",
                     sender_subteam: userDataGlobal["Sub Team"] || "N/A",
-                    created_at: serverTimestamp(),
-                    due_at: dueDate,
-                    sla: slaHours
+                    createdAt: serverTimestamp(),     // ใช้ CamelCase เหมือนของเดิม
+                    sla_hours: slaHours,              // ใช้ sla_hours
+                    due_at: dDate
                 });
 
-                // Show Success Animation
+                // Success Animation
                 const overlay = document.getElementById('success-overlay');
                 const content = document.getElementById('success-content');
                 overlay.style.display = 'flex';
@@ -256,47 +239,32 @@
                     content.classList.add('opacity-100', 'scale-100');
                 }, 50);
 
-                setTimeout(() => {
-                    window.location.href = "my-ticket.html";
-                }, 2500);
+                setTimeout(() => { window.location.href = "myticket.html"; }, 2200);
 
             } catch (error) {
                 console.error("Save error:", error);
-                alert("เกิดข้อผิดพลาด: " + error.message);
-                btn.disabled = false;
-                btn.innerHTML = originalBtn;
+                alert("ล้มเหลว: " + error.message);
+                btn.disabled = false; btn.innerHTML = originalBtn;
             }
         });
 
-        // --- 4. Logout Logic ---
+        // Logout Modal Logic
         window.openLogoutModal = () => {
-            const modal = document.getElementById('logout-modal');
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-active');
+            document.getElementById('logout-modal').classList.remove('hidden');
             setTimeout(() => {
-                document.getElementById('logout-backdrop').classList.add('opacity-100');
-                document.getElementById('logout-content').classList.remove('scale-90', 'opacity-0');
+                document.getElementById('logout-backdrop').classList.replace('opacity-0', 'opacity-100');
+                document.getElementById('logout-content').classList.replace('opacity-0', 'opacity-100');
+                document.getElementById('logout-content').classList.replace('scale-90', 'scale-100');
             }, 10);
         };
-
         document.getElementById('close-logout').onclick = () => {
-            document.getElementById('logout-backdrop').classList.remove('opacity-100');
-            document.getElementById('logout-content').classList.add('scale-90', 'opacity-0');
-            setTimeout(() => {
-                document.getElementById('logout-modal').classList.add('hidden');
-                document.body.classList.remove('modal-active');
-            }, 300);
+            document.getElementById('logout-modal').classList.add('hidden');
         };
-
         document.getElementById('confirm-logout').onclick = async () => {
-            await signOut(auth);
-            window.location.replace("login.html");
+            await signOut(auth); window.location.replace("login.html");
         };
-
         document.addEventListener('click', (e) => {
-            if (e.target.closest('#sidebar-logout-btn') || e.target.closest('#main-logout-btn')) {
-                openLogoutModal();
-            }
+            if (e.target.closest('#sidebar-logout-btn') || e.target.closest('#main-logout-btn')) openLogoutModal();
         });
     </script>
 </body>
