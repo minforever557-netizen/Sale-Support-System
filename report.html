@@ -3,115 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Dashboard - Sale Support System</title>
+    <title>Report Dashboard - Sale Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .report-card { 
-            background: white; border-radius: 1.5rem; border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); transition: all 0.3s ease;
-        }
-        .report-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07); }
-        .stat-value { font-size: 1.875rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="flex min-h-screen">
+<body class="bg-slate-50 flex">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
+    <div id="sidebar-container"></div>
 
-    <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder" class="sticky top-0 z-50"></div>
-
-        <main class="p-4 md:p-8 space-y-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-3xl font-bold text-slate-800 tracking-tight">สรุปภาพรวมระบบ (Reports)</h2>
-                    <p class="text-slate-500">ข้อมูลสถิติและการทำงานของ Ticket ทั้งหมด</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <input type="date" id="date-filter" class="px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                    <button onclick="refreshData()" class="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">
-                        <i class="fa-solid fa-arrows-rotate"></i>
+    <main class="flex-1 min-h-screen flex flex-col">
+        
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-slate-800">📊 ระบบรายงานและวิเคราะห์ข้อมูล</h2>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <input type="date" id="startDate" class="bg-transparent border-none text-sm focus:ring-0 p-2">
+                    <span class="text-slate-400">ถึง</span>
+                    <input type="date" id="endDate" class="bg-transparent border-none text-sm focus:ring-0 p-2">
+                    <button id="btnFilter" class="bg-[#5c56f1] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition">
+                        ตกลง
                     </button>
                 </div>
             </div>
+        </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="report-card p-6 border-l-4 border-indigo-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total Tickets</p>
-                    <div class="stat-value text-indigo-600" id="stat-total">0</div>
-                    <p class="text-[10px] text-slate-400">รายการทั้งหมดในระบบ</p>
+        <div class="p-8 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">ใบงานทั้งหมด</p>
+                    <h3 id="totalTickets" class="text-3xl font-black text-slate-800 mt-2">0</h3>
                 </div>
-                <div class="report-card p-6 border-l-4 border-emerald-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Complete Rate</p>
-                    <div class="stat-value text-emerald-600" id="stat-complete-rate">0%</div>
-                    <p class="text-[10px] text-slate-400" id="stat-complete-count">0 รายการ</p>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <p class="text-emerald-500 text-sm font-bold uppercase tracking-wider">ปิดงานแล้ว</p>
+                    <h3 id="closedTickets" class="text-3xl font-black text-slate-800 mt-2">0</h3>
                 </div>
-                <div class="report-card p-6 border-l-4 border-rose-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Reject Rate</p>
-                    <div class="stat-value text-rose-600" id="stat-reject-rate">0%</div>
-                    <p class="text-[10px] text-slate-400" id="stat-reject-count">0 รายการ</p>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm border-l-4 border-l-rose-500">
+                    <p class="text-rose-500 text-sm font-bold uppercase tracking-wider">เกิน SLA</p>
+                    <h3 id="overSlaCount" class="text-3xl font-black text-slate-800 mt-2">0</h3>
                 </div>
-                <div class="report-card p-6 border-l-4 border-amber-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">SLA Compliance</p>
-                    <div class="stat-value text-amber-600" id="stat-sla-rate">0%</div>
-                    <p class="text-[10px] text-slate-400">ปิดทันเวลาตามกำหนด</p>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm border-l-4 border-l-indigo-500">
+                    <p class="text-indigo-500 text-sm font-bold uppercase tracking-wider">อัตราสำเร็จ (%)</p>
+                    <h3 id="successRate" class="text-3xl font-black text-slate-800 mt-2">0%</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="report-card p-8">
-                    <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-indigo-500"></i> สัดส่วนหัวข้อที่แจ้ง (Ticket Topics)
-                    </h3>
-                    <div class="h-[300px] flex items-center justify-center">
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-500"></i> สัดส่วนหัวข้อปัญหา (%)
+                    </h4>
+                    <div class="h-[300px] flex justify-center">
                         <canvas id="topicChart"></canvas>
                     </div>
                 </div>
 
-                <div class="report-card p-8">
-                    <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-bar text-emerald-500"></i> ผลการทำงานแยกตามทีมหลัก
-                    </h3>
-                    <div class="h-[300px]">
-                        <canvas id="teamChart"></canvas>
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> ประสิทธิภาพการปิดงาน (SLA)
+                    </h4>
+                    <div class="h-[300px] flex justify-center">
+                        <canvas id="slaChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="report-card overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800">รายการ Ticket ล่าสุด</h3>
-                    <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold">LIVE UPDATE</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-slate-500 font-bold">
-                            <tr>
-                                <th class="px-6 py-4">วันที่/เวลา</th>
-                                <th class="px-6 py-4">ผู้ส่ง</th>
-                                <th class="px-6 py-4">ทีม (หลัก/ย่อย)</th>
-                                <th class="px-6 py-4">เรื่อง</th>
-                                <th class="px-6 py-4">สถานะ</th>
-                                <th class="px-6 py-4 text-center">SLA</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ticket-table-body" class="divide-y divide-slate-100">
-                            </tbody>
-                    </table>
+            <div class="grid grid-cols-1 gap-8">
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-blue-500"></i> จำนวนงานและสัดส่วนตามรายทีม
+                    </h4>
+                    <div class="h-[400px]">
+                        <canvas id="teamChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script type="module">
-        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Firebase Config (ตัวเดิมของคุณ)
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -121,137 +96,107 @@
             appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
         };
 
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
-        let topicChart, teamChart;
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                await loadLayout();
-                await fetchReportData();
-            } else {
-                window.location.replace("login.html");
-            }
+        // โหลด Sidebar อัตโนมัติ
+        fetch('sidebar.html').then(response => response.text()).then(data => {
+            document.getElementById('sidebar-container').innerHTML = data;
         });
 
-        async function loadLayout() {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
-            for (const comp of comps) {
-                const res = await fetch(comp.url);
-                if (res.ok) {
-                    const el = document.getElementById(comp.id);
-                    el.innerHTML = await res.text();
-                    el.querySelectorAll("script").forEach(s => {
-                        const ns = document.createElement("script");
-                        ns.type = "module";
-                        ns.textContent = s.textContent;
-                        document.head.appendChild(ns);
-                    });
-                }
-            }
+        // ฟังก์ชันจัดการกราฟ
+        let charts = {};
+
+        async function updateDashboard() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+
+            // ดึงข้อมูลจากคอลเลกชัน 'tickets' (หรือชื่อคอลเลกชันที่คุณใช้เก็บใบงาน)
+            const ticketRef = collection(db, "tickets");
+            let q = query(ticketRef);
+
+            // *หมายเหตุ: การกรองวันที่ควรใช้ timestamp ใน Firestore 
+            // โค้ดนี้เป็นการดึงมาคำนวณเบื้องต้น
+            const querySnapshot = await getDocs(q);
+            const data = [];
+            querySnapshot.forEach(doc => data.push(doc.data()));
+
+            processData(data);
         }
 
-        async function fetchReportData() {
-            // ดึงข้อมูล Ticket ทั้งหมด (ในที่นี้ตัวอย่างดึงจาก collection "tickets" โปรดแก้ชื่อตามจริง)
-            const snap = await getDocs(query(collection(db, "tickets"), orderBy("timestamp", "desc")));
-            const tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            updateStats(tickets);
-            updateTopicChart(tickets);
-            updateTeamChart(tickets);
-            updateTable(tickets);
-        }
-
-        function updateStats(data) {
+        function processData(data) {
             const total = data.length;
-            const complete = data.filter(t => t.status === "Complete").length;
-            const reject = data.filter(t => t.status === "Reject").length;
-            const slaMet = data.filter(t => t.sla_status === "In SLA").length;
+            document.getElementById('totalTickets').innerText = total;
 
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-complete-rate').innerText = total > 0 ? Math.round((complete / total) * 100) + "%" : "0%";
-            document.getElementById('stat-complete-count').innerText = `${complete} รายการ`;
-            document.getElementById('stat-reject-rate').innerText = total > 0 ? Math.round((reject / total) * 100) + "%" : "0%";
-            document.getElementById('stat-reject-count').innerText = `${reject} รายการ`;
-            document.getElementById('stat-sla-rate').innerText = total > 0 ? Math.round((slaMet / total) * 100) + "%" : "0%";
-        }
-
-        function updateTopicChart(data) {
+            // 1. ประมวลผลหัวข้อ (Topic)
             const topics = {};
-            data.forEach(t => {
-                const topic = t.subject || 'อื่นๆ';
-                topics[topic] = (topics[topic] || 0) + 1;
+            data.forEach(item => {
+                topics[item.topic] = (topics[item.topic] || 0) + 1;
             });
 
-            const ctx = document.getElementById('topicChart').getContext('2d');
-            if (topicChart) topicChart.destroy();
-            topicChart = new Chart(ctx, {
-                type: 'doughnut',
+            // 2. ประมวลผลทีม (Team)
+            const teams = {};
+            data.forEach(item => {
+                teams[item.team] = (teams[item.team] || 0) + 1;
+            });
+
+            // 3. ประมวลผล SLA (เทียบสถานะ)
+            let onTime = 0, overSla = 0;
+            data.forEach(item => {
+                if(item.sla_status === 'over') overSla++;
+                else onTime++;
+            });
+
+            renderCharts(topics, teams, { onTime, overSla }, total);
+        }
+
+        function renderCharts(topics, teams, sla, total) {
+            // ลบกราฟเดิมก่อนวาดใหม่ (ถ้ามี)
+            Object.values(charts).forEach(c => c.destroy());
+
+            // Chart 1: Topics Pie
+            charts.topic = new Chart(document.getElementById('topicChart'), {
+                type: 'pie',
                 data: {
                     labels: Object.keys(topics),
                     datasets: [{
-                        data: Object.values(topics),
-                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
+                        data: Object.values(topics).map(v => ((v/total)*100).toFixed(1)),
+                        backgroundColor: ['#5c56f1', '#818cf8', '#c7d2fe', '#f8fafc', '#312e81']
                     }]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        function updateTeamChart(data) {
-            const teams = {};
-            data.forEach(t => {
-                const team = t.main_team || 'ไม่ระบุทีม';
-                if (!teams[team]) teams[team] = { complete: 0, reject: 0 };
-                if (t.status === "Complete") teams[team].complete++;
-                if (t.status === "Reject") teams[team].reject++;
+                options: { plugins: { legend: { position: 'bottom' } } }
             });
 
-            const ctx = document.getElementById('teamChart').getContext('2d');
-            if (teamChart) teamChart.destroy();
-            teamChart = new Chart(ctx, {
+            // Chart 2: SLA Doughnut
+            charts.sla = new Chart(document.getElementById('slaChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['ทันเวลา (In SLA)', 'เกินเวลา (Over SLA)'],
+                    datasets: [{
+                        data: [sla.onTime, sla.overSla],
+                        backgroundColor: ['#10b981', '#ef4444']
+                    }]
+                }
+            });
+
+            // Chart 3: Team Bar
+            charts.team = new Chart(document.getElementById('teamChart'), {
                 type: 'bar',
                 data: {
                     labels: Object.keys(teams),
-                    datasets: [
-                        { label: 'Complete', data: Object.values(teams).map(v => v.complete), backgroundColor: '#10b981' },
-                        { label: 'Reject', data: Object.values(teams).map(v => v.reject), backgroundColor: '#ef4444' }
-                    ]
+                    datasets: [{
+                        label: 'จำนวนใบงาน',
+                        data: Object.values(teams),
+                        backgroundColor: '#5c56f1',
+                        borderRadius: 10
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                options: { scales: { y: { beginAtZero: true } } }
             });
         }
 
-        function updateTable(data) {
-            const body = document.getElementById('ticket-table-body');
-            body.innerHTML = data.slice(0, 10).map(t => `
-                <tr class="hover:bg-slate-50/50 transition">
-                    <td class="px-6 py-4 text-[12px] text-slate-500">${t.timestamp?.toDate().toLocaleString('th-TH') || '-'}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-700">${t.sender_name || '-'}</td>
-                    <td class="px-6 py-4 text-xs">
-                        <span class="block text-slate-800">${t.main_team || '-'}</span>
-                        <span class="text-slate-400 font-light">${t.sub_team || '-'}</span>
-                    </td>
-                    <td class="px-6 py-4 text-slate-600">${t.subject || '-'}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            t.status === 'Complete' ? 'bg-emerald-50 text-emerald-600' : 
-                            t.status === 'Reject' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
-                        }">${t.status || 'Pending'}</span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <i class="fa-solid fa-circle ${t.sla_status === 'In SLA' ? 'text-emerald-400' : 'text-rose-400'} text-[8px]"></i>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        window.refreshData = () => fetchReportData();
+        document.getElementById('btnFilter').onclick = updateDashboard;
+        updateDashboard(); // โหลดครั้งแรก
     </script>
 </body>
 </html>
