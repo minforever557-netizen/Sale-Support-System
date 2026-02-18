@@ -7,73 +7,53 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
-    </style>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap'); body { font-family: 'Sarabun', sans-serif; }</style>
 </head>
 <body class="bg-slate-50 flex min-h-screen">
 
     <div id="sidebar-container" class="sticky top-0 h-screen"></div>
 
     <div class="flex-1 flex flex-col min-w-0">
-        
         <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                <i class="fa-solid fa-chart-pie text-[#5c56f1]"></i> Report Dashboard
-            </h2>
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3"><i class="fa-solid fa-chart-line text-[#5c56f1]"></i> Report Dashboard</h2>
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                    <input type="date" id="startDate" class="bg-transparent border-none text-sm focus:ring-0 p-1">
-                    <span class="text-slate-400">-</span>
-                    <input type="date" id="endDate" class="bg-transparent border-none text-sm focus:ring-0 p-1">
-                    <button id="btnFilter" class="bg-[#5c56f1] text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:shadow-lg transition">
-                        กรองข้อมูล
-                    </button>
-                </div>
+                <select id="subTeamFilter" class="bg-white border border-slate-200 text-sm rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="all">--- ทุกทีม (ภาพรวมทั้งหมด) ---</option>
+                </select>
             </div>
         </header>
 
         <div class="p-8 space-y-8 overflow-y-auto">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">ใบงานทั้งหมด</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 border-l-4 border-l-indigo-500">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">ใบงานทั้งหมดในระบบ</p>
                     <h3 id="stat-total" class="text-4xl font-black text-slate-800 mt-2">0</h3>
                 </div>
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
-                    <p class="text-emerald-500 text-xs font-bold uppercase tracking-wider">ปิดทัน SLA</p>
+                    <p class="text-emerald-500 text-xs font-bold uppercase tracking-wider">ปิดงานสำเร็จ (ทันเวลา)</p>
                     <h3 id="stat-inSla" class="text-4xl font-black text-slate-800 mt-2">0</h3>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 border-l-4 border-l-rose-500">
-                    <p class="text-rose-500 text-xs font-bold uppercase tracking-wider">เกิน SLA</p>
-                    <h3 id="stat-overSla" class="text-4xl font-black text-slate-800 mt-2">0</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="font-bold text-slate-700 mb-6 flex items-center justify-between">
-                        สัดส่วนหัวข้อปัญหา <span>(%)</span>
-                    </h4>
-                    <div class="h-72 flex justify-center">
-                        <canvas id="topicChart"></canvas>
-                    </div>
+                    <h4 class="font-bold text-slate-700 mb-6">สัดส่วนหัวข้อปัญหา (จำนวน และ %)</h4>
+                    <div class="h-80 flex justify-center"><canvas id="topicChart"></canvas></div>
                 </div>
 
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="font-bold text-slate-700 mb-6 flex items-center justify-between">
-                        ประสิทธิภาพการปิดงาน <span>(SLA)</span>
-                    </h4>
-                    <div class="h-72 flex justify-center">
-                        <canvas id="slaChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
-                    <h4 class="font-bold text-slate-700 mb-6">จำนวนใบงานแยกตามทีมและสัดส่วน (%)</h4>
-                    <div class="h-96">
-                        <canvas id="teamChart"></canvas>
+                    <h4 class="font-bold text-slate-700 mb-4">ตารางสรุปจำนวน Ticket รายทีม</h4>
+                    <div class="overflow-hidden rounded-xl border border-slate-100">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+                                <tr>
+                                    <th class="px-6 py-4">ชื่อทีม (Main Team)</th>
+                                    <th class="px-6 py-4 text-center">จำนวนงาน</th>
+                                    <th class="px-6 py-4 text-right">สัดส่วน (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -82,7 +62,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
@@ -92,116 +72,96 @@
             messagingSenderId: "840890441207",
             appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- Load Sidebar (Fix 404 Path) ---
-        fetch('./components/sidebar.html')
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('sidebar-container').innerHTML = html;
-                const scripts = document.getElementById('sidebar-container').querySelectorAll('script');
-                scripts.forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    newScript.type = oldScript.type || 'text/javascript';
-                    if (oldScript.src) newScript.src = oldScript.src;
-                    else newScript.text = oldScript.text;
-                    document.body.appendChild(newScript);
-                });
-            }).catch(err => console.error("Error loading sidebar:", err));
+        // Load Sidebar/Topbar
+        fetch('./components/sidebar.html').then(res => res.text()).then(html => {
+            document.getElementById('sidebar-container').innerHTML = html;
+            const scripts = document.getElementById('sidebar-container').querySelectorAll('script');
+            scripts.forEach(s => { const n = document.createElement('script'); n.text = s.text; document.body.appendChild(n); });
+        });
 
-        let chartInstances = {};
+        let allTickets = [];
+        let chartInstance = null;
 
-        // --- Core Report Logic ---
-        async function renderReports() {
-            try {
-                // ดึงข้อมูลจากคอลเลกชัน 'tickets' (ตรวจสอบชื่อให้ตรงใน DB)
-                const ticketSnap = await getDocs(collection(db, "tickets"));
-                const tickets = [];
-                ticketSnap.forEach(doc => tickets.push(doc.data()));
+        async function loadData() {
+            const snap = await getDocs(collection(db, "tickets"));
+            allTickets = [];
+            const subTeams = new Set();
+            snap.forEach(doc => {
+                const data = doc.data();
+                allTickets.push(data);
+                if(data.sub_team) subTeams.add(data.sub_team); // ดึงชื่อ Sub Team มาทำ Filter
+            });
 
-                const total = tickets.length;
-                let inSla = 0, overSla = 0;
-                const topicData = {}, teamData = {};
+            // สร้าง Filter สำหรับ Sub Team
+            const filter = document.getElementById('subTeamFilter');
+            subTeams.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st; opt.textContent = st;
+                filter.appendChild(opt);
+            });
 
-                tickets.forEach(t => {
-                    // ประมวลผล SLA
-                    if (t.sla_status === 'In SLA' || t.status === 'Closed') inSla++;
-                    else overSla++;
-
-                    // ประมวลผล Topic และ Team (อ้างอิงชื่อฟิลด์ตามที่คุณเก็บ)
-                    if (t.topic) topicData[t.topic] = (topicData[t.topic] || 0) + 1;
-                    if (t.team) teamData[t.team] = (teamData[t.team] || 0) + 1;
-                });
-
-                // อัปเดตตัวเลข
-                document.getElementById('stat-total').innerText = total;
-                document.getElementById('stat-inSla').innerText = inSla;
-                document.getElementById('stat-overSla').innerText = overSla;
-
-                updateCharts(topicData, teamData, { inSla, overSla }, total);
-            } catch (err) {
-                console.error("Data Fetch Error:", err);
-            }
+            renderDashboard('all');
         }
 
-        function updateCharts(topicData, teamData, sla, total) {
-            // Destroy existing charts to refresh
-            Object.values(chartInstances).forEach(c => c.destroy());
+        function renderDashboard(filterSubTeam) {
+            const filtered = filterSubTeam === 'all' ? allTickets : allTickets.filter(t => t.sub_team === filterSubTeam);
+            const total = filtered.length;
+            
+            // สรุปข้อมูล
+            const topicStats = {};
+            const teamStats = {};
+            let inSla = 0;
 
-            // 1. Topic Chart (Pie)
-            chartInstances.topic = new Chart(document.getElementById('topicChart'), {
+            filtered.forEach(t => {
+                topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
+                teamStats[t.team] = (teamStats[t.team] || 0) + 1;
+                if(t.sla_status === 'In SLA') inSla++;
+            });
+
+            // อัปเดต Stats
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-inSla').innerText = inSla;
+
+            // 1. วาดกราฟวงกลม สัดส่วนปัญหา (แสดงจำนวน และ %)
+            if(chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('topicChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: Object.keys(topicData),
+                    labels: Object.keys(topicStats).map(label => {
+                        const count = topicStats[label];
+                        const percent = ((count / total) * 100).toFixed(1);
+                        return `${label}: ${count} เคส (${percent}%)`;
+                    }),
                     datasets: [{
-                        data: Object.values(topicData),
+                        data: Object.values(topicStats),
                         backgroundColor: ['#5c56f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#4338ca']
                     }]
-                }
-            });
-
-            // 2. SLA Chart (Doughnut)
-            chartInstances.sla = new Chart(document.getElementById('slaChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['ทันเวลา', 'เกิน SLA'],
-                    datasets: [{
-                        data: [sla.inSla, sla.overSla],
-                        backgroundColor: ['#10b981', '#f43f5e']
-                    }]
-                }
-            });
-
-            // 3. Team Chart (Bar with % logic)
-            chartInstances.team = new Chart(document.getElementById('teamChart'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(teamData),
-                    datasets: [{
-                        label: 'จำนวนใบงาน',
-                        data: Object.values(teamData),
-                        backgroundColor: '#5c56f1',
-                        borderRadius: 12
-                    }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ` จำนวน: ${ctx.raw} (${((ctx.raw/total)*100).toFixed(1)}%)`
-                            }
-                        }
-                    }
-                }
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } } } }
+            });
+
+            // 2. อัปเดตตารางสรุปรายทีม
+            const tableBody = document.getElementById('teamTableBody');
+            tableBody.innerHTML = '';
+            Object.keys(teamStats).sort((a,b) => teamStats[b] - teamStats[a]).forEach(team => {
+                const count = teamStats[team];
+                const percent = ((count / total) * 100).toFixed(1);
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4 font-medium">${team}</td>
+                        <td class="px-6 py-4 text-center font-bold text-indigo-600">${count}</td>
+                        <td class="px-6 py-4 text-right">${percent}%</td>
+                    </tr>
+                `;
             });
         }
 
-        document.getElementById('btnFilter').onclick = renderReports;
-        renderReports(); // Run once on load
+        document.getElementById('subTeamFilter').onchange = (e) => renderDashboard(e.target.value);
+        loadData();
     </script>
 </body>
 </html>
