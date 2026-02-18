@@ -46,15 +46,12 @@
 
     <div id="editModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in duration-300">
-            
+        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden">
             <div class="bg-slate-900 p-8 text-white">
                 <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-2xl font-bold flex items-center gap-3">
-                            <i class="fa-solid fa-user-gear text-indigo-400"></i> จัดการโปรไฟล์พนักงาน
-                        </h3>
-                    </div>
+                    <h3 class="text-2xl font-bold flex items-center gap-3">
+                        <i class="fa-solid fa-user-gear text-indigo-400"></i> จัดการโปรไฟล์พนักงาน
+                    </h3>
                     <button onclick="closeModal()" class="bg-white/10 hover:bg-white/20 p-2 rounded-xl transition">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -68,15 +65,11 @@
                     <div class="md:col-span-2"><h4 class="text-xs font-black text-indigo-500 uppercase tracking-widest border-b pb-2">Login Credentials</h4></div>
                     <div>
                         <label class="label-title">Username</label>
-                        <input type="text" id="edit-username" class="form-input" placeholder="Username">
+                        <input type="text" id="edit-username" class="form-input">
                     </div>
                     <div>
                         <label class="label-title">Email Address</label>
-                        <input type="email" id="edit-email" class="form-input" placeholder="Email">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="label-title">รหัสผ่านใหม่ (ปล่อยว่างหากไม่ต้องการเปลี่ยน)</label>
-                        <input type="password" id="edit-password" class="form-input" placeholder="อย่างน้อย 6 ตัวอักษร">
+                        <input type="email" id="edit-email" class="form-input">
                     </div>
                 </div>
 
@@ -110,7 +103,7 @@
                 <div class="pt-6 flex gap-3 sticky bottom-0 bg-white">
                     <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
                     <button type="submit" id="saveBtn" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด
+                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลพนักงาน
                     </button>
                 </div>
             </form>
@@ -119,7 +112,6 @@
 
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // เพิ่ม FieldPath ในส่วนของ import เพื่อแก้ปัญหาชื่อฟิลด์ที่มีจุด (.)
         import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, onSnapshot, FieldPath } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -181,8 +173,8 @@
                             <h3 class="font-bold text-slate-800">${u.name || 'ไม่ระบุชื่อ'}</h3>
                             <p class="text-[10px] text-slate-400 mb-4 uppercase tracking-widest font-bold">${u.role || 'user'}</p>
                             <div class="w-full text-xs space-y-2 mb-4 border-t pt-4">
-                                <div class="flex justify-between"><span class="text-slate-400">User</span><span>${u.username || '-'}</span></div>
                                 <div class="flex justify-between"><span class="text-slate-400">Team</span><span>${u.Team || '-'}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Phone</span><span>${u["Phone No."] || '-'}</span></div>
                             </div>
                             <button onclick="openEditModal('${docSnap.id}')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-[11px] font-bold hover:bg-indigo-600 transition">แก้ไขข้อมูล</button>
                         </div>
@@ -200,8 +192,7 @@
             document.getElementById('edit-name').value = u.name || "";
             document.getElementById('edit-username').value = u.username || "";
             document.getElementById('edit-email').value = u.email || "";
-            document.getElementById('edit-password').value = "";
-            document.getElementById('edit-phone').value = u["Phone No."] || ""; // แก้ไขการดึงข้อมูล Phone No.
+            document.getElementById('edit-phone').value = u["Phone No."] || "";
             document.getElementById('edit-role').value = u.role || "user";
             
             const mainTeam = allTeams.find(t => t.name === u.Team && t.type === "main");
@@ -234,7 +225,6 @@
             e.preventDefault();
             const uid = document.getElementById('edit-uid').value;
             const btn = document.getElementById('saveBtn');
-            const pass = document.getElementById('edit-password').value;
             
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> บันทึก...`;
@@ -242,30 +232,28 @@
             try {
                 const mainSelect = document.getElementById('edit-main-team');
                 const mainTeamName = mainSelect.options[mainSelect.selectedIndex].text;
-                
-                // ใช้ FieldPath เพื่อจัดการฟิลด์ที่มีจุดและช่องว่างให้บันทึกได้สำเร็จเหมือนหน้า profile
-                const updateData = {};
-                updateData["name"] = document.getElementById('edit-name').value;
-                updateData["username"] = document.getElementById('edit-username').value;
-                updateData["email"] = document.getElementById('edit-email').value;
-                updateData[new FieldPath("Phone No.")] = document.getElementById('edit-phone').value; // จุดสำคัญที่แก้ Error
-                updateData["role"] = document.getElementById('edit-role').value;
-                updateData["Team"] = mainTeamName.includes("เลือกทีม") ? "" : mainTeamName;
-                updateData["Sub Team"] = document.getElementById('edit-sub-team').value;
+                const adminRef = doc(db, "admin", uid);
 
-                if (pass) {
-                    if (pass.length < 6) throw new Error("รหัสผ่านต้องมี 6 ตัวขึ้นไป");
-                    updateData["tempPass"] = pass; // เก็บไว้เป็นข้อมูลอ้างอิงให้ Admin
-                }
+                // แก้ไขจุดนี้: ใช้โครงสร้างเดียวกับหน้า Profile
+                await updateDoc(adminRef, 
+                    "name", document.getElementById('edit-name').value.trim(),
+                    "username", document.getElementById('edit-username').value.trim(),
+                    "email", document.getElementById('edit-email').value.trim(),
+                    "role", document.getElementById('edit-role').value,
+                    "Team", mainTeamName.includes("เลือกทีม") ? "" : mainTeamName,
+                    "Sub Team", document.getElementById('edit-sub-team').value,
+                    new FieldPath("Phone No."), document.getElementById('edit-phone').value.trim()
+                );
 
-                await updateDoc(doc(db, "admin", uid), updateData);
                 closeModal();
                 alert("อัปเดตข้อมูลพนักงานสำเร็จ!");
             } catch (err) { 
                 console.error(err);
                 alert("Error: " + err.message); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลพนักงาน`; 
             }
-            finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด`; }
         };
     </script>
 </body>
