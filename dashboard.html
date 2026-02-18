@@ -158,16 +158,39 @@ const auth=getAuth(app);
 
 /* ===== LOAD SIDEBAR + TOPBAR ===== */
 async function loadLayout(){
+
 const comps=[
 { id:'sidebar-placeholder',url:'./components/sidebar.html'},
 { id:'topbar-placeholder',url:'./components/topbar.html'}
 ];
 
 for(const c of comps){
-const res=await fetch(c.url);
-document.getElementById(c.id).innerHTML=await res.text();
+
+    const res = await fetch(c.url);
+    const html = await res.text();
+
+    const el = document.getElementById(c.id);
+    el.innerHTML = html;
+    el.classList.remove("hidden");
+
+    /* ===== FIX: EXECUTE SCRIPT INSIDE COMPONENT ===== */
+    el.querySelectorAll("script").forEach(oldScript=>{
+
+        const newScript=document.createElement("script");
+
+        if(oldScript.type)
+            newScript.type=oldScript.type;
+
+        if(oldScript.src)
+            newScript.src=oldScript.src;
+        else
+            newScript.textContent=oldScript.textContent;
+
+        document.body.appendChild(newScript);
+    });
 }
 }
+
 
 /* ===== AUTH ===== */
 onAuthStateChanged(auth,async(user)=>{
