@@ -10,9 +10,11 @@
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
         .glass-card { background: white; border-radius: 2.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
-        .form-input { background-color: #f8fafc; border: 2px solid transparent; border-radius: 1.2rem; padding: 0.8rem 1.5rem; width: 100%; font-weight: 500; color: #334155; }
+        .form-input { background-color: #f8fafc; border: 2px solid transparent; border-radius: 1.2rem; padding: 0.8rem 1.5rem; width: 100%; font-weight: 500; color: #334155; transition: 0.3s; }
         .form-input:focus { border-color: #5c56f1; background-color: white; outline: none; }
-        .opt-card { display: flex; align-items: center; gap: 0.6rem; background: #f8fafc; padding: 1rem 1.2rem; border-radius: 1.2rem; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .form-input:read-only { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .opt-card { display: flex; align-items: center; gap: 0.6rem; background: #f8fafc; padding: 0.8rem 1rem; border-radius: 1.2rem; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .opt-card:hover { background: #f1f5f9; }
         .opt-card:has(input:checked) { border-color: #5c56f1; background: #f5f3ff; }
     </style>
 </head>
@@ -24,31 +26,59 @@
 
         <main class="p-6 md:p-10 max-w-5xl mx-auto w-full">
             <h2 class="text-3xl font-bold text-slate-800 mb-8">ข้อมูลส่วนตัว</h2>
+            
             <form id="profile-form" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-4">
                     <div class="glass-card p-10 text-center sticky top-28">
-                        <div id="u-avatar" class="w-32 h-32 bg-[#5c56f1] rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-bold mx-auto mb-6 shadow-lg">?</div>
-                        <h3 id="side-name" class="text-xl font-bold text-slate-800">...</h3>
-                        <p id="side-role" class="text-[#5c56f1] text-[10px] font-black uppercase bg-indigo-50 px-4 py-1 rounded-full inline-block mt-2 tracking-widest">USER</p>
+                        <div id="u-avatar" class="w-32 h-32 bg-[#5c56f1] rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-bold mx-auto mb-6 shadow-lg shadow-indigo-100">?</div>
+                        <h3 id="side-name" class="text-xl font-bold text-slate-800 truncate">...</h3>
+                        <p id="side-role" class="text-[#5c56f1] text-[10px] font-black uppercase bg-indigo-50 px-4 py-1 rounded-full inline-block mt-3 tracking-widest">USER</p>
+                        <p class="text-slate-400 text-xs mt-4 italic">* ไม่สามารถแก้ไขสิทธิ์การใช้งานได้</p>
                     </div>
                 </div>
+
                 <div class="lg:col-span-8">
-                    <div class="glass-card p-8 md:p-10 space-y-6">
+                    <div class="glass-card p-8 md:p-10 space-y-8">
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2"><label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">ชื่อ-นามสกุล</label><input type="text" id="p-name" class="form-input" required></div>
-                            <div><label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">อีเมล</label><input type="email" id="p-email" class="form-input" readonly></div>
-                            <div><label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">เบอร์โทรศัพท์</label><input type="text" id="p-phone" class="form-input"></div>
+                            <div class="md:col-span-2">
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">ชื่อ-นามสกุล</label>
+                                <input type="text" id="p-name" class="form-input" placeholder="ระบุชื่อของคุณ" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">อีเมล (ล็อกไว้)</label>
+                                <input type="email" id="p-email" class="form-input" readonly>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-1 block">เบอร์โทรศัพท์</label>
+                                <input type="text" id="p-phone" class="form-input" placeholder="08x-xxx-xxxx">
+                            </div>
                         </div>
-                        <div class="pt-6 border-t">
-                            <label class="text-xs font-bold text-indigo-500 uppercase mb-4 block ml-2">ทีมหลัก (MAIN TEAM)</label>
-                            <div id="team-container" class="grid grid-cols-2 gap-3"></div>
+
+                        <div class="pt-6 border-t border-slate-100">
+                            <div class="flex items-center gap-2 mb-4 ml-2">
+                                <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
+                                <label class="text-xs font-bold text-indigo-500 uppercase">ทีมหลัก (MAIN TEAM)</label>
+                            </div>
+                            <div id="team-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                </div>
                         </div>
-                        <div class="pt-6 border-t">
-                            <label class="text-xs font-bold text-indigo-500 uppercase mb-4 block ml-2">ทีมย่อย (SUB TEAM)</label>
-                            <div id="subteam-container" class="grid grid-cols-2 gap-3"></div>
+
+                        <div id="subteam-section" class="pt-6 border-t border-slate-100 opacity-50 pointer-events-none transition-all">
+                            <div class="flex items-center gap-2 mb-4 ml-2">
+                                <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
+                                <label class="text-xs font-bold text-indigo-500 uppercase">ทีมย่อย (SUB TEAM)</label>
+                            </div>
+                            <div id="subteam-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                </div>
                         </div>
-                        <div class="pt-6 flex justify-end">
-                            <button type="submit" id="saveBtn" class="bg-[#5c56f1] text-white px-10 py-4 rounded-2xl font-bold hover:bg-[#4a44d1] shadow-lg active:scale-95 transition">บันทึกข้อมูล</button>
+
+                        <div class="pt-6 flex justify-end gap-3 border-t border-slate-100">
+                            <button type="button" onclick="location.reload()" class="px-6 py-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition">รีเซ็ต</button>
+                            <button type="submit" id="saveBtn" class="bg-[#5c56f1] text-white px-10 py-4 rounded-2xl font-bold hover:bg-[#4a44d1] shadow-lg shadow-indigo-100 active:scale-95 transition flex items-center gap-2">
+                                <i class="fas fa-save"></i>
+                                บันทึกข้อมูล
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -75,90 +105,136 @@
         import { getFirestore, doc, getDoc, updateDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c", authDomain: "salesupportsystemapp.firebaseapp.com", projectId: "salesupportsystemapp", storageBucket: "salesupportsystemapp.firebasestorage.app", messagingSenderId: "840890441207", appId: "1:840890441207:web:f3a5076d46e963a90de2f2" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c", 
+            authDomain: "salesupportsystemapp.firebaseapp.com", 
+            projectId: "salesupportsystemapp", 
+            storageBucket: "salesupportsystemapp.firebasestorage.app", 
+            messagingSenderId: "840890441207", 
+            appId: "1:840890441207:web:f3a5076d46e963a90de2f2" 
+        };
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
         let allTeamsData = [];
 
-        // --- Layout Loader ---
+        // --- UI Functions ---
         async function loadLayout() {
-            const sidebar = await fetch('components/sidebar.html').then(r => r.text());
-            const topbar = await fetch('components/topbar.html').then(r => r.text());
-            document.getElementById('sidebar-placeholder').innerHTML = sidebar;
-            document.getElementById('topbar-placeholder').innerHTML = topbar;
-            
-            // Execute Sidebar JS
-            document.getElementById('sidebar-placeholder').querySelectorAll("script").forEach(s => {
-                const newS = document.createElement("script");
-                newS.type = "module";
-                newS.textContent = s.textContent;
-                document.head.appendChild(newS);
-            });
+            try {
+                const sidebar = await fetch('components/sidebar.html').then(r => r.text());
+                const topbar = await fetch('components/topbar.html').then(r => r.text());
+                document.getElementById('sidebar-placeholder').innerHTML = sidebar;
+                document.getElementById('topbar-placeholder').innerHTML = topbar;
+                
+                document.getElementById('sidebar-placeholder').querySelectorAll("script").forEach(s => {
+                    const newS = document.createElement("script");
+                    newS.type = "module";
+                    newS.textContent = s.textContent;
+                    document.head.appendChild(newS);
+                });
 
-            setTimeout(() => {
-                const btn = document.getElementById('main-logout-btn');
-                if (btn) btn.onclick = (e) => { e.preventDefault(); document.getElementById('logout-modal').classList.remove('hidden'); };
-            }, 500);
+                setTimeout(() => {
+                    const btn = document.getElementById('main-logout-btn');
+                    if (btn) btn.onclick = (e) => { e.preventDefault(); document.getElementById('logout-modal').classList.remove('hidden'); };
+                }, 500);
+            } catch (err) { console.error("Layout error:", err); }
         }
 
         document.getElementById('confirm-logout').onclick = () => signOut(auth).then(() => window.location.href="login.html");
 
-        // --- Logic ---
+        // --- Core Logic ---
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
             allTeamsData = snap.docs.map(d => d.data());
         }
 
+        // เชื่อมฟังก์ชันเข้ากับ Global scope เพื่อให้ HTML onchange เรียกใช้ได้
         window.updateSubProfile = (mainName, savedSub = null) => {
+            const subSection = document.getElementById('subteam-section');
             const subDiv = document.getElementById('subteam-container');
+            
+            subSection.classList.remove('opacity-50', 'pointer-events-none');
+            
             const filtered = allTeamsData.filter(t => t.mainTeam === mainName);
-            subDiv.innerHTML = filtered.map(t => `
-                <label class="opt-card">
-                    <input type="radio" name="sub" value="${t.subTeam}" ${t.subTeam === savedSub ? 'checked' : ''} class="w-4 h-4 accent-[#5c56f1]">
-                    <span class="text-sm font-semibold text-slate-600">${t.subTeam}</span>
-                </label>`).join('');
+            
+            if (filtered.length > 0) {
+                subDiv.innerHTML = filtered.map(t => `
+                    <label class="opt-card">
+                        <input type="radio" name="sub" value="${t.subTeam}" ${t.subTeam === savedSub ? 'checked' : ''} class="w-4 h-4 accent-[#5c56f1]" required>
+                        <span class="text-sm font-semibold text-slate-600">${t.subTeam}</span>
+                    </label>`).join('');
+            } else {
+                subDiv.innerHTML = `<p class="text-xs text-slate-400 ml-2 italic">ไม่มีทีมย่อยสำหรับทีมนี้</p>`;
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 await loadLayout();
                 await fetchTeams();
+                
                 const snap = await getDoc(doc(db, "admin", user.uid));
                 if (snap.exists()) {
                     const d = snap.data();
+                    
+                    // Set Basic Info
                     document.getElementById('p-name').value = d.name || "";
                     document.getElementById('p-email').value = d.email || "";
                     document.getElementById('p-phone').value = d['Phone No.'] || "";
+                    
+                    // Set Left Sidebar Card
                     document.getElementById('side-name').innerText = d.name || "User";
                     document.getElementById('side-role').innerText = (d.role || "user").toUpperCase();
                     document.getElementById('u-avatar').innerText = (d.name || "U")[0];
-                    
+
+                    // Generate Main Teams
                     const uniqueMain = [...new Set(allTeamsData.map(t => t.mainTeam))].sort();
                     document.getElementById('team-container').innerHTML = uniqueMain.map(name => `
                         <label class="opt-card">
-                            <input type="radio" name="main" value="${name}" onchange="updateSubProfile('${name}')" ${name === d.Team ? 'checked' : ''} class="w-4 h-4 accent-[#5c56f1]">
+                            <input type="radio" name="main" value="${name}" onchange="updateSubProfile('${name}')" ${name === d.Team ? 'checked' : ''} class="w-4 h-4 accent-[#5c56f1]" required>
                             <span class="text-sm font-semibold text-slate-600">${name}</span>
                         </label>`).join('');
-                    if (d.Team) updateSubProfile(d.Team, d['Sub Team']);
+
+                    // Load Sub Teams if already has a Main Team
+                    if (d.Team) {
+                        window.updateSubProfile(d.Team, d['Sub Team']);
+                    }
                 }
-            } else window.location.href="login.html";
+            } else {
+                window.location.href = "login.html";
+            }
         });
 
+        // Save Form
         document.getElementById('profile-form').onsubmit = async (e) => {
             e.preventDefault();
+            const saveBtn = document.getElementById('saveBtn');
             const main = document.querySelector('input[name="main"]:checked')?.value;
             const sub = document.querySelector('input[name="sub"]:checked')?.value;
-            if (!main || !sub) return alert("กรุณาเลือกทีม");
+            
+            if (!main || !sub) return alert("กรุณาเลือกทีมหลักและทีมย่อยให้ครบถ้วน");
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i class="fas fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
+
             try {
                 await updateDoc(doc(db, "admin", auth.currentUser.uid), {
                     name: document.getElementById('p-name').value,
                     'Phone No.': document.getElementById('p-phone').value,
-                    Team: main, 'Sub Team': sub
+                    Team: main,
+                    'Sub Team': sub,
+                    lastUpdated: new Date().toISOString()
                 });
-                alert("บันทึกสำเร็จ!"); location.reload();
-            } catch (err) { alert(err.message); }
+                
+                alert("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+                location.reload();
+            } catch (err) {
+                alert("เกิดข้อผิดพลาด: " + err.message);
+                saveBtn.disabled = false;
+                saveBtn.innerText = "บันทึกข้อมูล";
+            }
         };
     </script>
 </body>
