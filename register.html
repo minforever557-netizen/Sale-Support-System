@@ -9,84 +9,95 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+        .form-input { background-color: #f8fafc; border: 2px solid transparent; border-radius: 1.2rem; padding: 1rem 1.5rem; width: 100%; font-weight: 500; color: #334155; transition: 0.3s; }
+        .form-input:focus { border-color: #5c56f1; background-color: white; outline: none; box-shadow: 0 0 0 4px rgba(92, 86, 241, 0.1); }
+        select.form-input { appearance: none; cursor: pointer; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-6">
 
-    <div class="w-full max-w-lg glass-card rounded-[3rem] shadow-2xl border border-white overflow-hidden">
-        <div class="bg-[#5c56f1] p-10 text-white text-center">
-            <h2 class="text-3xl font-bold">ลงทะเบียนพนักงาน</h2>
-            <p class="text-indigo-100 mt-2 opacity-90">สร้างบัญชีผู้ใช้งานใหม่สำหรับระบบ Sale Support</p>
+    <div class="w-full max-w-2xl">
+        <div class="glass-card p-10 md:p-12">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 bg-indigo-50 text-[#5c56f1] rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-800">ลงทะเบียนพนักงาน</h2>
+                <p class="text-slate-400 mt-2">สร้างบัญชีผู้ใช้งานใหม่สำหรับระบบ Sale Support</p>
+            </div>
+
+            <form id="register-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">Username (สำหรับ Login)</label>
+                        <input type="text" id="reg-username" class="form-input" placeholder="เช่น user01" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">ชื่อ-นามสกุล</label>
+                        <input type="text" id="reg-name" class="form-input" placeholder="ระบุชื่อจริง" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">อีเมล (EMAIL)</label>
+                        <input type="email" id="reg-email" class="form-input" placeholder="example@mail.com" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">เบอร์โทรศัพท์</label>
+                        <input type="text" id="reg-phone" class="form-input" placeholder="08x-xxxxxxx">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                    <div>
+                        <label class="text-xs font-bold text-indigo-500 uppercase ml-2 mb-2 block">ทีมหลัก (MAIN TEAM)</label>
+                        <div class="relative">
+                            <select id="reg-main-team" class="form-input" required>
+                                <option value="" disabled selected>เลือกทีมหลัก</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-indigo-500 uppercase ml-2 mb-2 block">ทีมย่อย (SUB TEAM)</label>
+                        <div class="relative">
+                            <select id="reg-sub-team" class="form-input" required disabled>
+                                <option value="" disabled selected>เลือกทีมย่อย</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">รหัสผ่าน (PASSWORD)</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" id="regBtn" class="w-full bg-[#5c56f1] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#4a44d1] shadow-lg shadow-indigo-100 transition active:scale-[0.98]">
+                        ลงทะเบียนเข้าสู่ระบบ
+                    </button>
+                    <p class="text-center text-slate-400 mt-6">มีบัญชีอยู่แล้ว? <a href="login.html" class="text-[#5c56f1] font-bold hover:underline">เข้าสู่ระบบ</a></p>
+                </div>
+            </form>
         </div>
-
-        <form id="registerForm" class="p-10 space-y-5">
-            
-            <div>
-                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">ชื่อ-นามสกุล</label>
-                <input type="text" id="reg-name" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none transition-all" placeholder="ชื่อ - นามสกุล" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">ชื่อผู้ใช้งาน</label>
-                    <input type="text" id="reg-username" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none" placeholder="Username" required>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">เบอร์โทรศัพท์</label>
-                    <input type="text" id="reg-phone" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none" placeholder="08x-xxxxxxx" required>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">อีเมล (Email)</label>
-                <input type="email" id="reg-email" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none" placeholder="example@mail.com" required>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">ทีมหลัก (Main Team)</label>
-                    <select id="reg-main-team" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none cursor-pointer appearance-none" required>
-                        <option value="">กำลังโหลดทีม...</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">ทีมย่อย (Sub Team)</label>
-                    <select id="reg-sub-team" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none cursor-pointer appearance-none" disabled required>
-                        <option value="">เลือกทีมหลักก่อน</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 ml-1">รหัสผ่าน (Password)</label>
-                <input type="password" id="reg-password" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#5c56f1] outline-none" placeholder="อย่างน้อย 6 ตัวอักษร" required>
-            </div>
-
-            <button type="submit" id="submit-btn" class="w-full py-5 bg-[#5c56f1] text-white rounded-[1.5rem] font-bold text-lg hover:bg-[#4a44d1] shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] mt-4">
-                ลงทะเบียนเข้าสู่ระบบ
-            </button>
-
-            <p class="text-center text-slate-400 text-sm mt-4">
-                มีบัญชีอยู่แล้ว? <a href="login.html" class="text-[#5c56f1] font-bold hover:underline">เข้าสู่ระบบ</a>
-            </p>
-        </form>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-            authDomain: "salesupportsystemapp.firebaseapp.com",
-            projectId: "salesupportsystemapp",
-            storageBucket: "salesupportsystemapp.firebasestorage.app",
-            messagingSenderId: "840890441207",
-            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c", 
+            authDomain: "salesupportsystemapp.firebaseapp.com", 
+            projectId: "salesupportsystemapp", 
+            storageBucket: "salesupportsystemapp.firebasestorage.app", 
+            messagingSenderId: "840890441207", 
+            appId: "1:840890441207:web:f3a5076d46e963a90de2f2" 
         };
 
         const app = initializeApp(firebaseConfig);
@@ -95,102 +106,69 @@
 
         let allTeams = [];
 
-        // --- 1. โหลดข้อมูลทีมจาก Firestore ---
-        async function fetchTeams() {
+        // 1. Load Teams from Database
+        async function loadTeams() {
+            const snap = await getDocs(collection(db, "teams"));
+            allTeams = snap.docs.map(d => d.data());
+            
             const mainSelect = document.getElementById('reg-main-team');
-            try {
-                const q = query(collection(db, "teams"), orderBy("name", "asc"));
-                const querySnapshot = await getDocs(q);
-                allTeams = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                mainSelect.innerHTML = '<option value="">เลือกทีมหลัก</option>';
-                allTeams.filter(t => t.type === 'main').forEach(team => {
-                    mainSelect.innerHTML += `<option value="${team.id}">${team.name}</option>`;
-                });
-            } catch (error) {
-                console.error("Error fetching teams:", error);
-                mainSelect.innerHTML = '<option value="">โหลดข้อมูลล้มเหลว</option>';
-            }
+            const uniqueMains = [...new Set(allTeams.map(t => t.mainTeam))].sort();
+            
+            uniqueMains.forEach(name => {
+                mainSelect.add(new Option(name, name));
+            });
         }
 
-        // --- 2. กรองทีมย่อยตามทีมหลักที่เลือก ---
-        document.getElementById('reg-main-team').addEventListener('change', function() {
-            const mainTeamId = this.value;
+        // 2. Handle Main Team Change (Update Sub Team Dropdown)
+        document.getElementById('reg-main-team').onchange = (e) => {
             const subSelect = document.getElementById('reg-sub-team');
+            const filteredSubs = allTeams.filter(t => t.mainTeam === e.target.value);
             
-            if (!mainTeamId) {
-                subSelect.innerHTML = '<option value="">เลือกทีมหลักก่อน</option>';
-                subSelect.disabled = true;
-                return;
-            }
-
-            const filteredSubs = allTeams.filter(t => t.parentId === mainTeamId);
+            subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
+            subSelect.disabled = false;
             
-            if (filteredSubs.length > 0) {
-                subSelect.innerHTML = '<option value="">เลือกทีมย่อย</option>' + 
-                    filteredSubs.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-                subSelect.disabled = false;
-            } else {
-                subSelect.innerHTML = '<option value="ไม่มีทีมย่อย">ไม่มีทีมย่อย</option>';
-                subSelect.disabled = false;
-            }
-        });
+            filteredSubs.forEach(t => {
+                subSelect.add(new Option(t.subTeam, t.subTeam));
+            });
+        };
 
-        // --- 3. การสมัครสมาชิก ---
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        // 3. Register Process
+        document.getElementById('register-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            const mainTeamSelect = document.getElementById('reg-main-team');
-            
-            // ดึงชื่อทีมหลักออกมาจาก text ของ option ที่ถูกเลือก
-            const mainTeamName = mainTeamSelect.options[mainTeamSelect.selectedIndex].text;
+            const btn = document.getElementById('regBtn');
+            btn.disabled = true;
+            btn.innerText = "กำลังสร้างบัญชี...";
 
-            const formData = {
-                name: document.getElementById('reg-name').value.trim(),
-                username: document.getElementById('reg-username').value.trim(),
-                email: document.getElementById('reg-email').value.trim(),
-                phone: document.getElementById('reg-phone').value.trim(),
-                password: document.getElementById('reg-password').value,
-                team: mainTeamName,
-                subTeam: document.getElementById('reg-sub-team').value
-            };
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            const phone = document.getElementById('reg-phone').value;
+            const team = document.getElementById('reg-main-team').value;
+            const subTeam = document.getElementById('reg-sub-team').value;
 
             try {
-                btn.disabled = true;
-                btn.innerText = "กำลังสร้างบัญชี...";
-
-                const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-                const user = userCredential.user;
-
-                await setDoc(doc(db, "admin", user.uid), {
-                    name: formData.name,
-                    username: formData.username,
-                    email: formData.email,
-                    'Phone No.': formData.phone,
-                    Team: formData.team,
-                    'Sub Team': formData.subTeam,
-                    role: "user",
-                    password: formData.password,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp()
+                const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                await setDoc(doc(db, "admin", userCred.user.uid), {
+                    username: username,
+                    name: name,
+                    email: email,
+                    "Phone No.": phone,
+                    Team: team,
+                    "Sub Team": subTeam,
+                    role: "user", // Default role
+                    createdAt: new Date().toISOString()
                 });
-
                 alert("ลงทะเบียนสำเร็จ!");
-                window.location.href = "dashboard.html";
-
-            } catch (error) {
-                console.error(error);
-                let msg = "เกิดข้อผิดพลาดในการลงทะเบียน";
-                if (error.code === 'auth/email-already-in-use') msg = "อีเมลนี้ถูกใช้งานแล้ว";
-                alert(msg);
-            } finally {
+                window.location.href = "login.html";
+            } catch (err) {
+                alert("เกิดข้อผิดพลาด: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "ลงทะเบียนเข้าสู่ระบบ";
             }
-        });
+        };
 
-        // เริ่มโหลดข้อมูลทีมทันทีที่หน้าจอพร้อม
-        fetchTeams();
+        loadTeams();
     </script>
 </body>
 </html>
