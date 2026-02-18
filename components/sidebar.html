@@ -1,31 +1,53 @@
 <!-- ================= SIDEBAR STYLE ================= -->
 <style>
+
+/* ===== SECURE ADMIN MENU ===== */
 #admin-menu-section.hidden-secure{
     display:none !important;
 }
-    html, body{
+
+/* ===== GLOBAL RESET ===== */
+html, body{
     margin:0;
     padding:0;
     width:100%;
     overflow-x:hidden;
 }
 
-/* ===== Desktop ===== */
+/* ===== DESKTOP LAYOUT ===== */
+/* ให้ sidebar ดันเนื้อหาเฉพาะจอใหญ่ */
 @media (min-width:1024px){
+
     body{
-        margin-left:16rem; /* 64 = sidebar width */
-        transition: margin-left .3s ease;
+        margin-left:16rem; /* sidebar width */
+        transition:margin-left .25s ease;
+    }
+
+    #sidebar{
+        position:sticky;
+        transform:none !important;
     }
 }
 
-/* ===== Mobile ===== */
+/* ===== MOBILE FIX (สำคัญ) ===== */
 @media (max-width:1023px){
+
     body{
         margin-left:0 !important;
     }
+
+    /* ทำให้ sidebar เป็น overlay จริง */
+    #sidebar{
+        position:fixed !important;
+        left:0;
+        top:0;
+        transform:translateX(-100%);
+    }
+
 }
 
 </style>
+
 
 <!-- ================= MOBILE TOPBAR ================= -->
 <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b sticky top-0 z-30">
