@@ -10,7 +10,7 @@
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
         .form-input { 
-            @apply bg-white border border-slate-200 rounded-2xl px-5 py-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all w-full font-medium text-slate-700;
+            @apply bg-white border border-slate-200 rounded-2xl px-5 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all w-full font-medium text-slate-700;
         }
         .label-title { 
             @apply block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest;
@@ -19,8 +19,6 @@
         .modal-active { overflow: hidden; }
         .modal-backdrop-blur { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.5); }
         .modal-animate { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        
-        /* สไตล์พิเศษสำหรับช่องที่แก้ไขไม่ได้ */
         .input-readonly { @apply bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed; }
     </style>
 </head>
@@ -33,87 +31,110 @@
 
         <main class="p-4 md:p-8">
             <div class="max-w-5xl mx-auto">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Profile Settings</h2>
-                    <p class="text-sm text-slate-500">จัดการข้อมูลส่วนตัวและสิทธิ์การเข้าใช้งานของคุณ</p>
+                <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Profile Settings</h2>
+                        <p class="text-sm text-slate-500">จัดการข้อมูลส่วนตัวและสิทธิ์การเข้าใช้งานของคุณ</p>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div class="lg:col-span-4">
-                        <div class="profile-card p-10 text-center sticky top-24">
-                            <div id="avatar-display" class="w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[3rem] mx-auto mb-6 flex items-center justify-center text-4xl text-white font-bold shadow-xl shadow-indigo-100 uppercase">
+                        <div class="profile-card p-8 text-center sticky top-24">
+                            <div id="avatar-display" class="w-28 h-28 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2.5rem] mx-auto mb-6 flex items-center justify-center text-4xl text-white font-bold shadow-xl shadow-indigo-100 uppercase">
                                 ?
                             </div>
                             <h2 id="name-display" class="text-xl font-bold text-slate-800 mb-1">...</h2>
-                            <p id="role-display" class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] bg-indigo-50 inline-block px-4 py-1.5 rounded-full">Loading</p>
+                            <p id="role-display" class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] bg-indigo-50 inline-block px-4 py-1.5 rounded-full mb-8">Loading</p>
                             
-                            <div class="mt-8 pt-8 border-t border-slate-50 space-y-4 text-left">
+                            <div class="space-y-4 text-left border-t border-slate-50 pt-8">
                                 <div class="flex items-center gap-3 text-slate-500">
-                                    <i class="fa-regular fa-envelope text-sm w-5"></i>
-                                    <span id="side-email" class="text-xs truncate">...</span>
+                                    <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-xs">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </div>
+                                    <span id="side-email" class="text-xs truncate font-medium">...</span>
                                 </div>
                                 <div class="flex items-center gap-3 text-slate-500">
-                                    <i class="fa-solid fa-users-viewfinder text-sm w-5"></i>
-                                    <span id="side-team" class="text-xs">...</span>
+                                    <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-users-viewfinder"></i>
+                                    </div>
+                                    <span id="side-team" class="text-xs font-medium">...</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="lg:col-span-8">
-                        <form id="profile-form" class="profile-card p-8 md:p-10 space-y-8">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="md:col-span-2">
-                                    <label class="label-title">ชื่อ-นามสกุล</label>
-                                    <input type="text" id="prof-name" class="form-input" placeholder="กรอกชื่อ-นามสกุล" required>
-                                </div>
-                                <div>
-                                    <label class="label-title">Username (Login)</label>
-                                    <input type="text" id="prof-user" class="form-input input-readonly" readonly>
-                                </div>
-                                <div>
-                                    <label class="label-title">อีเมล (Email)</label>
-                                    <input type="email" id="prof-email" class="form-input" placeholder="example@email.com" required>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="label-title">เบอร์โทรศัพท์</label>
-                                    <input type="text" id="prof-phone" class="form-input" placeholder="0XXXXXXXXX">
-                                </div>
-                            </div>
-
-                            <div class="h-px bg-slate-100"></div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="label-title">ทีมหลัก (Main Team)</label>
-                                    <select id="prof-main" class="form-input" required>
-                                        <option value="" disabled selected>กำลังโหลดทีม...</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="label-title">ทีมย่อย (Sub Team)</label>
-                                    <select id="prof-sub" class="form-input" required disabled>
-                                        <option value="" disabled selected>เลือกทีมหลักก่อน</option>
-                                    </select>
+                        <form id="profile-form" class="profile-card p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                    ข้อมูลทั่วไป
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div class="md:col-span-2">
+                                        <label class="label-title">ชื่อ-นามสกุล</label>
+                                        <input type="text" id="prof-name" class="form-input" required>
+                                    </div>
+                                    <div>
+                                        <label class="label-title">Username</label>
+                                        <input type="text" id="prof-user" class="form-input input-readonly" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="label-title">เบอร์โทรศัพท์</label>
+                                        <input type="text" id="prof-phone" class="form-input" placeholder="0XXXXXXXXX">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="label-title">อีเมลใช้งาน (Email)</label>
+                                        <input type="email" id="prof-email" class="form-input" required>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="h-px bg-slate-100"></div>
+                            <div class="h-px bg-slate-50"></div>
 
                             <div>
-                                <label class="label-title">เปลี่ยนรหัสผ่านใหม่</label>
-                                <div class="relative">
-                                    <input type="password" id="prof-pass" class="form-input pr-12" placeholder="•••••••• (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)">
-                                    <button type="button" onclick="togglePass()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-indigo-500">
-                                        <i id="pass-icon" class="fa-solid fa-eye text-sm"></i>
-                                    </button>
+                                <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                    ข้อมูลทีม
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-title">ทีมหลัก (Main Team)</label>
+                                        <select id="prof-main" class="form-input cursor-pointer" required>
+                                            <option value="" disabled>กำลังโหลดทีม...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="label-title">ทีมย่อย (Sub Team)</label>
+                                        <select id="prof-sub" class="form-input cursor-pointer" required disabled>
+                                            <option value="" disabled>เลือกทีมหลักก่อน</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <p class="text-[10px] text-slate-400 mt-3 ml-1 italic">* หากเปลี่ยนรหัสผ่านหรืออีเมล ระบบจะให้คุณ Login ใหม่อีกครั้ง</p>
                             </div>
 
-                            <div class="pt-6 flex flex-col md:flex-row gap-4">
-                                <button type="submit" id="saveBtn" class="flex-1 py-4 bg-[#5c56f1] text-white rounded-2xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-floppy-disk"></i>
+                            <div class="h-px bg-slate-50"></div>
+
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                    ความปลอดภัย
+                                </h3>
+                                <div>
+                                    <label class="label-title">เปลี่ยนรหัสผ่านใหม่</label>
+                                    <div class="relative">
+                                        <input type="password" id="prof-pass" class="form-input pr-12" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน">
+                                        <button type="button" onclick="togglePass()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-indigo-500 transition-colors">
+                                            <i id="pass-icon" class="fa-solid fa-eye text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex justify-end">
+                                <button type="submit" id="saveBtn" class="w-full md:w-auto px-10 py-4 bg-[#5c56f1] text-white rounded-2xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-check-circle"></i>
                                     บันทึกการเปลี่ยนแปลง
                                 </button>
                             </div>
@@ -143,7 +164,7 @@
 
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, getDocs, collection, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, FieldPath } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, updateEmail, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -163,7 +184,7 @@
         let adminData = null;
         let allTeams = [];
 
-        // --- 1. Load Layout (ตามหน้า Audit Logs) ---
+        // --- 1. Layout ---
         async function loadLayout(userData, email) {
             const comps = [
                 { id: 'sidebar-placeholder', url: './components/sidebar.html' },
@@ -175,7 +196,6 @@
                 if (res.ok) {
                     const el = document.getElementById(comp.id);
                     el.innerHTML = await res.text();
-                    
                     el.querySelectorAll("script").forEach(oldScript => {
                         const newScript = document.createElement("script");
                         newScript.type = "module";
@@ -184,19 +204,20 @@
                     });
                 }
             }
-
-            // ตั้งข้อมูลใน Topbar
+            // Update Topbar Info
             setTimeout(() => {
-                const nameEl = document.querySelector('#topbar-user-name');
-                const emailEl = document.querySelector('#topbar-user-email');
-                const avatarEl = document.querySelector('#topbar-avatar-text');
+                const nameEl = document.querySelector('#top-user-name');
+                const emailEl = document.querySelector('#top-user-email');
+                const userEl = document.querySelector('#top-user-username');
+                const avatarEl = document.querySelector('#top-avatar');
                 if (nameEl) nameEl.innerText = userData.name || "Admin";
                 if (emailEl) emailEl.innerText = email;
+                if (userEl) userEl.innerText = `@${userData.username || 'user'}`;
                 if (avatarEl) avatarEl.innerText = (userData.name || "A")[0].toUpperCase();
-            }, 500);
+            }, 600);
         }
 
-        // --- 2. Auth & Init ---
+        // --- 2. Init ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserAuth = user;
@@ -210,13 +231,12 @@
             } else { window.location.replace("login.html"); }
         });
 
-        // --- 3. Data Fetching ---
+        // --- 3. Teams ---
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
             allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
             const mainSelect = document.getElementById('prof-main');
-            mainSelect.innerHTML = '<option value="" disabled>เลือกทีมหลัก</option>';
+            mainSelect.innerHTML = '<option value="" disabled selected>เลือกทีมหลัก</option>';
             allTeams.filter(t => t.type === "main").forEach(t => {
                 mainSelect.add(new Option(t.name, t.id));
             });
@@ -224,7 +244,7 @@
 
         function fillFormData(data, email) {
             document.getElementById('avatar-display').innerText = (data.name || "A")[0];
-            document.getElementById('name-display').innerText = data.name || "Unknown";
+            document.getElementById('name-display').innerText = data.name || "Admin";
             document.getElementById('role-display').innerText = data.role || "Admin";
             document.getElementById('side-email').innerText = email;
             document.getElementById('side-team').innerText = data.Team || "No Team";
@@ -248,7 +268,6 @@
         function renderSubTeams(parentId, currentSub = null) {
             const subSelect = document.getElementById('prof-sub');
             const subs = allTeams.filter(t => t.type === "sub" && t.parentId === parentId);
-            
             subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
             if (subs.length > 0) {
                 subSelect.disabled = false;
@@ -263,36 +282,35 @@
             }
         }
 
-        // --- 4. Form Submission (Fix Phone No. Error) ---
+        // --- 4. แก้ไขจุดสำคัญ: บันทึกข้อมูล (Fix Phone No. Error) ---
         document.getElementById('profile-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
             const originalBtnText = btn.innerHTML;
             
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังประมวลผล...`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> กำลังบันทึก...`;
 
             try {
                 const newEmail = document.getElementById('prof-email').value.trim();
                 const newPass = document.getElementById('prof-pass').value;
                 const mainTeamName = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
+                const subTeamName = document.getElementById('prof-sub').value;
 
-                // อัปเดตข้อมูลใน Firestore
-                // วิธีแก้ Error: ใช้ bracket notation ["Phone No."] หรือจัดการ String ให้ถูกต้อง
-                const updateObj = {
-                    "name": document.getElementById('prof-name').value.trim(),
-                    "Team": mainTeamName,
-                    "Sub Team": document.getElementById('prof-sub').value,
-                    "Phone No.": document.getElementById('prof-phone').value.trim() 
-                };
+                // แก้ไข Error: ใช้ new FieldPath() เพื่อบอก Firebase ว่านี่คือชื่อ Field ตรงๆ ไม่ใช่ Nested Object
+                const adminRef = doc(db, "admin", currentUserAuth.uid);
+                
+                await updateDoc(adminRef, 
+                    "name", document.getElementById('prof-name').value.trim(),
+                    "Team", mainTeamName,
+                    "Sub Team", subTeamName,
+                    new FieldPath("Phone No."), document.getElementById('prof-phone').value.trim() // <--- แก้ตรงนี้
+                );
 
-                await updateDoc(doc(db, "admin", currentUserAuth.uid), updateObj);
-
-                // อัปเดต Email/Password ใน Auth (ถ้ามีการเปลี่ยน)
                 if (newEmail !== currentUserAuth.email) await updateEmail(currentUserAuth, newEmail);
                 if (newPass) await updatePassword(currentUserAuth, newPass);
 
-                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+                alert("✅ บันทึกการเปลี่ยนแปลงเรียบร้อย!");
                 
                 if (newEmail !== currentUserAuth.email || newPass) {
                     await signOut(auth);
@@ -303,15 +321,15 @@
 
             } catch (err) {
                 console.error(err);
-                let msg = "เกิดข้อผิดพลาด: " + err.message;
-                if (err.message.includes("recent-login")) msg = "เพื่อความปลอดภัย กรุณา Logout แล้วเข้าสู่ระบบใหม่ก่อนเปลี่ยนอีเมลหรือรหัสผ่าน";
+                let msg = "❌ ล้มเหลว: " + err.message;
+                if (err.message.includes("recent-login")) msg = "เพื่อความปลอดภัย กรุณา Logout และ Login ใหม่อีกครั้งเพื่อเปลี่ยน Email หรือ Password";
                 alert(msg);
                 btn.disabled = false;
                 btn.innerHTML = originalBtnText;
             }
         };
 
-        // --- 5. Logout & UI ---
+        // --- 5. Modal & UI ---
         window.openLogoutModal = () => {
             const modal = document.getElementById('logout-modal');
             modal.classList.remove('hidden');
@@ -332,10 +350,7 @@
         };
 
         document.getElementById('close-logout').onclick = closeLogoutModal;
-        document.getElementById('confirm-logout').onclick = async () => {
-            await signOut(auth);
-            window.location.replace("login.html");
-        };
+        document.getElementById('confirm-logout').onclick = () => signOut(auth).then(() => window.location.replace("login.html"));
 
         window.togglePass = () => {
             const input = document.getElementById('prof-pass');
@@ -348,7 +363,6 @@
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         };
-
     </script>
 </body>
 </html>
