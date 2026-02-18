@@ -35,11 +35,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="md:col-span-1">
                         <div class="profile-card p-8 text-center sticky top-24 shadow-sm">
-                            <div id="avatar-container" class="w-24 h-24 bg-indigo-600 rounded-[2rem] mx-auto mb-4 flex items-center justify-center text-3xl text-white font-bold shadow-lg shadow-indigo-100">
+                            <div id="avatar-container" class="w-24 h-24 bg-indigo-600 rounded-[2rem] mx-auto mb-4 flex items-center justify-center text-3xl text-white font-bold shadow-lg shadow-indigo-100 uppercase">
                                 ?
                             </div>
                             <h2 id="display-name" class="text-xl font-bold text-slate-800 italic">...</h2>
-                            <span id="display-role" class="inline-block mt-2 px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest">Loading</span>
+                            <span id="display-role" class="inline-block mt-2 px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest text-center">Loading</span>
                         </div>
                     </div>
 
@@ -100,7 +100,7 @@
     <div id="logout-modal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="logout-backdrop"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-90" id="logout-content">
+            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-90">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-4xl">🚪</span></div>
                 <h3 class="text-2xl font-bold text-slate-800 text-center mb-2">ออกจากระบบ?</h3>
                 <div class="flex gap-3 mt-8">
@@ -116,6 +116,7 @@
         import { getFirestore, doc, getDoc, getDocs, collection, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // Firebase Config
         const firebaseConfig = { 
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c", 
             authDomain: "salesupportsystemapp.firebaseapp.com", 
@@ -132,31 +133,53 @@
         let allTeams = [];
         let currentUser = null;
 
-        // --- 1. Layout Loader ---
+        // --- 1. Layout Loader (Sidebar / Topbar) ---
         async function loadLayout() {
-            const sidebarRes = await fetch('components/sidebar.html');
-            const topbarRes = await fetch('components/topbar.html');
-            if (sidebarRes.ok) {
-                document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
-                document.getElementById('sidebar-placeholder').querySelectorAll("script").forEach(s => {
-                    const newS = document.createElement("script");
-                    newS.type = "module";
-                    newS.textContent = s.textContent;
-                    document.head.appendChild(newS);
-                });
+            try {
+                const [sidebarRes, topbarRes] = await Promise.all([
+                    fetch('components/sidebar.html'),
+                    fetch('components/topbar.html')
+                ]);
+
+                if (sidebarRes.ok) {
+                    const html = await sidebarRes.text();
+                    const container = document.getElementById('sidebar-placeholder');
+                    container.innerHTML = html;
+                    
+                    // กระตุ้น Script Module ใน Sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        newScript.type = "module";
+                        newScript.textContent = oldScript.textContent;
+                        document.head.appendChild(newScript);
+                    });
+                }
+
+                if (topbarRes.ok) {
+                    document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
+                }
+
+                // เชื่อมต่อปุ่ม Logout ที่โหลดมาจาก Sidebar
+                setTimeout(() => {
+                    const logoutBtn = document.getElementById('main-logout-btn');
+                    if (logoutBtn) {
+                        logoutBtn.onclick = (e) => {
+                            e.preventDefault();
+                            document.getElementById('logout-modal').classList.remove('hidden');
+                        };
+                    }
+                }, 500);
+            } catch (err) {
+                console.error("Layout loading failed:", err);
             }
-            if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
-            
-            // Link Logout
-            setTimeout(() => {
-                const btn = document.getElementById('main-logout-btn');
-                if (btn) btn.onclick = (e) => { e.preventDefault(); document.getElementById('logout-modal').classList.remove('hidden'); };
-            }, 500);
         }
 
-        document.getElementById('confirm-logout').onclick = () => signOut(auth).then(() => window.location.href="login.html");
+        // ฟังคำสั่ง Logout ยืนยัน
+        document.getElementById('confirm-logout').onclick = () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        };
 
-        // --- 2. Team Logic ---
+        // --- 2. Team Logic (Dropdowns) ---
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
             allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -188,25 +211,28 @@
             }
         }
 
-        // --- 3. Auth & Data Loading ---
+        // --- 3. Auth & Init Data ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 await loadLayout();
                 await fetchTeams();
                 
+                // โหลดข้อมูลจาก collection "admin"
                 const snap = await getDoc(doc(db, "admin", user.uid));
                 if (snap.exists()) {
                     const d = snap.data();
-                    document.getElementById('display-name').innerText = d.name || "...";
+                    // อัปเดต UI ฝั่งซ้าย
+                    document.getElementById('display-name').innerText = d.name || "Unknown User";
                     document.getElementById('display-role').innerText = d.role || "user";
                     document.getElementById('avatar-container').innerText = (d.name || "U")[0];
                     
+                    // เติมข้อมูลลง Form
                     document.getElementById('prof-name').value = d.name || "";
                     document.getElementById('prof-user').value = d.username || "";
                     document.getElementById('prof-phone').value = d["Phone No."] || "";
 
-                    // Match Team
+                    // จับคู่ Team Dropdown
                     const teamObj = allTeams.find(t => t.name === d.Team && t.type === "main");
                     if (teamObj) {
                         document.getElementById('prof-main').value = teamObj.id;
@@ -218,8 +244,7 @@
             }
         });
 
-        // --- 4. Save Changes ---
-        // --- 4. Save Changes ---
+        // --- 4. Save Changes (Fix Error "Invalid field path") ---
         document.getElementById('profile-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
@@ -231,34 +256,36 @@
             btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> กำลังบันทึก...';
 
             try {
-                // สร้าง Object ข้อมูลที่จะอัปเดต
+                // สร้าง Object สำหรับอัปเดตแบบ Bracket Notation
                 const updateData = {
                     name: document.getElementById('prof-name').value.trim(),
                     Team: mainTeamName
                 };
 
-                // ใช้ Bracket Notation เพื่อระบุชื่อฟิลด์ที่มีช่องว่างหรือจุดให้ถูกต้อง
+                // จัดการฟิลด์ที่มีช่องว่างหรือจุด
                 updateData["Phone No."] = document.getElementById('prof-phone').value.trim();
-                updateData["Sub Team"] = document.getElementById('prof-sub').value;
+                updateData["Sub Team"] = document.getElementById('prof-sub').value || "";
 
-                // อัปเดตข้อมูลใน Firestore เข้าที่ collection "admin"
+                // อัปเดตเข้า Firebase (admin collection)
                 await updateDoc(doc(db, "admin", currentUser.uid), updateData);
 
-                // อัปเดตรหัสผ่าน (ถ้ามีการกรอก)
+                // ตรวจสอบการเปลี่ยนรหัสผ่าน
                 if (newPass) {
+                    if (newPass.length < 6) throw new Error("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
                     await updatePassword(currentUser, newPass);
-                    alert("บันทึกข้อมูลและรหัสผ่านใหม่เรียบร้อย!");
+                    alert("บันทึกข้อมูลและรหัสผ่านใหม่สำเร็จ!");
                 } else {
-                    alert("บันทึกข้อมูลเรียบร้อย!");
+                    alert("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว!");
                 }
                 
                 location.reload();
             } catch (err) {
-                console.error(err);
-                alert("ล้มเหลว: " + err.message + "\n(หากต้องการเปลี่ยนรหัสผ่าน คุณอาจต้อง Login ใหม่อีกครั้งก่อนดำเนินการ)");
+                console.error("Save Error:", err);
+                alert("ล้มเหลว: " + err.message + "\n\n(คำแนะนำ: หากต้องการเปลี่ยนรหัสผ่าน คุณต้องเพิ่ง Login เข้ามาไม่เกิน 5-10 นาที มิฉะนั้นต้อง Login ใหม่เพื่อความปลอดภัย)");
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> บันทึกการเปลี่ยนแปลง';
             }
         };
+    </script>
 </body>
 </html>
