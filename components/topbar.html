@@ -1,38 +1,27 @@
-<header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100 px-4 md:px-8 py-3 shadow-sm">
-    <div class="flex items-center justify-between">
+<header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100 px-8 py-4 shadow-sm">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         
-        <div class="flex items-center gap-3">
-            <button onclick="window.toggleMobileMenu()" 
-                    class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-50 text-[#5c56f1] active:scale-95 transition-all border border-indigo-100">
-                <i class="fa-solid fa-bars-staggered text-lg"></i>
-            </button>
-
-            <div id="tp-avatar-circle" class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#5c56f1] to-[#7c77f5] rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
+        <div class="flex items-center gap-4">
+            <div id="tp-avatar-circle" class="w-12 h-12 bg-gradient-to-br from-[#5c56f1] to-[#7c77f5] rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-100 ring-2 ring-white">
                 ?
             </div>
             
-            <div class="flex flex-col min-w-0">
+            <div class="flex flex-col">
                 <div class="flex items-center gap-2">
-                    <span id="tp-fullname" class="text-slate-800 font-bold text-sm md:text-base truncate max-w-[100px] md:max-w-none">
-                        Loading...
-                    </span>
-                    <span id="tp-username" class="hidden sm:inline text-[#5c56f1] text-[10px] font-black uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
-                        @user
-                    </span>
+                    <span id="tp-fullname" class="text-slate-800 font-bold leading-tight text-lg">กำลังโหลด...</span>
+                    <span class="text-slate-300 text-xs">|</span>
+                    <span id="tp-username" class="text-[#5c56f1] text-xs font-black uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">@username</span>
                 </div>
-                <span id="tp-email" class="text-slate-400 text-[10px] md:text-xs truncate max-w-[150px] md:max-w-none font-medium">
-                    ...
-                </span>
+                <span id="tp-email" class="text-slate-400 text-xs font-medium mt-0.5">email@loading.com</span>
             </div>
         </div>
 
-        <div class="flex items-center bg-slate-50 px-3 md:px-5 py-1.5 md:py-2 rounded-xl border border-slate-100 shadow-inner">
+        <div class="flex flex-row md:flex-col items-center md:items-end bg-slate-50 px-6 py-2.5 rounded-[1.5rem] border border-slate-100 gap-3 md:gap-1">
             <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                <div id="tp-clock" class="text-sm md:text-xl font-black text-slate-700 tracking-tighter min-w-[60px] md:min-w-[100px] text-right">
-                    00:00:00
-                </div>
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <div id="tp-clock" class="text-2xl font-black text-slate-700 tracking-tighter leading-none min-w-[100px] text-right">00:00:00</div>
             </div>
+            <div id="tp-date" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">กำลังโหลดวันเวลา...</div>
         </div>
     </div>
 </header>
@@ -61,29 +50,34 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // --- ฟังก์ชันอัปเดตนาฬิกา ---
-    function updateClock() {
-        const now = new Date();
-        const clockEl = document.getElementById('tp-clock');
-        if(clockEl) {
-            clockEl.innerText = now.toLocaleTimeString('th-TH', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: false 
+    // --- ฟังก์ชันนาฬิกา Real-time ---
+    function initTopbarClock() {
+        const update = () => {
+            const now = new Date();
+            const clockEl = document.getElementById('tp-clock');
+            const dateEl = document.getElementById('tp-date');
+            
+            if(clockEl) clockEl.innerText = now.toLocaleTimeString('th-TH', { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
             });
-        }
+            
+            if(dateEl) dateEl.innerText = now.toLocaleDateString('th-TH', { 
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+            });
+        };
+        setInterval(update, 1000);
+        update();
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
     // --- ดึงข้อมูล Profile จาก Firestore ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             try {
+                // ค้นหาข้อมูลใน Collection 'admin' ตาม UID
                 const userDoc = await getDoc(doc(db, "admin", user.uid));
                 const data = userDoc.exists() ? userDoc.data() : {};
                 
+                // รวมข้อมูลแสดงผล
                 const fullName = data.name || user.displayName || 'Sale Support User';
                 const userName = data.username || user.email.split('@')[0];
                 const email = data.email || user.email;
@@ -100,8 +94,10 @@
                 if(iconEl) iconEl.innerText = fullName.charAt(0).toUpperCase();
                 
             } catch (err) {
-                console.error("Topbar Sync Error:", err);
+                console.error("Topbar Error:", err);
             }
         }
     });
+
+    initTopbarClock();
 </script>
