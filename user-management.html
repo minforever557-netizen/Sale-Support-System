@@ -17,6 +17,7 @@
     </style>
 </head>
 <body class="flex min-h-screen">
+
     <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
 
     <div class="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
@@ -53,7 +54,7 @@
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRegisterModal()"></div>
         <div class="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden modal-animate">
             <div class="bg-[#5d58f0] p-6 text-white text-center">
-                <h3 id="modal-title" class="text-xl font-bold">แก้ไขข้อมูลพนักงาน</h3>
+                <h3 id="modal-title" class="text-xl font-bold">ข้อมูลพนักงาน</h3>
             </div>
             <form id="registerForm" class="p-8 space-y-4 max-h-[75vh] overflow-y-auto">
                 <input type="hidden" id="edit-uid">
@@ -88,13 +89,13 @@
                     <div>
                         <label class="text-xs font-bold text-[#5d58f0] uppercase mb-1 block ml-2">ทีมหลัก</label>
                         <select id="reg-main" class="form-input" required>
-                            <option value="">เลือกทีมหลัก</option>
+                            <option value="">กำลังโหลดทีม...</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-[#5d58f0] uppercase mb-1 block ml-2">ทีมย่อย</label>
                         <select id="reg-sub" class="form-input" required disabled>
-                            <option value="">เลือกทีมย่อย</option>
+                            <option value="">เลือกทีมหลักก่อน</option>
                         </select>
                     </div>
                 </div>
@@ -102,7 +103,7 @@
                 <div id="pass-area" class="pt-4 border-t">
                     <label class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-1 block">รหัสผ่าน</label>
                     <input type="password" id="reg-password" class="form-input" placeholder="ระบุเพื่อตั้งค่าใหม่">
-                    <p class="text-[10px] text-slate-400 mt-1 ml-2">* ปล่อยว่างไว้หากไม่ต้องการแก้ไขรหัสผ่านเดิม</p>
+                    <p class="text-[10px] text-slate-400 mt-1 ml-2">* ปล่อยว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่านเดิม</p>
                 </div>
 
                 <div class="pt-4 flex gap-3">
@@ -110,6 +111,20 @@
                     <button type="submit" id="saveBtn" class="flex-1 py-4 bg-[#5d58f0] text-white rounded-2xl font-bold shadow-lg active:scale-95 transition">บันทึกข้อมูล</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="logout-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="logout-backdrop"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-90" id="logout-content">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-4xl">🚪</span></div>
+                <h3 class="text-2xl font-bold text-slate-800 text-center mb-2">ออกจากระบบ?</h3>
+                <div class="flex gap-3 mt-8">
+                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">ยกเลิก</button>
+                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold shadow-lg">ออกเลย</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -125,7 +140,33 @@
 
         let allTeamsRaw = [];
 
-        // --- Layout & Initialization ---
+        // --- 4. Layout Loader (สำคัญมาก: เพื่อให้ Sidebar/Topbar ขึ้นเหมือนหน้า Team Management) ---
+        async function loadLayout() {
+            const sidebarRes = await fetch('components/sidebar.html');
+            const topbarRes = await fetch('components/topbar.html');
+            if (sidebarRes.ok) {
+                document.getElementById('sidebar-placeholder').innerHTML = await sidebarRes.text();
+                // Execute scripts inside sidebar
+                document.getElementById('sidebar-placeholder').querySelectorAll("script").forEach(s => {
+                    const newS = document.createElement("script");
+                    newS.type = "module";
+                    newS.textContent = s.textContent;
+                    document.head.appendChild(newS);
+                });
+            }
+            if (topbarRes.ok) document.getElementById('topbar-placeholder').innerHTML = await topbarRes.text();
+
+            // Link Logout
+            setTimeout(() => {
+                const btn = document.getElementById('main-logout-btn');
+                if (btn) btn.onclick = (e) => { e.preventDefault(); document.getElementById('logout-modal').classList.remove('hidden'); };
+            }, 500);
+        }
+
+        document.getElementById('close-logout').onclick = () => document.getElementById('logout-modal').classList.add('hidden');
+        document.getElementById('confirm-logout').onclick = () => signOut(auth).then(() => window.location.href="login.html");
+
+        // --- 5. Team & User Logic ---
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
             allTeamsRaw = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -136,10 +177,7 @@
             mainTeams.forEach(t => mainSelect.add(new Option(t.name, t.id)));
         }
 
-        // --- Dropdown Logic ---
-        document.getElementById('reg-main').onchange = (e) => {
-            renderSubTeams(e.target.value);
-        };
+        document.getElementById('reg-main').onchange = (e) => renderSubTeams(e.target.value);
 
         function renderSubTeams(parentId, savedSubName = null) {
             const subSelect = document.getElementById('reg-sub');
@@ -159,7 +197,6 @@
             }
         }
 
-        // --- Edit Logic ---
         window.editUser = async (id) => {
             const snap = await getDoc(doc(db, "admin", id));
             if (snap.exists()) {
@@ -172,13 +209,11 @@
                 document.getElementById('reg-phone').value = d['Phone No.'] || '';
                 document.getElementById('reg-role').value = d.role || 'user';
                 
-                // Map Team (หา ID จากชื่อ)
                 const teamObj = allTeamsRaw.find(t => t.name === d.Team && t.type === "main");
                 if(teamObj) {
                     document.getElementById('reg-main').value = teamObj.id;
                     renderSubTeams(teamObj.id, d['Sub Team']);
                 }
-
                 document.getElementById('registerModal').classList.remove('hidden');
             }
         };
@@ -187,19 +222,17 @@
             document.getElementById('registerForm').reset();
             document.getElementById('edit-uid').value = '';
             document.getElementById('modal-title').innerText = "เพิ่มพนักงานใหม่";
-            document.getElementById('reg-sub').disabled = true;
             document.getElementById('registerModal').classList.remove('hidden');
         };
 
         window.closeRegisterModal = () => document.getElementById('registerModal').classList.add('hidden');
 
-        // --- Submit Logic ---
         document.getElementById('registerForm').onsubmit = async (e) => {
             e.preventDefault();
             const uid = document.getElementById('edit-uid').value;
-            const btn = document.getElementById('saveBtn');
             const mainSelect = document.getElementById('reg-main');
             const mainTeamName = mainSelect.options[mainSelect.selectedIndex].text;
+            const btn = document.getElementById('saveBtn');
 
             btn.disabled = true;
             btn.innerText = "กำลังบันทึก...";
@@ -216,31 +249,21 @@
             };
 
             try {
-                if (uid) {
-                    // อัปเดตข้อมูลเดิม
-                    await updateDoc(doc(db, "admin", uid), data);
-                    // หมายเหตุ: การเปลี่ยน Password ผ่าน Admin โดยตรงใน Firebase Auth ต้องใช้ Admin SDK 
-                    // ฝั่ง Client ทำได้เพียงอัปเดตข้อมูลทั่วไป
-                } else {
-                    // สร้าง User ใหม่
+                if (uid) await updateDoc(doc(db, "admin", uid), data);
+                else {
                     const pass = document.getElementById('reg-password').value;
-                    if(!pass) throw new Error("กรุณาระบุรหัสผ่านสำหรับผู้ใช้ใหม่");
                     const cred = await createUserWithEmailAndPassword(auth, data.email, pass);
                     await setDoc(doc(db, "admin", cred.user.uid), { ...data, createdAt: serverTimestamp() });
                 }
                 alert("บันทึกข้อมูลเรียบร้อย");
                 closeRegisterModal();
-            } catch (err) {
-                alert("ผิดพลาด: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "บันทึกข้อมูล";
-            }
+            } catch (err) { alert(err.message); }
+            finally { btn.disabled = false; btn.innerText = "บันทึกข้อมูล"; }
         };
 
-        // --- Data Listener ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                await loadLayout();
                 await fetchTeams();
                 onSnapshot(query(collection(db, "admin"), orderBy("name", "asc")), (snap) => {
                     document.getElementById('user-list').innerHTML = snap.docs.map(docSnap => {
@@ -250,21 +273,12 @@
                             <td class="p-6">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-[#5d58f0] font-bold">${(u.name||"?")[0]}</div>
-                                    <div>
-                                        <p class="font-bold text-slate-700">${u.name}</p>
-                                        <p class="text-[10px] text-slate-400 font-bold uppercase">${u.Team||'-'} / ${u['Sub Team']||'-'}</p>
-                                    </div>
+                                    <div><p class="font-bold text-slate-700">${u.name}</p><p class="text-[10px] text-slate-400 font-bold uppercase">${u.Team||'-'} / ${u['Sub Team']||'-'}</p></div>
                                 </div>
                             </td>
                             <td class="p-6 text-slate-500 font-medium">${u['Phone No.']||'-'}</td>
-                            <td class="p-6 text-center">
-                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${u.role==='admin'?'bg-amber-100 text-amber-700':'bg-indigo-100 text-indigo-700'}">
-                                    ${u.role||'user'}
-                                </span>
-                            </td>
-                            <td class="p-6 text-right">
-                                <button onclick="editUser('${docSnap.id}')" class="text-[#5d58f0] font-bold hover:underline">แก้ไขข้อมูล</button>
-                            </td>
+                            <td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${u.role==='admin'?'bg-amber-100 text-amber-700':'bg-indigo-100 text-indigo-700'}">${u.role||'user'}</span></td>
+                            <td class="p-6 text-right"><button onclick="editUser('${docSnap.id}')" class="text-[#5d58f0] font-bold hover:underline">แก้ไข</button></td>
                         </tr>`;
                     }).join('');
                 });
