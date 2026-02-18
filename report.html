@@ -78,7 +78,8 @@
                                 </tr>
                             </thead>
                             <tbody id="drilldown-table-body" class="divide-y divide-slate-50">
-                                </tbody>
+                                <tr><td colspan="3" class="py-10 text-center text-slate-400 italic">กำลังโหลดข้อมูล...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -96,10 +97,9 @@
                         <p id="modal-subtitle" class="text-indigo-500 font-bold text-sm uppercase mt-1"></p>
                     </div>
                     <button onclick="closeDetailModal()" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-colors">
-                        <i class="fa-solid fa-xmark text-slate-500 w-6 h-6 flex items-center justify-center"></i>
+                        <i class="fa-solid fa-xmark text-slate-500"></i>
                     </button>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <h5 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">หัวข้อที่ส่งเข้ามา (Topics)</h5>
@@ -117,7 +117,7 @@
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
@@ -134,15 +134,21 @@
 
         let allTickets = [];
         let topicChart = null;
-        let drillLevel = 'MAIN'; // MAIN, SUB
+        let drillLevel = 'MAIN'; 
         let activeMainTeam = null;
 
-        // --- 1. Load Layout ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const adminDoc = await getDoc(doc(db, "admin", user.uid));
+                if (adminDoc.exists()) {
+                    loadLayout(adminDoc.data(), user.email);
+                    initData();
+                } else { window.location.replace("login.html"); }
+            } else { window.location.replace("login.html"); }
+        });
+
         async function loadLayout(userData, email) {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
+            const comps = [{ id: 'sidebar-placeholder', url: './components/sidebar.html' }, { id: 'topbar-placeholder', url: './components/topbar.html' }];
             for (const comp of comps) {
                 const res = await fetch(comp.url);
                 if (res.ok) {
@@ -158,17 +164,6 @@
             }
         }
 
-        // --- 2. Auth & Data ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                if (adminDoc.exists()) {
-                    loadLayout(adminDoc.data(), user.email);
-                    initData();
-                } else { window.location.replace("login.html"); }
-            } else { window.location.replace("login.html"); }
-        });
-
         function initData() {
             onSnapshot(collection(db, "tickets"), (snapshot) => {
                 allTickets = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
@@ -176,68 +171,54 @@
             });
         }
 
-        // --- 3. Rendering Engine ---
+        // --- จุดที่ Update Logic ใหม่ (ครอบคลุมปัญหา user 1) ---
         window.renderDashboard = () => {
-            const statTotal = allTickets.length;
+            const total = allTickets.length;
             const slaCount = allTickets.filter(t => t.sla_status === 'In SLA').length;
-            const uniqueUsers = new Set(allTickets.map(t => t.userEmail || t.userName)).size;
+            const uniqueUsers = new Set(allTickets.map(t => t.userName || t.userEmail || t.user_name)).size;
 
-            document.getElementById('stat-total').innerText = statTotal.toLocaleString();
-            document.getElementById('stat-sla').innerText = statTotal > 0 ? ((slaCount/statTotal)*100).toFixed(1) + '%' : '0%';
-            document.getElementById('stat-users').innerText = uniqueUsers.toLocaleString();
+            document.getElementById('stat-total').innerText = total.toLocaleString();
+            document.getElementById('stat-sla').innerText = total > 0 ? ((slaCount/total)*100).toFixed(1) + '%' : '0%';
+            document.getElementById('stat-users').innerText = (uniqueUsers-1).toLocaleString(); // -1 กรณีมีค่าว่าง
 
-            if (drillLevel === 'MAIN') {
-                renderMainTeamView();
-            } else {
-                renderSubTeamView(activeMainTeam);
-            }
-        }
-
-        function renderMainTeamView() {
             const stats = {};
             const topicStats = {};
+
             allTickets.forEach(t => {
-                const team = t.Team || "ไม่ระบุทีม";
-                stats[team] = (stats[team] || 0) + 1;
-                topicStats[t.topic || "อื่นๆ"] = (topicStats[t.topic || "อื่นๆ"] || 0) + 1;
+                // ดึงค่า Team และ Sub Team แบบยืดหยุ่น (รองรับทุกตัวสะกดที่อาจผิดพลาดใน DB)
+                const team = t["Team"] || t["team"] || t["Main Team"] || "ไม่ระบุทีม";
+                const sub = t["Sub Team"] || t["sub_team"] || t["subTeam"] || "ไม่มีทีมย่อย";
+                const topic = t.topic || t.Topic || "ทั่วไป";
+
+                if (drillLevel === 'MAIN') {
+                    stats[team] = (stats[team] || 0) + 1;
+                    topicStats[topic] = (topicStats[topic] || 0) + 1;
+                } else if (drillLevel === 'SUB' && team === activeMainTeam) {
+                    stats[sub] = (stats[sub] || 0) + 1;
+                    topicStats[topic] = (topicStats[topic] || 0) + 1;
+                }
             });
 
             updateChart(topicStats);
-            updateTable(stats, allTickets.length, 'Main Team', (name) => {
-                activeMainTeam = name;
-                drillLevel = 'SUB';
-                renderDashboard();
-            });
             
-            document.getElementById('table-title').innerText = "สถิติรายทีมหลัก";
-            document.getElementById('current-view-label').innerText = "ภาพรวมทีมหลัก";
+            const currentTotal = drillLevel === 'MAIN' ? total : allTickets.filter(x => (x.Team || x.team) === activeMainTeam).length;
+            updateTable(stats, currentTotal, drillLevel === 'MAIN' ? 'Main Team' : 'Sub Team', (name) => {
+                if(drillLevel === 'MAIN') {
+                    activeMainTeam = name;
+                    drillLevel = 'SUB';
+                    renderDashboard();
+                } else {
+                    showDeepDetail(activeMainTeam, name);
+                }
+            });
+
+            document.getElementById('table-title').innerText = drillLevel === 'MAIN' ? "สถิติรายทีมหลัก" : `ทีมย่อยภายใต้: ${activeMainTeam}`;
+            document.getElementById('current-view-label').innerText = drillLevel === 'MAIN' ? "ภาพรวมทีมหลัก" : activeMainTeam;
         }
 
-        function renderSubTeamView(mainTeamName) {
-            const filtered = allTickets.filter(t => t.Team === mainTeamName);
-            const stats = {};
-            const topicStats = {};
-            
-            filtered.forEach(t => {
-                const sub = t["Sub Team"] || "ไม่ระบุทีมย่อย";
-                stats[sub] = (stats[sub] || 0) + 1;
-                topicStats[t.topic || "อื่นๆ"] = (topicStats[t.topic || "อื่นๆ"] || 0) + 1;
-            });
-
-            updateChart(topicStats);
-            updateTable(stats, filtered.length, 'Sub Team', (subName) => {
-                showDeepDetail(mainTeamName, subName);
-            });
-
-            document.getElementById('table-title').innerText = `ทีมย่อยภายใต้: ${mainTeamName}`;
-            document.getElementById('current-view-label').innerText = mainTeamName;
-        }
-
-        // --- 4. Helpers ---
         function updateChart(stats) {
             const ctx = document.getElementById('topicChart');
             const total = Object.values(stats).reduce((a, b) => a + b, 0);
-            
             if (topicChart) topicChart.destroy();
             topicChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -255,11 +236,7 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: (item) => {
-                                    const val = item.raw;
-                                    const pct = ((val/total)*100).toFixed(1);
-                                    return ` ${item.label}: ${val} เคส (${pct}%)`;
-                                }
+                                label: (item) => ` ${item.label}: ${item.raw} เคส (${((item.raw/total)*100).toFixed(1)}%)`
                             }
                         }
                     },
@@ -274,31 +251,32 @@
                 <tr class="hover:bg-indigo-50/50 cursor-pointer group transition-all" onclick="drillClick('${name}')">
                     <td class="py-5">
                         <div class="font-bold text-slate-700 group-hover:text-indigo-600">${name}</div>
-                        <div class="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">คลิกเพื่อเจาะลึกข้อมูล</div>
+                        <div class="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">คลิกเพื่อดูรายละเอียด</div>
                     </td>
                     <td class="py-5 text-center font-bold text-slate-600">${count.toLocaleString()}</td>
-                    <td class="py-5 text-right font-bold text-indigo-500">${((count/total)*100).toFixed(1)}%</td>
+                    <td class="py-5 text-right font-bold text-indigo-500">${total > 0 ? ((count/total)*100).toFixed(1) : 0}%</td>
                 </tr>
             `).join('');
-            
             window.drillClick = onClick;
         }
 
-        // --- 5. Level 3: Deep Detail (Modal) ---
         function showDeepDetail(main, sub) {
-            const filtered = allTickets.filter(t => t.Team === main && t["Sub Team"] === sub);
+            // กรองข้อมูลโดยเช็คทั้ง Key เล็กและใหญ่ เพื่อความแม่นยำสูงสุด
+            const filtered = allTickets.filter(t => 
+                (t.Team === main || t.team === main) && 
+                (t["Sub Team"] === sub || t.sub_team === sub)
+            );
             const total = filtered.length;
 
             document.getElementById('modal-title').innerText = sub;
             document.getElementById('modal-subtitle').innerText = `Main Team: ${main}`;
 
-            // Group Topics
-            const topics = {};
-            const users = {};
+            const topics = {}; const users = {};
             filtered.forEach(t => {
-                topics[t.topic || "อื่นๆ"] = (topics[t.topic || "อื่นๆ"] || 0) + 1;
-                const userName = t.userName || t.userEmail || "ไม่ระบุชื่อ";
-                users[userName] = (users[userName] || 0) + 1;
+                const top = t.topic || t.Topic || "ทั่วไป";
+                topics[top] = (topics[top] || 0) + 1;
+                const user = t.userName || t.userEmail || t.user_name || "ไม่ระบุชื่อ";
+                users[user] = (users[user] || 0) + 1;
             });
 
             document.getElementById('modal-topic-list').innerHTML = Object.entries(topics).sort((a,b) => b[1]-a[1]).map(([name, count]) => `
@@ -308,32 +286,19 @@
                         <div class="text-indigo-600 font-black text-sm">${count} เคส</div>
                         <div class="text-[10px] text-slate-400">${((count/total)*100).toFixed(1)}%</div>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
 
             document.getElementById('modal-user-list').innerHTML = Object.entries(users).sort((a,b) => b[1]-a[1]).map(([name, count]) => `
                 <div class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-2xl transition-colors">
-                    <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">
-                        ${name.substring(0,2).toUpperCase()}
-                    </div>
-                    <div class="flex-1">
-                        <div class="text-sm font-bold text-slate-700">${name}</div>
-                        <div class="text-[10px] text-slate-400">ส่งงานทั้งหมด ${count} เคส</div>
-                    </div>
-                </div>
-            `).join('');
+                    <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">${name.substring(0,2).toUpperCase()}</div>
+                    <div class="flex-1"><div class="text-sm font-bold text-slate-700">${name}</div><div class="text-[10px] text-slate-400">ส่งงานทั้งหมด ${count} เคส</div></div>
+                </div>`).join('');
 
             document.getElementById('detail-modal').classList.remove('hidden');
         }
 
-        window.resetDrilldown = () => {
-            drillLevel = 'MAIN';
-            activeMainTeam = null;
-            renderDashboard();
-        }
-
+        window.resetDrilldown = () => { drillLevel = 'MAIN'; activeMainTeam = null; renderDashboard(); }
         window.closeDetailModal = () => document.getElementById('detail-modal').classList.add('hidden');
-
     </script>
 </body>
 </html>
