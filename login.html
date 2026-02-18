@@ -6,38 +6,91 @@
     <title>Login - Sale Support System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Kanit', sans-serif; }
+        body { 
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+        
+        /* Animation สำหรับตอนโหลดหน้า */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-group:focus-within label {
+            color: #f97316; /* orange-500 */
+            transform: scale(1.05);
+        }
     </style>
 </head>
-<body class="bg-green-50 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm border-b-8 border-green-600">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-black text-green-600">SALE</h1>
-            <p class="text-orange-500 font-bold tracking-widest uppercase text-sm">Support System</p>
+    <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full max-w-sm border-b-[10px] border-green-600 fade-in-up relative overflow-hidden">
+        
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-green-50 rounded-full"></div>
+        
+        <div class="text-center mb-10 relative">
+            <div class="inline-block p-4 rounded-2xl bg-green-50 mb-4">
+                <i class="fas fa-chart-line text-4xl text-green-600"></i>
+            </div>
+            <h1 class="text-4xl font-black text-green-600 tracking-tight">SALE</h1>
+            <p class="text-orange-500 font-bold tracking-[0.2em] uppercase text-xs mt-1">Support System</p>
         </div>
 
-        <form id="loginForm" class="space-y-5">
-            <div>
-                <label class="text-gray-500 text-xs font-bold ml-1 uppercase">Username</label>
-                <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" 
-                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" required>
+        <form id="loginForm" class="space-y-6 relative">
+            <div class="input-group">
+                <label class="block text-gray-400 text-xs font-bold ml-1 mb-2 uppercase transition-all">Username</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" 
+                        class="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
+                </div>
             </div>
-            <div>
-                <label class="text-gray-500 text-xs font-bold ml-1 uppercase">Password</label>
-                <input type="password" id="password" placeholder="••••" 
-                    class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-400 outline-none transition" required>
+
+            <div class="input-group">
+                <label class="block text-gray-400 text-xs font-bold ml-1 mb-2 uppercase transition-all">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="password" placeholder="••••••••" 
+                        class="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
+                </div>
             </div>
             
             <button type="submit" id="loginBtn" 
-                class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-orange-600 transform hover:-translate-y-1 transition flex justify-center items-center">
-                <span>LOG IN</span>
+                class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-95 transform transition-all duration-200 flex justify-center items-center space-x-2">
+                <span id="btnText">LOG IN</span>
+                <div id="btnLoader" class="spinner hidden"></div>
             </button>
 
-            <div class="flex justify-between text-sm pt-2">
-                <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500">ลืมรหัสผ่าน?</a>
-                <a href="register.html" class="text-green-600 font-bold hover:underline">สร้างบัญชีใหม่</a>
+            <div class="flex justify-between items-center text-xs pt-4">
+                <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500 transition-colors">ลืมรหัสผ่าน?</a>
+                <div class="h-1 w-1 bg-gray-300 rounded-full"></div>
+                <a href="register.html" class="text-green-600 font-bold hover:text-green-700 hover:underline transition-all">สร้างบัญชีใหม่</a>
             </div>
         </form>
     </div>
@@ -47,6 +100,7 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // ... (firebaseConfig เหมือนเดิมของคุณ) ...
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -62,47 +116,61 @@
 
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const userVal = document.getElementById('username').value.trim();
             const passVal = document.getElementById('password').value;
 
+            // Start Animation
             loginBtn.disabled = true;
-            loginBtn.innerHTML = "Checking...";
+            btnText.innerText = "กำลังตรวจสอบ";
+            btnLoader.classList.remove('hidden');
+            loginBtn.classList.add('opacity-90', 'cursor-not-allowed');
 
             try {
-                // ค้นหาใน Collection 'admin' ตามภาพของคุณ
                 const q = query(collection(db, "admin"), where("username", "==", userVal));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    alert("ไม่พบชื่อผู้ใช้งานนี้ในระบบฐานข้อมูล");
+                    showError("ไม่พบชื่อผู้ใช้งานในระบบ");
                     resetButton();
                     return;
                 }
 
                 let emailFound = "";
-                querySnapshot.forEach((doc) => { 
-                    emailFound = doc.data().email; 
-                });
+                querySnapshot.forEach((doc) => { emailFound = doc.data().email; });
 
-                // ล็อกอินด้วย Email ที่เจอ
                 await signInWithEmailAndPassword(auth, emailFound, passVal);
                 
-                // สำเร็จ -> ไปหน้า Dashboard
-                window.location.href = "dashboard.html";
+                // Success Animation
+                btnText.innerText = "สำเร็จแล้ว!";
+                btnLoader.classList.add('hidden');
+                loginBtn.classList.replace('bg-orange-500', 'bg-green-500');
+                
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 800);
 
             } catch (error) {
                 console.error("Login Error:", error);
-                alert("รหัสผ่านไม่ถูกต้อง หรือยังไม่ได้เพิ่ม User ใน Firebase Auth");
+                showError("รหัสผ่านไม่ถูกต้อง");
                 resetButton();
             }
         });
 
+        function showError(msg) {
+            // คุณสามารถเปลี่ยนเป็น SweetAlert2 ได้หากต้องการความสวยงามเพิ่ม
+            alert(msg);
+        }
+
         function resetButton() {
             loginBtn.disabled = false;
-            loginBtn.innerHTML = "<span>LOG IN</span>";
+            btnText.innerText = "LOG IN";
+            btnLoader.classList.add('hidden');
+            loginBtn.classList.remove('opacity-90', 'cursor-not-allowed');
         }
     </script>
 </body>
