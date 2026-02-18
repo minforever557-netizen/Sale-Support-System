@@ -1,126 +1,78 @@
 <style>
-    /* บังคับซ่อนด้วย CSS ที่มี Priority สูงสุดเพื่อไม่ให้เมนูแวบตอนโหลด */
-    #admin-menu-section.hidden-secure {
-        display: none !important;
-    }
-
-    /* สไตล์เพิ่มเติมสำหรับ Mobile Drawer */
+    #admin-menu-section.hidden-secure { display: none !important; }
+    /* สไตล์สำหรับ Mobile Drawer */
     #mobile-drawer-container.active .backdrop { opacity: 1; }
     #mobile-drawer-container.active .drawer-content { transform: translateX(0); }
 </style>
 
-<aside id="desktop-sidebar" class="hidden lg:flex flex-col w-64 bg-white h-screen border-r border-slate-200 sticky top-0 overflow-y-auto z-50">
-    <div id="sidebar-core-logic">
+<aside id="main-sidebar" class="hidden lg:flex flex-col w-64 bg-white h-screen border-r border-slate-200 sticky top-0 overflow-y-auto z-50">
+    <div id="sidebar-content-bundle">
         <div class="p-6">
             <h1 class="text-xl font-bold text-[#5c56f1] flex items-center gap-2">
                 <span class="w-8 h-8 bg-[#5c56f1] rounded-lg flex items-center justify-center text-white text-xs">S</span>
                 Sale Support
             </h1>
         </div>
-
         <nav class="flex-1 px-4 space-y-1">
             <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-4">Main Menu</p>
-            
             <a href="dashboard.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                <span class="text-lg">🏠</span> <span class="font-medium">Dashboard</span>
+                <span>🏠</span> <span class="font-medium">Dashboard</span>
             </a>
             <a href="new-ticket.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                <span class="text-lg">➕</span> <span class="font-medium">สร้าง Ticket</span>
+                <span>➕</span> <span class="font-medium">สร้าง Ticket</span>
             </a>
             <a href="my-ticket.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                <span class="text-lg">📋</span> <span class="font-medium">ใบงานของฉัน</span>
+                <span>📋</span> <span class="font-medium">ใบงานของฉัน</span>
             </a>
             <a href="all-ticket.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                <span class="text-lg">🎫</span> <span class="font-medium">ใบงานทั้งหมด</span>
+                <span>🎫</span> <span class="font-medium">ใบงานทั้งหมด</span>
             </a>
             <a href="profile.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                <span class="text-lg">👤</span> <span class="font-medium">ข้อมูลส่วนตัว</span>
+                <span>👤</span> <span class="font-medium">ข้อมูลส่วนตัว</span>
             </a>
 
             <div id="admin-menu-section" class="hidden-secure pt-6 border-t border-slate-100 mt-4">
                 <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Admin Control</p>
-                <a href="admin-manage.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition font-bold">
-                    <span class="text-lg">🛠️</span> จัดการงาน Admin
-                </a>
-                <a href="user-management.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                    <span class="text-lg">👥</span> จัดการผู้ใช้งาน
-                </a>
-                <a href="topic-management.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                    <span class="text-lg">📂</span> จัดการหัวข้อร้องเรียน
-                </a>
-                <a href="team-management.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                    <span class="text-lg">🛡️</span> จัดการทีม
-                </a>
-                <a href="report.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                    <span class="text-lg">📊</span> Report Dashboard
-                </a>
-                <a href="logs.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">
-                    <span class="text-lg">📜</span> System Logs
-                </a>
+                <a href="admin-manage.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition font-bold">🛠️ จัดการงาน Admin</a>
+                <a href="user-management.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">👥 จัดการผู้ใช้งาน</a>
+                <a href="logs.html" class="nav-link flex items-center gap-3 p-3.5 text-slate-600 hover:bg-indigo-50 hover:text-[#5c56f1] rounded-2xl transition">📜 System Logs</a>
             </div>
         </nav>
-
         <div class="p-4 border-t border-slate-100 mt-auto">
-            <button id="sidebar-logout-btn" class="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition font-bold">
-                <span class="text-lg">🚪</span> ออกจากระบบ
+            <button id="sidebar-logout-btn-desktop" class="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition font-bold">
+                <span>🚪</span> ออกจากระบบ
             </button>
         </div>
     </div>
 </aside>
 
-<div id="mobile-drawer-container" class="fixed inset-0 z-[999] hidden lg:hidden">
-    <div class="backdrop absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="window.toggleMobileMenu()"></div>
-    
+<div id="mobile-drawer-container" class="fixed inset-0 z-[1000] hidden lg:hidden">
+    <div class="backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="window.toggleMobileMenu()"></div>
     <div class="drawer-content absolute left-0 top-0 bottom-0 w-72 bg-white -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
         <div class="p-5 border-b border-slate-50 flex items-center justify-between bg-[#5c56f1] text-white">
-            <span class="font-bold">เมนูหลัก</span>
+            <span class="font-bold">Sale Support Menu</span>
             <button onclick="window.toggleMobileMenu()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/20"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div id="mobile-content-target" class="flex-1 overflow-y-auto">
-            </div>
+        <div id="mobile-content-target" class="flex-1 overflow-y-auto bg-white"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-        authDomain: "salesupportsystemapp.firebaseapp.com",
-        projectId: "salesupportsystemapp",
-        storageBucket: "salesupportsystemapp.firebasestorage.app",
-        messagingSenderId: "840890441207",
-        appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
-    };
-
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // --- 1. Global Logout Function (เพื่อให้ใช้ได้ทั้ง Desktop และ Mobile) ---
-    const handleLogout = () => {
-        if (confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
-            signOut(auth).then(() => window.location.replace("login.html"));
-        }
-    };
-
-    // --- 2. Mobile Toggle Logic ---
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // Logic การเปิดปิด Menu
     window.toggleMobileMenu = () => {
         const container = document.getElementById('mobile-drawer-container');
         const target = document.getElementById('mobile-content-target');
-        
         if (container.classList.contains('hidden')) {
-            // ก๊อปปี้เนื้อหาเมนูไปใส่ Mobile ครั้งแรกที่เปิด
             if (target.innerHTML.trim() === "") {
-                const navClone = document.getElementById('sidebar-core-logic').cloneNode(true);
+                const navClone = document.getElementById('sidebar-content-bundle').cloneNode(true);
                 target.appendChild(navClone);
-                
-                // ผูกเหตุการณ์ Logout ให้ปุ่มใน Mobile ด้วย
-                target.querySelector('#sidebar-logout-btn')?.addEventListener('click', handleLogout);
+                target.querySelector('#sidebar-logout-btn-desktop')?.addEventListener('click', () => {
+                    if(confirm("ออกจากระบบ?")) signOut(getAuth()).then(() => window.location.replace("login.html"));
+                });
             }
-            
             container.classList.remove('hidden');
             setTimeout(() => container.classList.add('active'), 10);
         } else {
@@ -129,34 +81,7 @@
         }
     };
 
-    // --- 3. Firebase Auth & Role Check ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const userRef = doc(db, "admin", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    const userRole = (userData.role || "").toString().toLowerCase().trim();
-
-                    // ปรับการโชว์ Admin Menu ทั้ง Desktop และ Mobile
-                    document.querySelectorAll('#admin-menu-section').forEach(el => {
-                        if (userRole === 'admin') el.classList.remove('hidden-secure');
-                    });
-                }
-            } catch (err) { console.error("Sidebar Auth Error:", err); }
-        }
+    document.getElementById('sidebar-logout-btn-desktop')?.addEventListener('click', () => {
+        if(confirm("ออกจากระบบ?")) signOut(getAuth()).then(() => window.location.replace("login.html"));
     });
-
-    // ไฮไลต์ลิงก์ปัจจุบัน
-    const currentPage = window.location.pathname.split("/").pop() || "dashboard.html";
-    document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-            link.classList.add('bg-indigo-50', 'text-[#5c56f1]', 'font-bold');
-        }
-    });
-
-    // ผูกปุ่ม Logout Desktop
-    document.getElementById('sidebar-logout-btn')?.addEventListener('click', handleLogout);
 </script>
