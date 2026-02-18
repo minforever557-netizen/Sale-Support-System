@@ -41,7 +41,6 @@
                     <select id="sortOrder" class="bg-emerald-50 border border-emerald-100 text-emerald-700 px-6 py-4 rounded-[1.5rem] focus:bg-white outline-none font-bold cursor-pointer transition-all w-full md:w-48">
                         <option value="createdAt-desc">ล่าสุดไปเก่า</option>
                         <option value="createdAt-asc">เก่าไปล่าสุด</option>
-                        <option value="status-asc">สถานะ (A-Z)</option>
                     </select>
                 </div>
             </div>
@@ -72,13 +71,52 @@
         <div class="absolute inset-0 modal-backdrop-blur" onclick="closeDetailModal()"></div>
         <div class="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-indigo-600 p-8 text-white flex justify-between items-start">
-                <h3 class="text-xl font-bold">รายละเอียด Ticket</h3>
+                <div>
+                    <h3 class="text-xl font-bold">รายละเอียด Ticket</h3>
+                    <p class="text-indigo-100 text-[10px] uppercase font-black tracking-widest mt-1">Full Ticket Information</p>
+                </div>
                 <button onclick="closeDetailModal()" class="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition text-white">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <div class="p-8 overflow-y-auto custom-scroll space-y-6" id="detail-content">
+            <div class="p-8 overflow-y-auto custom-scroll space-y-6">
+                <div class="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Internet No.</p>
+                        <p id="det-id-number" class="font-bold text-slate-800">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">วันที่สร้าง</p>
+                        <p id="det-create-date" class="text-slate-600 text-sm">-</p>
+                    </div>
                 </div>
+
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 px-1 tracking-widest">หัวข้อปัญหา</p>
+                    <div id="det-topic" class="p-5 bg-white rounded-2xl border border-slate-100 font-bold text-indigo-700 shadow-sm">-</div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 px-1 tracking-widest">รายละเอียด</p>
+                    <div id="det-detail" class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 text-sm leading-relaxed whitespace-pre-line">-</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">ผู้สร้างใบงาน</p>
+                        <p id="det-user-create" class="font-bold text-slate-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">สถานะปัจจุบัน</p>
+                        <span id="det-status" class="status-badge">-</span>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-amber-50 rounded-[2rem] border border-amber-100">
+                    <p class="text-[10px] font-black text-amber-600 uppercase mb-2 tracking-widest">Admin Remark</p>
+                    <p id="det-admin-remark" class="text-slate-700 italic font-medium">ไม่มีหมายเหตุ</p>
+                </div>
+            </div>
             <div class="p-6 bg-slate-50 text-right border-t border-slate-100">
                 <button onclick="closeDetailModal()" class="px-10 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-100 transition shadow-sm">ปิด</button>
             </div>
@@ -86,7 +124,7 @@
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300 shadow-none" id="logout-backdrop"></div>
+        <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300" id="logout-backdrop"></div>
         <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="logout-content">
             <div class="text-center">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-3xl">🚪</span></div>
@@ -120,59 +158,37 @@
 
         let allTickets = [];
 
-        // --- 1. Load Layout (ปรับปรุงใหม่ตาม System Log) ---
+        // Load Layout
         async function loadLayout(userData, email) {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
-
+            const comps = [{ id: 'sidebar-placeholder', url: './components/sidebar.html' }, { id: 'topbar-placeholder', url: './components/topbar.html' }];
             for (const comp of comps) {
                 const res = await fetch(comp.url);
                 if (res.ok) {
                     const el = document.getElementById(comp.id);
                     el.innerHTML = await res.text();
                     el.classList.remove('hidden');
-                    
-                    // กระตุ้นการทำงานของ Script ภายใน Component
-                    el.querySelectorAll("script").forEach(oldScript => {
-                        const newScript = document.createElement("script");
-                        newScript.type = "module";
-                        newScript.textContent = oldScript.textContent;
-                        document.head.appendChild(newScript);
-                    });
                 }
             }
-
-            // ตั้งค่าข้อมูลผู้ใช้บน Topbar
             setTimeout(() => {
                 const nameEl = document.querySelector('#topbar-user-name');
-                const emailEl = document.querySelector('#topbar-user-email');
                 if (nameEl) nameEl.innerText = userData.name || "Admin";
-                if (emailEl) emailEl.innerText = email;
             }, 500);
         }
 
-        // --- 2. Auth Control ---
+        // Auth
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const adminDoc = await getDoc(doc(db, "admin", user.uid));
                 if (adminDoc.exists()) {
                     loadLayout(adminDoc.data(), user.email);
                     initTicketListener();
-                } else {
-                    window.location.replace("dashboard.html");
-                }
-            } else {
-                window.location.replace("login.html");
-            }
+                } else { window.location.replace("dashboard.html"); }
+            } else { window.location.replace("login.html"); }
         });
 
-        // --- 3. Ticket Management ---
+        // Ticket List
         function initTicketListener() {
-            const [field, direction] = document.getElementById('sortOrder').value.split('-');
-            const q = query(collection(db, "tickets"), orderBy(field, direction));
-
+            const q = query(collection(db, "tickets"), orderBy("createdAt", "desc"));
             onSnapshot(q, (snapshot) => {
                 allTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderTickets(allTickets);
@@ -182,25 +198,20 @@
         function renderTickets(tickets) {
             const list = document.getElementById('ticket-list');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = tickets.filter(t => 
-                t.id_number?.toLowerCase().includes(searchTerm) || 
-                t.topic?.toLowerCase().includes(searchTerm) ||
-                t.owner?.toLowerCase().includes(searchTerm)
-            );
+            const filtered = tickets.filter(t => t.id_number?.toLowerCase().includes(searchTerm) || t.topic?.toLowerCase().includes(searchTerm) || t.owner?.toLowerCase().includes(searchTerm));
 
             list.innerHTML = filtered.map(t => {
-                const createDate = t.createdAt?.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) || '-';
-                let statusClass = "bg-slate-100 text-slate-600";
-                if(t.status === 'Open') statusClass = "bg-blue-100 text-blue-700";
-                if(t.status === 'Success') statusClass = "bg-emerald-100 text-emerald-700";
-                if(t.status === 'Reject') statusClass = "bg-red-100 text-red-700";
+                const date = t.createdAt?.toDate().toLocaleString('th-TH') || '-';
+                let stClass = "bg-slate-100 text-slate-600";
+                if(t.status === 'Open') stClass = "bg-blue-100 text-blue-700";
+                if(t.status === 'Success') stClass = "bg-emerald-100 text-emerald-700";
 
                 return `
                     <tr class="hover:bg-emerald-50/30 transition-all border-b border-emerald-50 last:border-0">
                         <td class="p-7 font-bold text-slate-700">${t.id_number || '-'}</td>
-                        <td class="p-7 text-slate-500 text-[12px]">${createDate}</td>
+                        <td class="p-7 text-slate-500 text-xs">${date}</td>
                         <td class="p-7 text-slate-700 font-medium">${t.topic}</td>
-                        <td class="p-7 text-center"><span class="status-badge ${statusClass}">${t.status || 'Pending'}</span></td>
+                        <td class="p-7 text-center"><span class="status-badge ${stClass}">${t.status || 'Pending'}</span></td>
                         <td class="p-7 font-bold text-slate-600">${t.owner || '-'}</td>
                         <td class="p-7 text-right">
                             <button onclick="viewDetail('${t.id}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-5 py-2.5 rounded-xl text-xs font-black transition-all">
@@ -212,41 +223,63 @@
             }).join('');
         }
 
-        // --- 4. Logout & Modal Support ---
-        window.openLogoutModal = () => {
-            const modal = document.getElementById('logout-modal');
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-active');
-            setTimeout(() => {
-                document.getElementById('logout-backdrop').classList.add('opacity-100');
-                document.getElementById('logout-content').classList.remove('scale-90', 'opacity-0');
-            }, 10);
+        // --- จุดแก้ไขสำคัญ: ฟังก์ชันดูรายละเอียด ---
+        window.viewDetail = async (id) => {
+            const docSnap = await getDoc(doc(db, "tickets", id));
+            if (docSnap.exists()) {
+                const t = docSnap.data();
+                
+                // แมปข้อมูลลง Modal
+                document.getElementById('det-id-number').innerText = t.id_number || '-';
+                document.getElementById('det-create-date').innerText = t.createdAt?.toDate().toLocaleString('th-TH') || '-';
+                document.getElementById('det-topic').innerText = t.topic || '-';
+                document.getElementById('det-detail').innerText = t.detail || '-';
+                document.getElementById('det-user-create').innerText = t.owner || '-';
+                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีหมายเหตุจากผู้ดูแล';
+
+                // จัดการสถานะและ Badge
+                const statusEl = document.getElementById('det-status');
+                statusEl.innerText = t.status || 'Pending';
+                statusEl.className = "status-badge " + 
+                    (t.status === 'Open' ? 'bg-blue-100 text-blue-700' : 
+                     t.status === 'Success' ? 'bg-emerald-100 text-emerald-700' : 
+                     t.status === 'Reject' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600');
+
+                // เปิด Modal
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.body.classList.add('modal-active');
+            }
         };
 
-        const closeLogoutModal = () => {
-            document.getElementById('logout-backdrop').classList.remove('opacity-100');
-            document.getElementById('logout-content').classList.add('scale-90', 'opacity-0');
-            setTimeout(() => {
-                document.getElementById('logout-modal').classList.add('hidden');
-                document.body.classList.remove('modal-active');
-            }, 300);
+        window.closeDetailModal = () => {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.classList.remove('modal-active');
         };
 
-        // ใช้ Event Delegation ดักจับปุ่มจาก Sidebar ที่โหลดมาทีหลัง
+        // Logout
         document.addEventListener('click', (e) => {
-            if (e.target.closest('#main-logout-btn')) openLogoutModal();
+            if (e.target.closest('#main-logout-btn')) {
+                const modal = document.getElementById('logout-modal');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('logout-backdrop').classList.add('opacity-100');
+                    document.getElementById('logout-content').classList.remove('scale-90', 'opacity-0');
+                }, 10);
+            }
         });
 
-        document.getElementById('close-logout').onclick = closeLogoutModal;
+        document.getElementById('close-logout').onclick = () => {
+            document.getElementById('logout-backdrop').classList.remove('opacity-100');
+            document.getElementById('logout-content').classList.add('scale-90', 'opacity-0');
+            setTimeout(() => document.getElementById('logout-modal').classList.add('hidden'), 300);
+        };
+
         document.getElementById('confirm-logout').onclick = async () => {
             await signOut(auth);
             window.location.replace("login.html");
         };
 
-        // Filter Listener
         document.getElementById('searchInput').oninput = () => renderTickets(allTickets);
-        document.getElementById('sortOrder').onchange = initTicketListener;
-
     </script>
 </body>
 </html>
