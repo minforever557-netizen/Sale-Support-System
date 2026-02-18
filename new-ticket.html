@@ -10,7 +10,6 @@
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
         
-        /* สไตล์ Topbar ให้เหมือน Systemlog และอยู่กับที่ */
         #topbar-placeholder {
             position: sticky;
             top: 0;
@@ -25,6 +24,18 @@
         .modal-active { overflow: hidden; }
         .modal-backdrop-blur { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.5); }
         .modal-animate { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        /* Success Overlay Style */
+        #success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -71,7 +82,6 @@
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-2">3. รายละเอียดปัญหา</label>
                             <div id="sla-badge" class="hidden bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-right">
                                 <p class="text-[11px] font-black text-emerald-700 uppercase tracking-tighter" id="sla-hours-text"></p>
-                                <p class="text-[10px] text-slate-500 font-medium" id="sla-due-text"></p>
                             </div>
                         </div>
 
@@ -86,6 +96,16 @@
                 </form>
             </div>
         </main>
+    </div>
+
+    <div id="success-overlay">
+        <div class="text-center scale-95 transition-transform duration-500 ease-out" id="success-content">
+            <div class="w-24 h-24 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-6 shadow-2xl animate-bounce">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">ส่งใบงานสำเร็จ!</h2>
+            <p class="text-slate-500">ระบบกำลังนำคุณไปยังรายการใบงานของคุณ...</p>
+        </div>
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
@@ -121,14 +141,29 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        const ticketForm = document.getElementById('ticketForm');
         const topicSelect = document.getElementById('topic');
         const detailInput = document.getElementById('detail-input');
         const slaBadge = document.getElementById('sla-badge');
         
         let topicsData = {};
         let originalLines = [];
+        let currentUser = null;
 
-        // --- 1. Load Layout (เหมือน Systemlog) ---
+        // --- 1. Auth & Layout Load ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const adminDoc = await getDoc(doc(db, "admin", user.uid));
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                currentUser = adminDoc.exists() ? adminDoc.data() : (userDoc.exists() ? userDoc.data() : {});
+                currentUser.uid = user.uid;
+                currentUser.email = user.email;
+                loadLayout(currentUser, user.email);
+            } else {
+                window.location.replace("login.html");
+            }
+        });
+
         async function loadLayout(userData, email) {
             const comps = [
                 { id: 'sidebar-placeholder', url: './components/sidebar.html' },
@@ -150,7 +185,6 @@
                 }
             }
 
-            // ตั้งข้อมูลใน Topbar
             setTimeout(() => {
                 const nameEl = document.querySelector('#topbar-user-name');
                 const emailEl = document.querySelector('#topbar-user-email');
@@ -159,60 +193,12 @@
                 if (emailEl) emailEl.innerText = email;
                 if (avatarEl) avatarEl.innerText = (userData.name || "U")[0].toUpperCase();
                 
-                // อัปเดตข้อมูลใน Form
                 document.getElementById('form-user-name').innerText = userData.name;
                 document.getElementById('form-user-avatar').innerText = (userData.name || "U")[0].toUpperCase();
             }, 500);
         }
 
-        // --- 2. Auth Check ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                const data = adminDoc.exists() ? adminDoc.data() : (userDoc.exists() ? userDoc.data() : {});
-                loadLayout(data, user.email);
-            } else {
-                window.location.replace("login.html");
-            }
-        });
-
-        // --- 3. Checklist Logic (ป้องกันการลบหัวข้อ) ---
-        detailInput.addEventListener('keydown', (e) => {
-            const cursorPosition = detailInput.selectionStart;
-            const text = detailInput.value;
-            const lines = text.split("\n");
-            let currentLineStart = 0;
-            let currentLineIndex = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-                if (cursorPosition <= currentLineStart + lines[i].length) {
-                    currentLineIndex = i;
-                    break;
-                }
-                currentLineStart += lines[i].length + 1;
-            }
-
-            const originalLineText = originalLines[currentLineIndex] || "";
-            if ((e.key === 'Backspace' || e.key === 'Delete')) {
-                if (cursorPosition <= currentLineStart + originalLineText.length) {
-                    e.preventDefault();
-                }
-            }
-        });
-
-        detailInput.addEventListener('input', () => {
-            const lines = detailInput.value.split("\n");
-            const restoredLines = lines.map((line, i) => {
-                const original = originalLines[i] || "";
-                return line.startsWith(original) ? line : original + line;
-            });
-            if (detailInput.value !== restoredLines.join("\n")) {
-                detailInput.value = restoredLines.join("\n");
-            }
-        });
-
-        // --- 4. Load Topics ---
+        // --- 2. Checklist & Topics Logic ---
         onSnapshot(collection(db, "topics"), (snapshot) => {
             topicSelect.innerHTML = '<option value="">เลือกหัวข้อปัญหา</option>';
             snapshot.forEach(doc => {
@@ -233,7 +219,94 @@
             }
         });
 
-        // --- 5. Logout Logic (เหมือน Systemlog) ---
+        // ป้องกันการลบ Checklist หัวข้อ
+        detailInput.addEventListener('keydown', (e) => {
+            const cursorPosition = detailInput.selectionStart;
+            const lines = detailInput.value.split("\n");
+            let currentLineStart = 0;
+            let currentLineIndex = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                if (cursorPosition <= currentLineStart + lines[i].length) {
+                    currentLineIndex = i;
+                    break;
+                }
+                currentLineStart += lines[i].length + 1;
+            }
+
+            const originalLineText = originalLines[currentLineIndex] || "";
+            if ((e.key === 'Backspace' || e.key === 'Delete') && cursorPosition <= currentLineStart + originalLineText.length) {
+                e.preventDefault();
+            }
+        });
+
+        detailInput.addEventListener('input', () => {
+            const lines = detailInput.value.split("\n");
+            const restoredLines = lines.map((line, i) => {
+                const original = originalLines[i] || "";
+                return line.startsWith(original) ? line : original + line;
+            });
+            if (detailInput.value !== restoredLines.join("\n")) {
+                detailInput.value = restoredLines.join("\n");
+            }
+        });
+
+        // --- 3. Submit Ticket Logic ---
+        ticketForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const originalBtnHtml = btn.innerHTML;
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังส่งข้อมูล...`;
+
+            try {
+                const topicId = topicSelect.value;
+                const selectedTopic = topicsData[topicId];
+                
+                // คำนวณ Due Date จาก SLA
+                const slaHours = parseInt(selectedTopic.sla || 0);
+                const dueDate = new Date();
+                dueDate.setHours(dueDate.getHours() + slaHours);
+
+                // บันทึกข้อมูลลง Collection "tickets"
+                await addDoc(collection(db, "tickets"), {
+                    subject: selectedTopic.name,
+                    id_number: document.getElementById('id_number').value.trim(),
+                    details: detailInput.value,
+                    status: "Pending", // สถานะเริ่มต้น
+                    priority: "Normal",
+                    sender_name: currentUser.name,
+                    sender_uid: currentUser.uid,
+                    sender_team: currentUser.Team || "ไม่ระบุทีม",
+                    sender_subteam: currentUser["Sub Team"] || "ไม่ระบุทีมย่อย",
+                    created_at: serverTimestamp(),
+                    due_at: dueDate,
+                    sla: slaHours
+                });
+
+                // แสดง Success Animation
+                const overlay = document.getElementById('success-overlay');
+                overlay.style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('success-content').classList.replace('scale-95', 'scale-100');
+                }, 10);
+
+                // Redirect หลังจากแสดงความสำเร็จ
+                setTimeout(() => {
+                    window.location.href = "myticket.html";
+                }, 2500);
+
+            } catch (error) {
+                console.error("Submit Error:", error);
+                alert("เกิดข้อผิดพลาด: " + error.message);
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        };
+
+        // --- 4. Logout & Modal Logic ---
         window.openLogoutModal = () => {
             const modal = document.getElementById('logout-modal');
             modal.classList.remove('hidden');
@@ -259,7 +332,6 @@
             window.location.replace("login.html");
         };
 
-        // ตรวจจับการคลิก Logout จาก Sidebar
         document.addEventListener('click', (e) => {
             if (e.target.closest('#sidebar-logout-btn') || e.target.closest('#main-logout-btn')) {
                 openLogoutModal();
