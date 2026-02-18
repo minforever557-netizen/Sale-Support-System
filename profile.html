@@ -219,6 +219,7 @@
         });
 
         // --- 4. Save Changes ---
+        // --- 4. Save Changes ---
         document.getElementById('profile-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
@@ -230,13 +231,18 @@
             btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> กำลังบันทึก...';
 
             try {
-                // อัปเดตข้อมูลใน Firestore
-                await updateDoc(doc(db, "admin", currentUser.uid), {
+                // สร้าง Object ข้อมูลที่จะอัปเดต
+                const updateData = {
                     name: document.getElementById('prof-name').value.trim(),
-                    "Phone No.": document.getElementById('prof-phone').value.trim(),
-                    Team: mainTeamName,
-                    "Sub Team": document.getElementById('prof-sub').value,
-                });
+                    Team: mainTeamName
+                };
+
+                // ใช้ Bracket Notation เพื่อระบุชื่อฟิลด์ที่มีช่องว่างหรือจุดให้ถูกต้อง
+                updateData["Phone No."] = document.getElementById('prof-phone').value.trim();
+                updateData["Sub Team"] = document.getElementById('prof-sub').value;
+
+                // อัปเดตข้อมูลใน Firestore เข้าที่ collection "admin"
+                await updateDoc(doc(db, "admin", currentUser.uid), updateData);
 
                 // อัปเดตรหัสผ่าน (ถ้ามีการกรอก)
                 if (newPass) {
@@ -248,11 +254,11 @@
                 
                 location.reload();
             } catch (err) {
+                console.error(err);
                 alert("ล้มเหลว: " + err.message + "\n(หากต้องการเปลี่ยนรหัสผ่าน คุณอาจต้อง Login ใหม่อีกครั้งก่อนดำเนินการ)");
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> บันทึกการเปลี่ยนแปลง';
             }
         };
-    </script>
 </body>
 </html>
