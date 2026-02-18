@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
 </head>
 <body class="bg-slate-50 flex min-h-screen">
 
@@ -15,8 +19,10 @@
     <div class="flex-1 flex flex-col min-w-0">
         
         <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800">📊 Report Dashboard</h2>
-            <div class="flex items-center gap-4">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                <i class="fa-solid fa-chart-pie text-[#5c56f1]"></i> Report Dashboard
+            </h2>
+            <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                     <input type="date" id="startDate" class="bg-transparent border-none text-sm focus:ring-0 p-1">
                     <span class="text-slate-400">-</span>
@@ -29,33 +35,46 @@
         </header>
 
         <div class="p-8 space-y-8 overflow-y-auto">
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                     <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">ใบงานทั้งหมด</p>
-                    <h3 id="stat-total" class="text-3xl font-black text-slate-800 mt-2">0</h3>
+                    <h3 id="stat-total" class="text-4xl font-black text-slate-800 mt-2">0</h3>
                 </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
                     <p class="text-emerald-500 text-xs font-bold uppercase tracking-wider">ปิดทัน SLA</p>
-                    <h3 id="stat-inSla" class="text-3xl font-black text-slate-800 mt-2">0</h3>
+                    <h3 id="stat-inSla" class="text-4xl font-black text-slate-800 mt-2">0</h3>
                 </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 border-l-4 border-l-rose-500">
                     <p class="text-rose-500 text-xs font-bold uppercase tracking-wider">เกิน SLA</p>
-                    <h3 id="stat-overSla" class="text-3xl font-black text-slate-800 mt-2">0</h3>
+                    <h3 id="stat-overSla" class="text-4xl font-black text-slate-800 mt-2">0</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="font-bold text-slate-700 mb-6">สัดส่วนหัวข้อปัญหา (%)</h4>
-                    <div class="h-64 flex justify-center"><canvas id="topicChart"></canvas></div>
+                    <h4 class="font-bold text-slate-700 mb-6 flex items-center justify-between">
+                        สัดส่วนหัวข้อปัญหา <span>(%)</span>
+                    </h4>
+                    <div class="h-72 flex justify-center">
+                        <canvas id="topicChart"></canvas>
+                    </div>
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="font-bold text-slate-700 mb-6">ประสิทธิภาพ SLA (%)</h4>
-                    <div class="h-64 flex justify-center"><canvas id="slaChart"></canvas></div>
+                    <h4 class="font-bold text-slate-700 mb-6 flex items-center justify-between">
+                        ประสิทธิภาพการปิดงาน <span>(SLA)</span>
+                    </h4>
+                    <div class="h-72 flex justify-center">
+                        <canvas id="slaChart"></canvas>
+                    </div>
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
                     <h4 class="font-bold text-slate-700 mb-6">จำนวนใบงานแยกตามทีมและสัดส่วน (%)</h4>
-                    <div class="h-80"><canvas id="teamChart"></canvas></div>
+                    <div class="h-96">
+                        <canvas id="teamChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,8 +84,20 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- 1. Load Sidebar (Fix 404) ---
-        fetch('./sidebar.html')
+        const firebaseConfig = {
+            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
+            authDomain: "salesupportsystemapp.firebaseapp.com",
+            projectId: "salesupportsystemapp",
+            storageBucket: "salesupportsystemapp.firebasestorage.app",
+            messagingSenderId: "840890441207",
+            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- Load Sidebar (Fix 404 Path) ---
+        fetch('./components/sidebar.html')
             .then(res => res.text())
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
@@ -78,93 +109,99 @@
                     else newScript.text = oldScript.text;
                     document.body.appendChild(newScript);
                 });
-            }).catch(err => console.error("Sidebar load failed:", err));
+            }).catch(err => console.error("Error loading sidebar:", err));
 
-        // --- 2. Firebase Setup ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-            authDomain: "salesupportsystemapp.firebaseapp.com",
-            projectId: "salesupportsystemapp",
-            storageBucket: "salesupportsystemapp.firebasestorage.app",
-            messagingSenderId: "840890441207",
-            appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let chartInstances = {};
 
-        let charts = {};
-
-        // --- 3. Report Logic ---
+        // --- Core Report Logic ---
         async function renderReports() {
-            const ticketSnap = await getDocs(collection(db, "tickets"));
-            const tickets = [];
-            ticketSnap.forEach(doc => tickets.push(doc.data()));
+            try {
+                // ดึงข้อมูลจากคอลเลกชัน 'tickets' (ตรวจสอบชื่อให้ตรงใน DB)
+                const ticketSnap = await getDocs(collection(db, "tickets"));
+                const tickets = [];
+                ticketSnap.forEach(doc => tickets.push(doc.data()));
 
-            const total = tickets.length;
-            let inSla = 0, overSla = 0;
-            const topicStats = {}, teamStats = {};
+                const total = tickets.length;
+                let inSla = 0, overSla = 0;
+                const topicData = {}, teamData = {};
 
-            tickets.forEach(t => {
-                // SLA (อ้างอิงจากฟิลด์ status หรือ sla_status ของคุณ)
-                if (t.status === 'Closed' || t.sla_status === 'In SLA') inSla++;
-                else overSla++;
+                tickets.forEach(t => {
+                    // ประมวลผล SLA
+                    if (t.sla_status === 'In SLA' || t.status === 'Closed') inSla++;
+                    else overSla++;
 
-                // Topic & Team
-                if(t.topic) topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
-                if(t.team) teamStats[t.team] = (teamStats[t.team] || 0) + 1;
-            });
+                    // ประมวลผล Topic และ Team (อ้างอิงชื่อฟิลด์ตามที่คุณเก็บ)
+                    if (t.topic) topicData[t.topic] = (topicData[t.topic] || 0) + 1;
+                    if (t.team) teamData[t.team] = (teamData[t.team] || 0) + 1;
+                });
 
-            // Update UI
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-inSla').innerText = inSla;
-            document.getElementById('stat-overSla').innerText = overSla;
+                // อัปเดตตัวเลข
+                document.getElementById('stat-total').innerText = total;
+                document.getElementById('stat-inSla').innerText = inSla;
+                document.getElementById('stat-overSla').innerText = overSla;
 
-            // Clear old charts
-            Object.values(charts).forEach(c => c.destroy());
+                updateCharts(topicData, teamData, { inSla, overSla }, total);
+            } catch (err) {
+                console.error("Data Fetch Error:", err);
+            }
+        }
 
-            // Render Charts
-            const ctxTopic = document.getElementById('topicChart').getContext('2d');
-            charts.topic = new Chart(ctxTopic, {
+        function updateCharts(topicData, teamData, sla, total) {
+            // Destroy existing charts to refresh
+            Object.values(chartInstances).forEach(c => c.destroy());
+
+            // 1. Topic Chart (Pie)
+            chartInstances.topic = new Chart(document.getElementById('topicChart'), {
                 type: 'pie',
                 data: {
-                    labels: Object.keys(topicStats),
+                    labels: Object.keys(topicData),
                     datasets: [{
-                        data: Object.values(topicStats),
-                        backgroundColor: ['#5c56f1', '#818cf8', '#c7d2fe', '#312e81', '#4338ca']
+                        data: Object.values(topicData),
+                        backgroundColor: ['#5c56f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#4338ca']
                     }]
                 }
             });
 
-            const ctxSla = document.getElementById('slaChart').getContext('2d');
-            charts.sla = new Chart(ctxSla, {
+            // 2. SLA Chart (Doughnut)
+            chartInstances.sla = new Chart(document.getElementById('slaChart'), {
                 type: 'doughnut',
                 data: {
                     labels: ['ทันเวลา', 'เกิน SLA'],
                     datasets: [{
-                        data: [inSla, overSla],
+                        data: [sla.inSla, sla.overSla],
                         backgroundColor: ['#10b981', '#f43f5e']
                     }]
                 }
             });
 
-            const ctxTeam = document.getElementById('teamChart').getContext('2d');
-            charts.team = new Chart(ctxTeam, {
+            // 3. Team Chart (Bar with % logic)
+            chartInstances.team = new Chart(document.getElementById('teamChart'), {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(teamStats),
+                    labels: Object.keys(teamData),
                     datasets: [{
-                        label: 'จำนวนงาน',
-                        data: Object.values(teamStats),
+                        label: 'จำนวนใบงาน',
+                        data: Object.values(teamData),
                         backgroundColor: '#5c56f1',
-                        borderRadius: 8
+                        borderRadius: 12
                     }]
                 },
-                options: { scales: { y: { beginAtZero: true } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` จำนวน: ${ctx.raw} (${((ctx.raw/total)*100).toFixed(1)}%)`
+                            }
+                        }
+                    }
+                }
             });
         }
 
         document.getElementById('btnFilter').onclick = renderReports;
-        renderReports();
+        renderReports(); // Run once on load
     </script>
 </body>
 </html>
