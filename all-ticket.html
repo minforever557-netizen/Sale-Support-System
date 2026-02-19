@@ -216,6 +216,7 @@
             }).join('');
         }
 
+        // --- Interaction Handlers ---
         window.viewDetail = async (id) => {
             const docSnap = await getDoc(doc(db, "tickets", id));
             if (docSnap.exists()) {
@@ -227,15 +228,21 @@
                 document.getElementById('det-detail').innerText = t.detail;
                 document.getElementById('det-admin-user').innerText = t.adminName || 'System';
                 document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกเพิ่มเติมจากแอดมิน';
+
                 document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+                document.body.classList.add('modal-active');
             }
         };
 
         window.closeDetailModal = () => {
             document.getElementById('detail-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
         };
+
+        document.getElementById('searchInput').addEventListener('input', () => renderTickets(currentTickets));
+        document.getElementById('sortOrder').addEventListener('change', () => {
+            initTicketListener();
+        });
 
         document.getElementById('searchInput').addEventListener('input', () => renderTickets(currentTickets));
         document.getElementById('sortOrder').addEventListener('change', initTicketListener);
