@@ -66,24 +66,25 @@ body {
     color: var(--primary-green);
 }
 
+/* --- บังคับแสดงแถบเส้นสีเขียวด้านขวา --- */
 .nav-link-modern.active {
     background-color: var(--light-green) !important;
     color: var(--primary-green) !important;
-    font-weight: 700;
+    position: relative; /* สำคัญมากเพื่อให้ ::after ยึดตำแหน่งได้ */
+    overflow: visible !important; /* ป้องกันแถบโดนตัดทิ้งตอนย่อ */
 }
 
-/* แถบบอกตำแหน่งเมนู (Indicator) */
 .nav-link-modern.active::after {
     content: "" !important;
     display: block !important;
     position: absolute !important;
     right: 0 !important;
     top: 0 !important;
+    width: 4px !important; /* ความหนาของเส้น */
     height: 100% !important;
-    width: 4px !important;
     background-color: var(--primary-green) !important;
     border-radius: 4px 0 0 4px;
-    z-index: 50 !important;
+    z-index: 100 !important; /* ดันให้ลอยมาหน้าสุด */
 }
 
 /* ==========================================================================
