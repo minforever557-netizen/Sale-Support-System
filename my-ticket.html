@@ -72,7 +72,7 @@
                                 </tr>
                             </thead>
                             <tbody id="ticket-list" class="divide-y divide-slate-50 text-sm">
-                                <tr><td colspan="6" class="p-20 text-center text-emerald-500 font-medium animate-pulse">กำลังโหลดใบงาน...</td></tr>
+                                <tr><td colspan="6" class="p-20 text-center text-emerald-500 font-medium">กำลังโหลดใบงาน...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -114,13 +114,13 @@
                 </div>
             </div>
             <div class="p-6 bg-slate-50 text-right border-t border-slate-100">
-                <button onclick="closeDetailModal()" class="px-10 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition shadow-sm">ปิด</button>
+                <button onclick="closeDetailModal()" class="px-10 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-100 transition shadow-sm">ปิด</button>
             </div>
         </div>
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="logout-backdrop"></div>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="logout-backdrop"></div>
         <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
             <div class="text-center">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-3xl">🚪</span></div>
@@ -134,12 +134,14 @@
         </div>
     </div>
 
+    <script type="module" src="./js/dashboard.js"></script>
+
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
+        const firebaseConfig = { 
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
             projectId: "salesupportsystemapp",
@@ -154,54 +156,33 @@
 
         let currentTickets = [];
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                const userData = adminDoc.exists() ? adminDoc.data() : (userDoc.exists() ? userDoc.data() : {});
-                
-                // โหลด Sidebar/Topbar ผ่านฟังก์ชันที่คุณมี
-                await loadLayout(userData, user.email);
-                initTicketListener(user.email);
+                // โหลดข้อมูลเฉพาะของตัวเอง
+                initTicketListener(user.email); 
+
+                // ดักฟังปุ่ม Logout จาก Topbar (dashboard.js โหลดมา)
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#main-logout-btn')) {
+                        e.preventDefault();
+                        document.getElementById('logout-modal').classList.remove('hidden');
+                    }
+                });
             } else {
                 window.location.replace("login.html");
             }
         });
 
-        async function loadLayout(userData, email) {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
-            for (const comp of comps) {
-                const res = await fetch(comp.url);
-                if (res.ok) {
-                    const el = document.getElementById(comp.id);
-                    el.innerHTML = await res.text();
-                    el.classList.remove('hidden');
-                    el.querySelectorAll("script").forEach(s => {
-                        const ns = document.createElement("script");
-                        ns.type = "module";
-                        ns.textContent = s.textContent;
-                        document.head.appendChild(ns);
-                    });
-                }
-            }
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('#main-logout-btn')) {
-                    e.preventDefault();
-                    document.getElementById('logout-modal').classList.remove('hidden');
-                }
-            });
-        }
-
         function initTicketListener(email) {
             const [field, direction] = document.getElementById('sortOrder').value.split('-');
+            
+            // กรองเฉพาะเจ้าของ Ticket (ownerEmail)
             const q = query(
-                collection(db, "tickets"),
+                collection(db, "tickets"), 
                 where("ownerEmail", "==", email),
                 orderBy(field, direction)
             );
+
             onSnapshot(q, (snapshot) => {
                 currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderTickets(currentTickets);
@@ -241,7 +222,7 @@
                         </td>
                         <td class="p-7 text-slate-500 text-[12px]">${updateDate}</td>
                         <td class="p-7 text-right">
-                            <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-500 px-5 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95">
+                            <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-500 px-5 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 shadow-sm">
                                 <i class="fa-solid fa-eye mr-2"></i>ดูข้อมูล
                             </button>
                         </td>
@@ -274,6 +255,7 @@
             if (auth.currentUser) initTicketListener(auth.currentUser.email);
         });
 
+        // Logout
         document.getElementById('close-logout').onclick = () => document.getElementById('logout-modal').classList.add('hidden');
         document.getElementById('confirm-logout').onclick = async () => {
             await signOut(auth);
