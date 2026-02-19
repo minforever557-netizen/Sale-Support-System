@@ -21,19 +21,17 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // ดึงข้อมูลจากคอลเลกชัน 'admin' ตาม UID
             const userDoc = await getDoc(doc(db, "admin", user.uid));
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                // ตรวจสอบ Role (รองรับตัวพิมพ์เล็ก/ใหญ่)
                 const userRole = (userData.role || "").toLowerCase();
 
+                // ตรวจสอบ Role (admin, user, staff)
                 if (['admin', 'user', 'staff'].includes(userRole)) {
-                    // เริ่มต้นโหลด Layout และส่งข้อมูลผู้ใช้เข้าไป
+                    // เรียกโหลด Layout และรอจนกว่าจะโหลด Component เสร็จจริง
                     await initGlobalLayout(userData, user.email);
                     
-                    // โหลดสถิติ Dashboard
                     if (typeof loadDashboardStats === 'function') {
                         loadDashboardStats(user.email);
                     }
@@ -57,14 +55,14 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// 3. ฟังก์ชันโหลด Sidebar และ Topbar
+// 3. ฟังก์ชันโหลด Sidebar และ Topbar (ปรับปรุงใหม่)
 async function initGlobalLayout(userData, email) {
     const components = [
         { id: 'sidebar-placeholder', url: './components/sidebar.html' },
         { id: 'topbar-placeholder', url: './components/topbar.html' }
     ];
 
-    // 1. โหลด HTML Components ทั้งหมด
+    // --- ส่วนที่ 1: โหลด HTML Components (รอให้เสร็จทีละตัว) ---
     for (const comp of components) {
         try {
             const response = await fetch(comp.url);
@@ -73,35 +71,38 @@ async function initGlobalLayout(userData, email) {
             const container = document.getElementById(comp.id);
             if (container) {
                 container.innerHTML = html;
+                console.log(`Loaded: ${comp.id}`);
             }
         } catch (error) {
             console.error(`Error loading ${comp.id}:`, error);
         }
     }
 
-    // 2. ฟังก์ชันอัปเดตข้อมูลแบบ Direct Injection (ไม่ต้องรอ setTimeout นาน)
-    const renderUserData = () => {
-        const nameEl = document.getElementById('tp-fullname');
-        const userEl = document.getElementById('tp-username');
-        const emailEl = document.getElementById('tp-email');
-        const avatarEl = document.getElementById('tp-avatar-circle');
+    // --- ส่วนที่ 2: ฟังก์ชันฉีดข้อมูลเข้า Topbar (พร้อมระบบตรวจสอบซ้ำ) ---
+    const renderUserData = (retryCount = 0) => {
+        const elements = {
+            name: document.getElementById('tp-fullname'),
+            user: document.getElementById('tp-username'),
+            email: document.getElementById('tp-email'),
+            avatar: document.getElementById('tp-avatar-circle')
+        };
 
-        if (nameEl) {
-            // อัปเดตข้อมูลจาก Firestore ที่คุณส่งมา (name: "user 02", username: "user02")
-            nameEl.innerText = userData.name || "ผู้ใช้งาน";
-            if (userEl) userEl.innerText = `@${userData.username || "user"}`;
-            if (emailEl) emailEl.innerText = email || userData.email;
-            if (avatarEl && userData.name) {
-                avatarEl.innerText = userData.name.charAt(0).toUpperCase();
+        // ตรวจสอบว่า Element หลัก (ชื่อ) ปรากฏหรือยัง
+        if (elements.name) {
+            elements.name.innerText = userData.name || "ผู้ใช้งาน";
+            if (elements.user) elements.user.innerText = `@${userData.username || "user"}`;
+            if (elements.email) elements.email.innerText = email || userData.email;
+            if (elements.avatar && userData.name) {
+                elements.avatar.innerText = userData.name.charAt(0).toUpperCase();
             }
-            console.log("Topbar updated successfully!");
-        } else {
-            // ถ้ายังหา Element ไม่เจอ ให้ลองรันใหม่อีกครั้งใน 50ms (ป้องกัน Race Condition)
-            setTimeout(renderUserData, 50);
+            console.log("✅ Topbar updated successfully!");
+        } else if (retryCount < 20) { 
+            // ถ้ายังไม่เจอ ให้ลองใหม่ทุกๆ 50ms (สูงสุด 1 วินาที)
+            setTimeout(() => renderUserData(retryCount + 1), 50);
         }
     };
 
-    // 3. ระบบนาฬิกา (รันทันทีที่โหลดเสร็จ)
+    // --- ส่วนที่ 3: ระบบนาฬิกา Real-time ---
     const initClock = () => {
         const clockEl = document.getElementById('tp-clock');
         const dateEl = document.getElementById('tp-date');
@@ -118,11 +119,11 @@ async function initGlobalLayout(userData, email) {
         }
     };
 
-    // เริ่มการรันข้อมูล
+    // เริ่มทำงาน
     renderUserData();
     initClock();
 
-    // เริ่มทำงานระบบ Sidebar
+    // เริ่มทำงานระบบ Sidebar (ลูกศรย่อขยาย)
     if (typeof initSidebarBehavior === 'function') {
         initSidebarBehavior(userData);
     }
