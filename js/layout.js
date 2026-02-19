@@ -113,17 +113,19 @@ function initSidebarToggle() {
     const sidebar = document.getElementById("sidebar-wrapper");
     const icon = document.getElementById("toggle-icon");
 
-    if (!btn || !sidebar) return;
+    if (!btn || !sidebar) {
+        console.log("TOGGLE NOT FOUND");
+        return;
+    }
 
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
 
         sidebar.classList.toggle("sidebar-collapsed");
 
-        // สลับลูกศร
         icon.classList.toggle("fa-chevron-left");
         icon.classList.toggle("fa-chevron-right");
 
-    });
+    };
 }
 
 
