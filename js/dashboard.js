@@ -99,6 +99,37 @@ function initSidebarBehavior(userData) {
 }
 
 // --- ฟังก์ชันอื่นๆ คงเดิม (เพื่อความกระชับผมขอตัดเนื้อในออก แต่ให้คุณใช้ของเดิมที่คุณมีได้เลย) ---
-async function initGlobalLayout(userData, email) { /* ... โค้ดเดิม ... */ }
-async function loadDashboardStats(userEmail) { /* ... โค้ดเดิม ... */ }
+async function initGlobalLayout(userData, email) {
+    const comps = [
+        { id: 'sidebar-placeholder', url: './components/sidebar.html' },
+        { id: 'topbar-placeholder', url: './components/topbar.html' }
+    ];
 
+    for (const comp of comps) {
+        try {
+            const response = await fetch(comp.url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const html = await response.text();
+            const container = document.getElementById(comp.id);
+            if (container) {
+                container.innerHTML = html;
+                // ถ้าเป็น Sidebar ให้ลบ class hidden ออกเพื่อให้แสดงผล
+                if (comp.id === 'sidebar-placeholder') {
+                    container.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to load ${comp.id}:`, error);
+        }
+    }
+
+    // อัปเดตข้อมูลผู้ใช้บน Topbar (อ้างอิง ID ใน topbar.html)
+    const nameDisplay = document.querySelector('#topbar-user-name');
+    if (nameDisplay) nameDisplay.innerText = userData.name || "User";
+    
+    const emailDisplay = document.querySelector('#topbar-user-email');
+    if (emailDisplay) emailDisplay.innerText = email;
+
+    // 🚩 สำคัญ: เรียกฟังก์ชันควบคุม Sidebar หลังจากโหลด HTML เสร็จแล้ว
+    initSidebarBehavior(userData);
+}
