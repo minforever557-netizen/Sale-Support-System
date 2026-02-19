@@ -223,3 +223,87 @@ body {
     font-size: 11px;
     font-weight: 700;
 }
+/* --- Profile Settings Theme Customization --- */
+
+/* Animation สำหรับการโหลดหน้า Profile */
+.profile-container {
+    animation: profileFadeIn 0.5s ease-out;
+}
+
+@keyframes profileFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ปรับแต่ง Input ให้เข้ากับความหรูหราของแผงควบคุม */
+.form-input { 
+    width: 100%; 
+    background-color: #ffffff; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 1.25rem; 
+    padding: 0.85rem 1.25rem; 
+    font-size: 0.95rem; 
+    font-weight: 500; 
+    color: #334155;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input:focus { 
+    border-color: #5c67f2; 
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(92, 103, 242, 0.1);
+    background-color: #fff;
+}
+
+/* สำหรับช่องที่ห้ามแก้ไข (Read-only) */
+.input-readonly { 
+    background-color: #f8fafc; 
+    color: #94a3b8; 
+    cursor: not-allowed; 
+    border-style: dashed; 
+}
+
+/* หัวข้อเล็กๆ เหนือช่อง Input */
+.label-title { 
+    display: block; 
+    font-size: 0.7rem; 
+    font-weight: 800; 
+    color: #64748b; 
+    text-transform: uppercase; 
+    margin-bottom: 0.6rem; 
+    margin-left: 0.5rem; 
+    letter-spacing: 0.05em; 
+}
+
+/* Success Overlay หลังจากกดบันทึก */
+#success-overlay {
+    display: none; 
+    position: fixed; 
+    inset: 0; 
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.8); 
+    backdrop-filter: blur(12px);
+    align-items: center; 
+    justify-content: center;
+}
+
+/* ปรับปรุงปุ่มบันทึกให้มีความนูนและเงาที่นุ่มนวลขึ้น */
+.btn-save-profile {
+    background-color: #5c67f2;
+    transition: all 0.3s ease;
+}
+
+.btn-save-profile:hover {
+    background-color: #4a54d1;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -5px rgba(92, 103, 242, 0.4);
+}
+
+.btn-save-profile:active {
+    transform: scale(0.98);
+}
+
+/* ตกแต่ง Avatar Gradient */
+.profile-avatar-gradient {
+    background: linear-gradient(135deg, #5c67f2 0%, #818cf8 100%);
+}
