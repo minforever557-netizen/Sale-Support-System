@@ -143,7 +143,18 @@
                 let emailFound = "";
                 querySnapshot.forEach((doc) => { emailFound = doc.data().email; });
 
-                await signInWithEmailAndPassword(auth, emailFound, passVal);
+                const userCredential =
+    await signInWithEmailAndPassword(auth, emailFound, passVal);
+
+// ✅ บันทึก session ให้ layout + authGuard ใช้
+const userData = {
+    email: emailFound,
+    username: userVal,
+    role: "Admin" // หรือดึงจาก firestore ถ้ามี
+};
+
+localStorage.setItem("user", JSON.stringify(userData));
+
                 
                 // Success Animation
                 btnText.innerText = "สำเร็จแล้ว!";
