@@ -435,6 +435,12 @@ select.profile-input-field {
 
    /* ===== SIDEBAR COLLAPSE ===== */
 
+/* ===== COLLAPSE MODE ===== */
+
+#sidebar-wrapper {
+    width: 260px;
+}
+
 .sidebar-collapsed {
     width: 80px !important;
 }
@@ -442,12 +448,11 @@ select.profile-input-field {
 /* ซ่อนข้อความ */
 .sidebar-collapsed .sidebar-text {
     opacity: 0;
-    pointer-events: none;
     width: 0;
     overflow: hidden;
 }
 
-/* จัด icon ให้อยู่กลาง */
+/* icon อยู่กลาง */
 .sidebar-collapsed .nav-link-modern {
     justify-content: center;
 }
