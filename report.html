@@ -17,16 +17,18 @@
         .modal-active { overflow: hidden; }
         .modal-backdrop-blur { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.5); }
         .modal-animate { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        /* เพิ่มเติมเพื่อให้เข้ากับ Dashboard layout */
+        aside#sidebar-placeholder { width: 256px; }
+        @media (max-width: 1024px) { aside#sidebar-placeholder { display: none; } }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-   <aside id="sidebar-placeholder"
-class="hidden lg:block flex-shrink-0">
-</aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder"></div>
+        <div id="topbar-placeholder" class="sticky top-0 z-40"></div>
 
         <main class="p-4 md:p-8 space-y-6">
             <div class="glass-card p-6">
@@ -60,7 +62,7 @@ class="hidden lg:block flex-shrink-0">
                                 <option value="Q1">Q1</option><option value="Q2">Q2</option>
                                 <option value="Q3">Q3</option><option value="Q4">Q4</option>
                             </select>
-                            <input type="number" id="val-y" class="filter-input w-1/2" value="2025">
+                            <input type="number" id="val-y" class="filter-input w-1/2" value="2026">
                         </div>
                     </div>
                     <div class="flex items-end">
@@ -109,7 +111,7 @@ class="hidden lg:block flex-shrink-0">
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300" id="logout-backdrop"></div>
+        <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300" id="logout-backdrop" onclick="closeLogoutModal()"></div>
         <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 modal-animate" id="logout-content">
             <div class="text-center">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -118,8 +120,8 @@ class="hidden lg:block flex-shrink-0">
                 <h3 class="text-2xl font-bold text-slate-800 mb-2">Logout?</h3>
                 <p class="text-slate-500 mb-8 text-sm">ต้องการออกจากระบบใช่หรือไม่?</p>
                 <div class="flex gap-3">
-                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg">ยืนยัน</button>
-                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200">ยกเลิก</button>
+                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg active:scale-95">ยืนยัน</button>
+                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 active:scale-95" onclick="closeLogoutModal()">ยกเลิก</button>
                 </div>
             </div>
         </div>
@@ -170,7 +172,7 @@ class="hidden lg:block flex-shrink-0">
 
         Chart.register(ChartDataLabels);
 
-        // --- 1. Layout & Auth ---
+        // --- 1. Layout & Auth Logic ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const adminDoc = await getDoc(doc(db, "admin", user.uid));
@@ -186,13 +188,15 @@ class="hidden lg:block flex-shrink-0">
                 { id: 'sidebar-placeholder', url: './components/sidebar.html' },
                 { id: 'topbar-placeholder', url: './components/topbar.html' }
             ];
+            
             for (const comp of comps) {
                 const res = await fetch(comp.url);
                 if (res.ok) {
                     const el = document.getElementById(comp.id);
                     el.innerHTML = await res.text();
                     el.classList.remove('hidden');
-                    // Re-run scripts in components
+
+                    // Run scripts inside injected components
                     el.querySelectorAll("script").forEach(oldScript => {
                         const newScript = document.createElement("script");
                         newScript.type = "module";
@@ -201,24 +205,29 @@ class="hidden lg:block flex-shrink-0">
                     });
                 }
             }
-            // Set User Info
+
+            // Sync User Info to Topbar
             setTimeout(() => {
                 const nameEl = document.querySelector('#topbar-user-name');
                 const emailEl = document.querySelector('#topbar-user-email');
+                const avatarEl = document.querySelector('#topbar-avatar-text');
                 if (nameEl) nameEl.innerText = userData.name || "Admin";
                 if (emailEl) emailEl.innerText = email;
-            }, 500);
+                if (avatarEl && userData.name) avatarEl.innerText = userData.name.charAt(0).toUpperCase();
+
+                // Bind Logout Event to Sidebar Button
+                const logoutBtn = document.querySelector('#main-logout-btn');
+                if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); openLogoutModal(); };
+            }, 600);
         }
 
-        // --- 2. Data Logic (Fixed Team/Subteam) ---
+        // --- 2. Data Fetching ---
         function initData() {
             onSnapshot(collection(db, "tickets"), (snapshot) => {
                 rawTickets = snapshot.docs.map(doc => {
                     const d = doc.data();
                     const ts = d.timestamp?.toDate() || new Date();
                     const keys = Object.keys(d);
-
-                    // ฟังก์ชันค้นหาฟิลด์แบบยืดหยุ่น (ไม่สน Space/Case)
                     const getVal = (targets) => {
                         const k = keys.find(key => targets.includes(key.trim().toLowerCase()));
                         return k ? d[k] : null;
@@ -240,7 +249,7 @@ class="hidden lg:block flex-shrink-0">
             });
         }
 
-        // --- 3. Filter & Render ---
+        // --- 3. UI Interaction & Chart ---
         window.toggleFilterUI = () => {
             const mode = document.getElementById('filter-mode').value;
             document.getElementById('ui-daily').classList.toggle('hidden', mode !== 'daily');
@@ -287,11 +296,18 @@ class="hidden lg:block flex-shrink-0">
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(data),
-                    datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'], borderWidth: 0 }]
+                    datasets: [{ 
+                        data: Object.values(data), 
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'], 
+                        borderWidth: 0 
+                    }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 } } },
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { color: '#fff', font: { weight: 'bold', size: 10 } } 
+                    },
                     cutout: '75%'
                 }
             });
@@ -341,7 +357,7 @@ class="hidden lg:block flex-shrink-0">
 
         window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-        // --- 4. Logout Logic (Same as Log.html) ---
+        // --- 4. Modal & Logout Logic ---
         window.openLogoutModal = () => {
             const modal = document.getElementById('logout-modal');
             modal.classList.remove('hidden');
@@ -352,7 +368,7 @@ class="hidden lg:block flex-shrink-0">
             }, 10);
         };
 
-        const closeLogoutModal = () => {
+        window.closeLogoutModal = () => {
             document.getElementById('logout-backdrop').classList.remove('opacity-100');
             document.getElementById('logout-content').classList.add('scale-90', 'opacity-0');
             setTimeout(() => {
@@ -361,7 +377,6 @@ class="hidden lg:block flex-shrink-0">
             }, 300);
         };
 
-        document.getElementById('close-logout').onclick = closeLogoutModal;
         document.getElementById('confirm-logout').onclick = async () => {
             await signOut(auth);
             window.location.replace("login.html");
