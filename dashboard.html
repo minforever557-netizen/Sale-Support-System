@@ -1,83 +1,60 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sale Support System</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Sale Support System</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
 
-    <link rel="stylesheet" href="./css/style.css">
 </head>
 
-<body class="bg-slate-50 font-[Kanit]">
-
-<!-- ================= LAYOUT WRAPPER ================= -->
-<div class="flex min-h-screen">
+<body class="flex min-h-screen bg-slate-50">
 
     <!-- SIDEBAR -->
-    <aside id="sidebar-placeholder"
+    <aside id="sidebar-container"
         class="hidden lg:block w-64 bg-white border-r border-slate-200">
     </aside>
 
-    <!-- CONTENT AREA -->
-    <div class="flex-1 flex flex-col">
+    <!-- RIGHT AREA -->
+    <div class="flex-1 flex flex-col min-w-0">
 
         <!-- TOPBAR -->
-        <header id="topbar-placeholder"></header>
+        <div id="topbar-container"></div>
 
-        <!-- ================= MAIN ================= -->
+        <!-- MAIN CONTENT -->
         <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
 
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h2 class="text-3xl font-bold text-slate-800 tracking-tight">
-                        แผงควบคุมระบบ
-                    </h2>
-                    <p class="text-slate-500 mt-1">
-                        สรุปข้อมูลการดำเนินงานประจำวันของคุณ
-                    </p>
-                </div>
+            <h2 class="text-3xl font-bold text-slate-800">
+                แผงควบคุมระบบ
+            </h2>
 
-                <a href="new-ticket.html" class="btn-primary">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    สร้างใบงานใหม่
-                </a>
-            </div>
-
-            <!-- STATS -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 <div class="glass-card p-8">
-                    <p class="text-xs text-slate-400">ใบงานทั้งหมด</p>
-                    <h3 id="stat-total" class="text-5xl font-bold">0</h3>
+                    <p>ใบงานทั้งหมด</p>
+                    <h3 id="stat-total" class="text-4xl font-bold">0</h3>
                 </div>
 
                 <div class="glass-card p-8">
-                    <p class="text-xs text-slate-400">กำลังดำเนินการ</p>
-                    <h3 id="stat-progress" class="text-5xl font-bold">0</h3>
+                    <p>กำลังดำเนินการ</p>
+                    <h3 id="stat-progress" class="text-4xl font-bold">0</h3>
                 </div>
 
                 <div class="glass-card p-8">
-                    <p class="text-xs text-slate-400">ปิดงานแล้ว</p>
-                    <h3 id="stat-closed" class="text-5xl font-bold">0</h3>
+                    <p>ปิดงานแล้ว</p>
+                    <h3 id="stat-closed" class="text-4xl font-bold">0</h3>
                 </div>
 
             </div>
 
         </main>
+
     </div>
-</div>
 
-<!-- LOGOUT MODAL (ของเดิมคุณ ใช้ได้เลย) -->
-<div id="logout-modal"
-     class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-</div>
-
-<!-- ================= SCRIPTS ================= -->
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/dashboard.js"></script>
 
