@@ -5,13 +5,13 @@
 async function loadLayout() {
 
     // ---------- SIDEBAR ----------
-    const sidebar = await fetch("./components/sidebar.html")
+    const sidebar = await fetch("./components/sidebar.html?v=" + Date.now())
         .then(res => res.text());
 
     document.getElementById("sidebar-container").innerHTML = sidebar;
 
     // ---------- TOPBAR ----------
-    const topbar = await fetch("./components/topbar.html")
+    const topbar = await fetch("./components/topbar.html?v=" + Date.now())
         .then(res => res.text());
 
     document.getElementById("topbar-container").innerHTML = topbar;
@@ -19,7 +19,9 @@ async function loadLayout() {
     // หลัง inject HTML ต้อง init
     initLogout();
     loadUserToTopbar();
+    setActiveMenu();
 }
+
 
 
 // ==============================
@@ -41,6 +43,24 @@ function loadUserToTopbar() {
             (user.name || "") + " " + (user.lastname || "");
     if (email) email.innerText = user.email || "-";
 }
+// ==============================
+// SET ACTIVE MENU
+// ==============================
+function setActiveMenu() {
+
+    const currentPage = location.pathname.split("/").pop();
+
+    document.querySelectorAll(".nav-link-modern")
+        .forEach(link => {
+
+            const page = link.dataset.page;
+
+            if (page === currentPage) {
+                link.classList.add("active");
+            }
+        });
+}
+
 
 
 // ==============================
@@ -48,17 +68,19 @@ function loadUserToTopbar() {
 // ==============================
 function initLogout() {
 
-    const btn = document.getElementById("logoutBtn");
+    const btn =
+        document.getElementById("logoutBtn") ||
+        document.getElementById("main-logout-btn");
 
     if (!btn) return;
 
     btn.addEventListener("click", () => {
 
         localStorage.removeItem("user");
-
         window.location.href = "index.html";
     });
 }
+
 
 
 // ==============================
