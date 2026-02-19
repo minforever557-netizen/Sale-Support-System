@@ -84,51 +84,55 @@ body {
    4. MINI SIDEBAR MODE (บังคับตัดตัวหนังสือ 100%)
    ========================================================================== */
 
-/* 4.1 บีบความกว้าง Placeholder และ Wrapper */
+/* ==========================================================================
+   4. MINI SIDEBAR MODE (Force Icon Only)
+   ========================================================================== */
+
+/* 4.1 บังคับความกว้างของ Sidebar ทั้งหมด */
 #sidebar-placeholder.mini,
 #sidebar-placeholder.mini #sidebar-wrapper {
     width: var(--sidebar-mini-width) !important;
     min-width: var(--sidebar-mini-width) !important;
-}
-
-/* 4.2 บังคับซ่อนตัวหนังสือทุกประเภท (ใช้ Opacity ร่วมกับ Display) */
-#sidebar-placeholder.mini .sidebar-text, 
-#sidebar-placeholder.mini span, 
-#sidebar-placeholder.mini p,
-#sidebar-placeholder.mini .font-medium,
-#sidebar-placeholder.mini .fa-chevron-right {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    width: 0 !important;
     overflow: hidden !important;
 }
 
-/* 4.3 จัดไอคอนให้อยู่กึ่งกลางเป๊ะๆ และเอา Gap ออก */
+/* 4.2 บังคับตัดตัวหนังสือออกทันที (ครอบคลุมทุกแท็กข้างใน) */
+#sidebar-placeholder.mini .sidebar-text,
+#sidebar-placeholder.mini #sidebar-wrapper span,
+#sidebar-placeholder.mini #sidebar-wrapper p {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important; /* ดึงออกจาก Flow เพื่อไม่ให้กินพื้นที่ */
+}
+
+/* 4.3 จัดไอคอนให้อยู่กึ่งกลาง และปรับ Gap ของ Link */
 #sidebar-placeholder.mini .nav-link-modern {
     justify-content: center !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 12px 0 !important;
     gap: 0 !important;
-    margin: 4px auto !important;
+    margin: 4px 8px !important;
 }
 
 #sidebar-placeholder.mini .nav-icon {
     margin: 0 !important;
-    font-size: 1.3rem !important;
+    font-size: 1.35rem !important; /* ขยายไอคอนให้ชัดขึ้นเมื่ออยู่ลำพัง */
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
 }
 
-/* 4.4 จัดการ Logo (SaleSupport) ให้เหลือแต่จรวด */
-#sidebar-placeholder.mini #sidebar-wrapper .h-20 {
+/* 4.4 จัดการ Logo จรวดให้เหลือตัวเดียว */
+#sidebar-placeholder.mini .h-20 {
     justify-content: center !important;
     padding: 0 !important;
 }
 
-#sidebar-placeholder.mini #sidebar-wrapper .min-w-\[40px\] {
-    margin: 0 !important;
-}
-
-/* 4.5 จัดการปุ่ม Logout ให้สมดุล */
+/* 4.5 ปรับปุ่ม Logout ให้เหลือแค่ไอคอน */
 #sidebar-placeholder.mini .logout-btn-modern {
     justify-content: center !important;
     padding: 14px 0 !important;
