@@ -83,6 +83,7 @@ function initLogout() {
 
 
 
+<script>
 // ==============================
 // PAGE GUARD
 // ==============================
@@ -95,6 +96,11 @@ function authGuard() {
         window.location.href = "index.html";
     }
 }
+
+// run immediately
+authGuard();
+</script>
+
 
 
 // ==============================
