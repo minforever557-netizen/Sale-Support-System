@@ -63,33 +63,39 @@ async function initGlobalLayout(userData, email) {
     for (const comp of components) {
         try {
             const response = await fetch(comp.url);
-            if (!response.ok) throw new Error(`Could not load ${comp.url}`);
             const html = await response.text();
             const container = document.getElementById(comp.id);
-            if (container) {
-                container.innerHTML = html;
-                // ลบคลาสที่อาจทำให้ Sidebar ซ่อนอยู่
-                if (comp.id === 'sidebar-placeholder') container.classList.remove('hidden');
-            }
+            if (container) container.innerHTML = html;
         } catch (error) {
-            console.warn(`Layout Error: ${error.message}`);
+            console.error(`Error loading ${comp.id}:`, error);
         }
     }
 
-    // อัปเดตข้อมูลบนหน้าจอ (รอให้ HTML โหลดเสร็จก่อน)
-    const updateUI = () => {
-        const nameEl = document.querySelector('#topbar-user-name');
-        const emailEl = document.querySelector('#topbar-user-email');
-        if (nameEl) nameEl.innerText = userData.name || "User";
-        if (emailEl) emailEl.innerText = email;
-    };
-    
-    setTimeout(updateUI, 100);
+    // --- ส่วนแก้ไข Topbar ---
+    const updateTopbar = () => {
+        // อ้างอิง ID ตามที่ปรากฏใน Topbar
+        const nameEl = document.querySelector('#topbar-user-name') || document.querySelector('.topbar-name');
+        const emailEl = document.querySelector('#topbar-user-email') || document.querySelector('.topbar-email');
+        const dateEl = document.querySelector('#topbar-date'); // สำหรับแสดงเวลา
 
-    // เริ่มทำงานระบบควบคุม Sidebar
+        if (nameEl) nameEl.innerText = userData.name || "Unknown User";
+        if (emailEl) emailEl.innerText = email || "no-email@system.com";
+        
+        // ระบบนาฬิกา Real-time
+        if (dateEl) {
+            setInterval(() => {
+                const now = new Date();
+                dateEl.innerText = now.toLocaleTimeString('th-TH') + " " + now.toLocaleDateString('th-TH');
+            }, 1000);
+        }
+    };
+
+    // รอให้ DOM Render แป๊บนึงแล้วค่อยใส่ค่า
+    setTimeout(updateTopbar, 200);
+
+    // เริ่มทำงานระบบ Sidebar
     initSidebarBehavior(userData);
 }
-
 // 4. ระบบควบคุม Sidebar (Toggle, Active Link, Admin Control)
 function initSidebarBehavior(userData) {
     const sidebar = document.getElementById('sidebar-placeholder');
