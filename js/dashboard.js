@@ -62,7 +62,7 @@ async function initGlobalLayout(userData, email) {
         { id: 'topbar-placeholder', url: './components/topbar.html' }
     ];
 
-    // --- ส่วนที่ 1: โหลด HTML Components (รอให้เสร็จทีละตัว) ---
+    // 1. โหลด HTML Components (รอให้โหลดเสร็จจริงๆ ก่อนไปต่อ)
     for (const comp of components) {
         try {
             const response = await fetch(comp.url);
@@ -71,57 +71,65 @@ async function initGlobalLayout(userData, email) {
             const container = document.getElementById(comp.id);
             if (container) {
                 container.innerHTML = html;
-                console.log(`Loaded: ${comp.id}`);
+                console.log(`✅ Loaded Component: ${comp.id}`);
             }
         } catch (error) {
-            console.error(`Error loading ${comp.id}:`, error);
+            console.error(`❌ Error loading ${comp.id}:`, error);
         }
     }
 
-    // --- ส่วนที่ 2: ฟังก์ชันฉีดข้อมูลเข้า Topbar (พร้อมระบบตรวจสอบซ้ำ) ---
-    const renderUserData = (retryCount = 0) => {
-        const elements = {
-            name: document.getElementById('tp-fullname'),
-            user: document.getElementById('tp-username'),
-            email: document.getElementById('tp-email'),
-            avatar: document.getElementById('tp-avatar-circle')
-        };
+    // 2. ฟังก์ชันฉีดข้อมูลเข้า Topbar (ปรับปรุงให้เช็คถี่ขึ้น)
+    const renderUserData = (attempts = 0) => {
+        const nameEl = document.getElementById('tp-fullname');
+        const userEl = document.getElementById('tp-username');
+        const emailEl = document.getElementById('tp-email');
+        const avatarEl = document.getElementById('tp-avatar-circle');
 
-        // ตรวจสอบว่า Element หลัก (ชื่อ) ปรากฏหรือยัง
-        if (elements.name) {
-            elements.name.innerText = userData.name || "ผู้ใช้งาน";
-            if (elements.user) elements.user.innerText = `@${userData.username || "user"}`;
-            if (elements.email) elements.email.innerText = email || userData.email;
-            if (elements.avatar && userData.name) {
-                elements.avatar.innerText = userData.name.charAt(0).toUpperCase();
+        if (nameEl) {
+            // ใส่ข้อมูล (ใช้ค่าจาก userData ใน Firestore: image_0f7262.png)
+            nameEl.innerText = userData.name || "user 02";
+            if (userEl) userEl.innerText = `@${userData.username || "user02"}`;
+            if (emailEl) emailEl.innerText = email || userData.email;
+            if (avatarEl && (userData.name || userData.username)) {
+                const firstChar = (userData.name || userData.username).charAt(0).toUpperCase();
+                avatarEl.innerText = firstChar;
             }
-            console.log("✅ Topbar updated successfully!");
-        } else if (retryCount < 20) { 
-            // ถ้ายังไม่เจอ ให้ลองใหม่ทุกๆ 50ms (สูงสุด 1 วินาที)
-            setTimeout(() => renderUserData(retryCount + 1), 50);
+            
+            console.log("🚀 Topbar UI Updated Successfully!");
+            // เริ่มระบบนาฬิกาเมื่อ UI พร้อมแล้ว
+            initLiveClock();
+        } else if (attempts < 50) { // ลองใหม่ทุก 20ms รวมสูงสุด 1 วินาที
+            setTimeout(() => renderUserData(attempts + 1), 20);
+        } else {
+            console.error("❌ Critical: Topbar elements not found after 1s");
         }
     };
 
-    // --- ส่วนที่ 3: ระบบนาฬิกา Real-time ---
-    const initClock = () => {
-        const clockEl = document.getElementById('tp-clock');
-        const dateEl = document.getElementById('tp-date');
-        if (clockEl && dateEl) {
-            const update = () => {
-                const now = new Date();
-                clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
-                dateEl.innerText = now.toLocaleDateString('th-TH', { 
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-                });
-            };
-            update();
-            setInterval(update, 1000);
-        }
-    };
-
-    // เริ่มทำงาน
+    // 3. เริ่มการอัปเดต UI
     renderUserData();
-    initClock();
+
+    // 4. เริ่มทำงานระบบ Sidebar
+    if (typeof initSidebarBehavior === 'function') {
+        initSidebarBehavior(userData);
+    }
+}
+
+// ฟังก์ชันนาฬิกาแยกออกมาเพื่อความเป็นระเบียบ
+function initLiveClock() {
+    const clockEl = document.getElementById('tp-clock');
+    const dateEl = document.getElementById('tp-date');
+    if (clockEl && dateEl) {
+        const update = () => {
+            const now = new Date();
+            clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
+            dateEl.innerText = now.toLocaleDateString('th-TH', { 
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+            });
+        };
+        update();
+        setInterval(update, 1000);
+    }
+}
 
     // เริ่มทำงานระบบ Sidebar (ลูกศรย่อขยาย)
     if (typeof initSidebarBehavior === 'function') {
