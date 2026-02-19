@@ -173,3 +173,27 @@ body {
     background-color: var(--primary-green) !important;
     border: 2px solid white;
 }
+
+/* เจาะเข้าไปคุม Sidebar Wrapper เมื่อ Placeholder ติดคลาส mini */
+#sidebar-placeholder.mini #sidebar-wrapper {
+    width: var(--sidebar-mini-width) !important;
+}
+
+/* ซ่อนข้อความทั้งหมดภายใต้ Wrapper เมื่อเป็น mini */
+#sidebar-placeholder.mini #sidebar-wrapper .sidebar-text,
+#sidebar-placeholder.mini #sidebar-wrapper p {
+    display: none !important;
+}
+
+/* จัดกึ่งกลาง Logo และไอคอนเมนู */
+#sidebar-placeholder.mini #sidebar-wrapper .px-6,
+#sidebar-placeholder.mini #sidebar-wrapper .nav-link-modern {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* ปรับตำแหน่งปุ่ม Toggle ให้ขยับตามเวลาหด */
+#sidebar-placeholder.mini #sidebar-toggle {
+    right: -12px;
+}
