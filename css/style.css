@@ -224,6 +224,71 @@ body {
     font-weight: 700;
 }
 /* --- Profile Settings Theme Customization --- */
+/* --- Profile Settings Theme: Green, White, Orange --- */
+
+/* Avatar: สีเขียว Emerald สดใส */
+.profile-avatar-custom {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+    border-radius: 2.2rem !important;
+}
+
+/* Input & Select: เน้นความคลีนสะอาดตา */
+.form-input-profile { 
+    width: 100%; 
+    background-color: #fcfdfe; 
+    border: 1.5px solid #f1f5f9 !important; 
+    border-radius: 1.25rem !important; 
+    padding: 1rem 1.25rem !important; 
+    font-size: 0.95rem; 
+    font-weight: 500; 
+    color: #334155;
+    transition: all 0.2s ease;
+}
+
+/* Focus: ใช้สีส้มเพื่อให้เห็นจุดแก้ไขชัดเจน */
+.form-input-profile:focus { 
+    border-color: #f59e0b !important; 
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+    outline: none;
+}
+
+.label-profile { 
+    display: block;
+    font-size: 0.75rem !important; 
+    font-weight: 700 !important; 
+    color: #64748b !important; 
+    margin-bottom: 0.75rem !important; 
+    margin-left: 0.25rem;
+}
+
+/* ปุ่มบันทึก: สีส้ม Orange กระแทกตา */
+.btn-save-full {
+    background-color: #f59e0b !important;
+    color: white !important;
+    width: 100%;
+    padding: 1.25rem !important;
+    border-radius: 1.25rem !important;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.2);
+}
+
+.btn-save-full:hover {
+    background-color: #d97706 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(245, 158, 11, 0.3);
+}
+
+/* สถานะแอดมิน: สีเขียวอ่อน */
+.status-badge-green {
+    background-color: #ecfdf5;
+    color: #059669;
+}
 
 /* Animation สำหรับการโหลดหน้า Profile */
 .profile-container {
