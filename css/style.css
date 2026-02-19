@@ -324,92 +324,75 @@ body {
     z-index: 2000;
     background: rgba(255, 255, 255, 0.8); 
 
-   /* ==========================================================================
-   6.1 ADDITIONAL BOX STYLING (เพิ่มความสวยงามให้กล่องข้อมูล)
+/* ==========================================================================
+   6. PROFILE CONTENT BOXES (สไตล์กล่องสี่เหลี่ยมขอบโค้ง)
    ========================================================================== */
 
-/* ปรับระยะห่างและพื้นหลังของ Main ให้ดูมีมิติ */
-.profile-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding-bottom: 5rem;
-}
-
-/* ตกแต่งกล่อง Section ภายในฟอร์ม */
-.form-section-box {
+/* กล่องครอบแต่ละส่วน (Section Box) */
+.content-section-box {
     background: #ffffff;
     border: 1px solid #f1f5f9;
-    border-radius: 1.5rem;
-    padding: 1.5rem;
+    border-radius: 2rem;
+    padding: 2rem;
     margin-bottom: 2rem;
-    transition: all 0.3s ease;
 }
 
-.form-section-box:hover {
-    border-color: var(--light-green);
-    background: #fcfdfe;
+/* กล่องกรอกข้อมูล (Input Box) แบบสี่เหลี่ยมขอบโค้ง */
+.input-group-container {
+    margin-bottom: 1.5rem;
 }
 
-/* ตกแต่งหัวข้อ Section ให้ดูเป็นสัดส่วน */
-.section-header-inline {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px dashed #e2e8f0;
+.field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    margin-left: 0.5rem;
 }
 
-.icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-/* ตกแต่ง Sidebar Info Box ด้านซ้าย */
-.info-item-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 1.25rem;
-    border: 1px solid transparent;
+.profile-input-field {
+    width: 100%;
+    background-color: #f8fafc; /* เทาอ่อนมาก */
+    border: 1.5px solid #f1f5f9;
+    border-radius: 1.25rem; /* ขอบโค้งสี่เหลี่ยม */
+    padding: 0.85rem 1.25rem;
+    font-size: 1rem;
+    color: #1e293b;
     transition: all 0.2s ease;
 }
 
-.info-item-card:hover {
-    background: white;
-    border-color: var(--light-green);
-    transform: translateX(5px);
+.profile-input-field:focus {
+    background-color: #ffffff;
+    border-color: var(--primary-orange);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
 }
 
-/* ปรับแต่ง Dropdown (Select) ให้ดูแพงขึ้น */
-select.form-input-profile {
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='C19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+/* กรณีช่องที่แก้ไขไม่ได้ */
+.profile-input-field:read-only {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border-style: dashed;
+}
+
+/* กล่องแสดงผลด้านซ้าย (Info Box) */
+.info-display-card {
+    background: #f8fafc;
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid transparent;
+}
+
+/* ปรับแต่ง Select ให้เข้าชุดกัน */
+select.profile-input-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
-    background-size: 1.2rem;
-    padding-right: 2.5rem !important;
-    appearance: none;
-}
-
-/* เพิ่ม Effect ให้รูปโปรไฟล์ดูมีเลเยอร์ */
-.avatar-ring {
-    padding: 8px;
-    background: white;
-    border-radius: 3rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    display: inline-block;
-    margin-bottom: 1.5rem;
-}
-    backdrop-filter: blur(12px);
-    align-items: center; 
-    justify-content: center;
+    background-size: 1rem;
 }
