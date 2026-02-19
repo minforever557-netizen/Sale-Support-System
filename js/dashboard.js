@@ -1,214 +1,139 @@
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { auth } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 
-// 1. Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
-    authDomain: "salesupportsystemapp.firebaseapp.com",
-    projectId: "salesupportsystemapp",
-    storageBucket: "salesupportsystemapp.firebasestorage.app",
-    messagingSenderId: "840890441207",
-    appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+let currentTickets = [];
+
+/* ================= AUTH CHECK ================= */
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  initTicketListener(user.email);
+});
+
+/* ================= LOAD TICKETS ================= */
+
+function initTicketListener(email) {
+
+  const sortVal = document.getElementById("sortOrder").value;
+  const [field, direction] = sortVal.split("-");
+
+  const q = query(
+    collection(db, "tickets"),
+    where("ownerEmail", "==", email),
+    orderBy(field, direction)
+  );
+
+  onSnapshot(q, (snapshot) => {
+    currentTickets = snapshot.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+
+    renderTickets(currentTickets);
+  });
+}
+
+/* ================= RENDER ================= */
+
+function renderTickets(tickets) {
+
+  const list = document.getElementById("ticket-list");
+  const searchTerm =
+    document.getElementById("searchInput").value.toLowerCase();
+
+  const filtered = tickets.filter(t =>
+    t.id_number?.toLowerCase().includes(searchTerm) ||
+    t.topic?.toLowerCase().includes(searchTerm)
+  );
+
+  if (!filtered.length) {
+    list.innerHTML =
+      `<tr><td colspan="6" class="p-20 text-center text-slate-400">ไม่พบใบงาน</td></tr>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(t => {
+
+    const createDate =
+      t.createdAt?.toDate().toLocaleString("th-TH") || "-";
+
+    const updateDate =
+      t.updatedAt?.toDate().toLocaleString("th-TH") || "-";
+
+    let statusClass = "bg-slate-100 text-slate-600";
+    if (t.status === "Open") statusClass = "bg-blue-100 text-blue-700";
+    if (t.status === "On Progress") statusClass = "bg-orange-100 text-orange-700";
+    if (t.status === "Success") statusClass = "bg-emerald-100 text-emerald-700";
+    if (t.status === "Reject") statusClass = "bg-red-100 text-red-700";
+
+    return `
+      <tr class="hover:bg-slate-50">
+        <td class="p-6 font-bold">${t.id_number || "-"}</td>
+        <td class="p-6">${createDate}</td>
+        <td class="p-6">${t.topic}</td>
+        <td class="p-6 text-center">
+          <span class="status-badge ${statusClass}">
+            ${t.status}
+          </span>
+        </td>
+        <td class="p-6">${updateDate}</td>
+        <td class="p-6 text-right">
+          <button onclick="viewDetail('${t.id}')"
+          class="px-4 py-2 border rounded-xl">
+            ดูข้อมูล
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ================= DETAIL ================= */
+
+window.viewDetail = async (id) => {
+
+  const docSnap = await getDoc(doc(db, "tickets", id));
+
+  if (!docSnap.exists()) return;
+
+  const t = docSnap.data();
+
+  document.getElementById("det-modal-id").innerText = `ID: ${id}`;
+  document.getElementById("det-id-number").innerText = t.id_number || "-";
+  document.getElementById("det-create-date").innerText =
+    t.createdAt?.toDate().toLocaleString("th-TH") || "-";
+  document.getElementById("det-topic").innerText = t.topic;
+  document.getElementById("det-detail").innerText = t.detail;
+
+  document.getElementById("detail-modal").classList.remove("hidden");
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(app);
-const auth = getAuth(app);
+/* ================= EVENTS ================= */
 
-// 2. Authentication Monitor
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        try {
-            const userDoc = await getDoc(doc(db, "admin", user.uid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                const userRole = (userData.role || "").toLowerCase();
+document
+  .getElementById("searchInput")
+  .addEventListener("input", () => renderTickets(currentTickets));
 
-                if (['admin', 'user', 'staff'].includes(userRole)) {
-                    await initGlobalLayout(userData, user.email);
-                    if (typeof loadDashboardStats === 'function') {
-                        loadDashboardStats(user.email);
-                    }
-                } else {
-                    alert("สิทธิ์การใช้งานของคุณไม่ถูกต้อง");
-                    await signOut(auth);
-                    window.location.replace("login.html");
-                }
-            } else {
-                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
-                await signOut(auth);
-                window.location.replace("login.html");
-            }
-        } catch (error) {
-            console.error("Auth Error:", error);
-        }
-    } else {
-        if (!window.location.pathname.includes("login.html")) {
-            window.location.replace("login.html");
-        }
-    }
-});
-
-// 3. ฟังก์ชันโหลด Layout
-async function initGlobalLayout(userData, email) {
-    const components = [
-        { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-        { id: 'topbar-placeholder', url: './components/topbar.html' }
-    ];
-
-    for (const comp of components) {
-        try {
-            const response = await fetch(comp.url);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const html = await response.text();
-            const container = document.getElementById(comp.id);
-            if (container) container.innerHTML = html;
-        } catch (error) {
-            console.error(`Error loading ${comp.id}:`, error);
-        }
-    }
-
-    const startUIRender = (attempts = 0) => {
-        const nameEl = document.getElementById('topbar-user-name');
-        const sidebarWrapper = document.getElementById('sidebar-wrapper');
-
-        if (nameEl && sidebarWrapper) {
-            // อัปเดตข้อมูลผู้ใช้
-            nameEl.innerText = userData.name || "ผู้ใช้งาน";
-            const emailEl = document.getElementById('topbar-user-email');
-            if (emailEl) emailEl.innerText = email || userData.email;
-
-            const roleEl = document.getElementById('topbar-role');
-            if (roleEl) roleEl.innerText = userData.role || "User";
-
-            const avatarEl = document.getElementById('topbar-avatar');
-            if (avatarEl && userData.name) {
-                avatarEl.innerText = userData.name.charAt(0).toUpperCase();
-            }
-
-            // ตรวจสอบสิทธิ์ Admin
-            const adminSection = document.getElementById('admin-menu-section');
-            if (adminSection) {
-                if ((userData.role || "").toLowerCase() === 'admin') {
-                    adminSection.classList.remove('hidden', 'hidden-secure');
-                } else {
-                    adminSection.remove(); 
-                }
-            }
-
-            // รันระบบ UI (เรียกใช้ตัวเดียวที่รวมมาให้แล้วด้านล่าง)
-            initLiveClock();
-            attachSidebarEvents();
-            
-            console.log("🚀 Layout & Data Ready!");
-        } else if (attempts < 50) {
-            setTimeout(() => startUIRender(attempts + 1), 50);
-        }
-    };
-
-    startUIRender();
-}
-
-// 4. ระบบนาฬิกา
-function initLiveClock() {
-    const clockEl = document.getElementById('topbar-time');
-    const dateEl = document.getElementById('topbar-date');
-    if (clockEl && dateEl) {
-        const update = () => {
-            const now = new Date();
-            clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
-            dateEl.innerText = now.toLocaleDateString('th-TH', { 
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-            });
-        };
-        update();
-        setInterval(update, 1000);
-    }
-}
-
-// 5. ระบบ Sidebar Toggle และ Active Menu (รวมเป็นฟังก์ชันเดียว)
-function attachSidebarEvents() {
-    const placeholder = document.getElementById('sidebar-placeholder');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    
-    if (!toggleBtn || !placeholder) return;
-
-    // --- ส่วนที่ 1: ตรวจสอบหน้า Active (เส้นสีเขียว) ---
-    const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
-    document.querySelectorAll('.nav-link-modern').forEach(link => {
-        const href = link.getAttribute('href');
-        const linkPage = href ? href.split("/").pop() : "";
-        if (linkPage === currentPath) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
-
-    // --- ส่วนที่ 2: ระบบ Toggle และไอคอนลูกศร ---
-    const renderIcon = () => {
-        const isMini = placeholder.classList.contains('mini');
-        const iconClass = isMini ? 'fa-chevron-right' : 'fa-chevron-left';
-        toggleBtn.innerHTML = `<i class="fa-solid ${iconClass}" style="display: block !important; color: white; font-size: 10px;"></i>`;
-    };
-
-    renderIcon();
-
-    toggleBtn.onclick = (e) => {
-        e.preventDefault();
-        placeholder.classList.toggle('mini');
-        renderIcon();
-    };
-}
-
-// 6. ฟังก์ชันสถิติ Dashboard
-async function loadDashboardStats(userEmail) {
-    try {
-        const q = query(collection(db, "tickets"), where("ownerEmail", "==", userEmail));
-        const snap = await getDocs(q);
-        let total = 0, progress = 0, closed = 0;
-
-        snap.forEach(docSnap => {
-            const data = docSnap.data();
-            total++;
-            if (["In Progress", "Pending", "กำลังดำเนินการ"].includes(data.status)) progress++;
-            if (["Success", "Closed", "ปิดงานแล้ว"].includes(data.status)) closed++;
-        });
-
-        const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
-        setVal('stat-total', total);
-        setVal('stat-progress', progress);
-        setVal('stat-closed', closed);
-
-        if (total > 0) {
-            const percent = Math.round((closed / total) * 100);
-            setVal('eff-percent', percent + "%");
-            const circle = document.getElementById('progress-circle');
-            if (circle) circle.style.strokeDasharray = `${percent} 100`;
-        }
-    } catch (err) { console.error("Stats Error:", err); }
-}
-
-// 7. ระบบ Logout
-document.addEventListener('click', (e) => {
-    if (e.target.closest('#main-logout-btn')) {
-        const modal = document.getElementById('logout-modal');
-        if(modal) {
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('logout-backdrop')?.classList.add('opacity-100');
-                document.getElementById('logout-content')?.classList.remove('scale-90', 'opacity-0');
-            }, 10);
-        }
-    }
-    if (e.target.id === 'close-logout') {
-        document.getElementById('logout-backdrop')?.classList.remove('opacity-100');
-        document.getElementById('logout-content')?.classList.add('scale-90', 'opacity-0');
-        setTimeout(() => document.getElementById('logout-modal')?.classList.add('hidden'), 300);
-    }
-    if (e.target.id === 'confirm-logout') {
-        signOut(auth).then(() => window.location.replace("login.html"));
-    }
-});
+document
+  .getElementById("sortOrder")
+  .addEventListener("change", () => {
+    const user = auth.currentUser;
+    if (user) initTicketListener(user.email);
+  });

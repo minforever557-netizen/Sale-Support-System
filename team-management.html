@@ -4,34 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>โครงสร้างทีม - Sale Support System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/style.css"> 
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .modal-animate { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .team-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .team-card:hover { border-color: #5d58f0; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(93, 88, 240, 0.1); }
-        
-        /* Logout Modal Styles System */
-        .modal-active { overflow: hidden; }
-        #logout-modal { transition: visibility 0.3s; }
-        #logout-backdrop { transition: opacity 0.3s ease-out; }
-        #logout-content { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .fade-in { animation: fadeInMain 0.5s ease-out; }
-        @keyframes fadeInMain { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+ <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+
 </head>
-<body class="flex min-h-screen">
+<body class="flex h-screen overflow-hidden bg-slate-50">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
+    <!-- SIDEBAR -->
+<aside id="sidebar-container"
+class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
+</aside>
 
+
+
+    <!-- RIGHT AREA -->
     <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder" class="sticky top-0 z-50"></div>
 
-        <main class="p-4 md:p-10 fade-in">
+        <!-- TOPBAR -->
+        <div id="topbar-container"></div>
+
+        <!-- MAIN CONTENT -->
+        <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                     <div>
@@ -284,5 +280,7 @@
             }
         };
     </script>
+             <script src="./js/layout.js"></script>
+<script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

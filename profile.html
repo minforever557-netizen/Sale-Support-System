@@ -4,34 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Settings - Sale Support System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/style.css"> 
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .profile-card { background: white; border-radius: 2rem; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02); }
-        .form-input { width: 100%; background-color: #fcfdfe; border: 1.5px solid #f1f5f9; border-radius: 1.25rem; padding: 0.85rem 1.25rem; font-size: 0.95rem; font-weight: 500; color: #334155; transition: all 0.3s ease; }
-        .form-input:focus { border-color: #6366f1; background-color: #ffffff; outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-        .input-readonly { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; border-style: dashed; }
-        .label-title { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.6rem; margin-left: 0.5rem; letter-spacing: 0.05em; }
-        
-        #success-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Modal Animation Helpers */
-        .modal-active { opacity: 1 !important; transform: scale(1) !important; }
-        .backdrop-active { opacity: 1 !important; }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+
 </head>
-<body class="flex min-h-screen">
+<body class="flex h-screen overflow-hidden bg-slate-50">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
+    <!-- SIDEBAR -->
+<aside id="sidebar-container"
+class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
+</aside>
 
+
+
+    <!-- RIGHT AREA -->
     <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder" class="sticky top-0 z-50"></div>
+
+        <!-- TOPBAR -->
+        <div id="topbar-container"></div>
 
         <main class="p-4 md:p-10 fade-in">
             <div class="max-w-5xl mx-auto">
@@ -356,5 +349,8 @@
             }
         };
     </script>
+
+<script src="./js/layout.js"></script>
+<script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

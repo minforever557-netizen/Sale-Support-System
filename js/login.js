@@ -1,8 +1,21 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    setPersistence, 
+    browserLocalPersistence 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Firebase Config
+import { 
+    getFirestore, 
+    collection, 
+    query, 
+    where, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+// ================= FIREBASE CONFIG =================
 const firebaseConfig = {
     apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
     authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -16,12 +29,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+
+// ================= LOGIN =================
 const loginForm = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginBtn');
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const usernameInput = document.getElementById('username').value.trim();
     const passwordInput = document.getElementById('password').value;
 
@@ -29,44 +44,81 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.innerHTML = "กำลังตรวจสอบ...";
 
     try {
-        // 1. ล้างข้อมูลระบบเก่า (localStorage) เพื่อป้องกันการขัดแย้ง
+
+        // ล้าง session เก่า
         localStorage.clear();
 
-        // 2. ค้นหา Email จาก Username ใน Firestore
+        // ===== 1. หา user จาก username =====
         const adminRef = collection(db, "admin");
         const q = query(adminRef, where("username", "==", usernameInput));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            alert("ไม่พบชื่อผู้ใช้งานนี้ในระบบ");
+            alert("ไม่พบชื่อผู้ใช้งาน");
             resetBtn();
             return;
         }
 
         let userEmail = "";
+        let userRole = "user";
+
         querySnapshot.forEach((doc) => {
-            userEmail = doc.data().email;
+            const data = doc.data();
+            userEmail = data.email;
+            userRole = data.role || "user";
         });
 
-        // 3. ตั้งค่า Persistence ให้คงสถานะ Login ไว้แม้ปิด Browser (ช่วยแก้ปัญหาเด้ง)
+        // ===== 2. จำสถานะ login =====
         await setPersistence(auth, browserLocalPersistence);
 
-        // 4. ล็อกอินด้วย Email
-        await signInWithEmailAndPassword(auth, userEmail, passwordInput);
-        
-        // 5. ย้ายหน้าโดยใช้ replace (เพื่อไม่ให้กด Back กลับมาหน้า login ได้)
-        window.location.replace("dashboard.html");
+        // ===== 3. Login =====
+        const userCredential =
+            await signInWithEmailAndPassword(auth, userEmail, passwordInput);
+
+        // ===== 4. Save session =====
+        localStorage.setItem("userEmail", userEmail);
+        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("isLogin", "true");
+
+        // ===== 5. Redirect ตาม ROLE =====
+        redirectByRole(userRole);
 
     } catch (error) {
-        console.error("Login Error:", error);
-        let message = "รหัสผ่านไม่ถูกต้อง หรือเกิดข้อผิดพลาด";
+        console.error(error);
+
+        let message = "เข้าสู่ระบบไม่สำเร็จ";
         if (error.code === 'auth/wrong-password') message = "รหัสผ่านไม่ถูกต้อง";
-        if (error.code === 'auth/user-not-found') message = "ไม่พบผู้ใช้งานนี้";
+        if (error.code === 'auth/user-not-found') message = "ไม่พบผู้ใช้งาน";
+
         alert(message);
         resetBtn();
     }
 });
 
+
+// ================= REDIRECT ROLE =================
+function redirectByRole(role) {
+
+    switch(role) {
+        case "admin":
+            window.location.replace("dashboard.html");
+            break;
+
+        case "sale":
+            window.location.replace("sale-dashboard.html");
+            break;
+
+        case "support":
+            window.location.replace("support-dashboard.html");
+            break;
+
+        default:
+            window.location.replace("dashboard.html");
+    }
+}
+
+
+// ================= RESET BUTTON =================
 function resetBtn() {
     loginBtn.disabled = false;
     loginBtn.innerHTML = "<span>เข้าสู่ระบบ</span>";

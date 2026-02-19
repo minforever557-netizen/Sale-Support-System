@@ -4,35 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Tickets - Sale Support System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="./css/style.css">
-    
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        .status-badge { @apply px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest; }
-        .modal-active { overflow: hidden; }
-        .modal-backdrop-blur { backdrop-filter: blur(8px); background-color: rgba(15, 23, 42, 0.4); }
-        
-        /* Custom Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+
 </head>
-<body class="flex min-h-screen">
+<body class="flex h-screen overflow-hidden bg-slate-50">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
+    <!-- SIDEBAR -->
+<aside id="sidebar-container"
+class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
+</aside>
 
+
+
+    <!-- RIGHT AREA -->
     <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder" class="sticky top-0 z-40"></div>
 
-        <main class="p-4 md:p-8 max-w-7xl mx-auto w-full fade-in">
+        <!-- TOPBAR -->
+        <div id="topbar-container"></div>
+
+        <!-- MAIN CONTENT -->
+        <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h2 class="text-3xl font-bold text-slate-800 tracking-tight">ใบงานของฉัน</h2>
@@ -254,5 +249,7 @@
             if (authUser) initTicketListener(authUser.email);
         });
     </script>
+    <script src="./js/layout.js"></script>
+<script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

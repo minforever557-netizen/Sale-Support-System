@@ -323,7 +323,7 @@ body {
     inset: 0; 
     z-index: 2000;
     background: rgba(255, 255, 255, 0.8); 
-
+}
 /* ==========================================================================
    6. PROFILE CONTENT BOXES (สไตล์กล่องสี่เหลี่ยมขอบโค้ง)
    ========================================================================== */
@@ -432,25 +432,144 @@ select.profile-input-field {
     align-items: center;
     gap: 0.5rem;
 }
+/* =================================
+   SIDEBAR COLLAPSE SYSTEM
+================================= */
 
-   /* ===== SIDEBAR COLLAPSE ===== */
-/* ===== NORMAL ===== */
-#sidebar-wrapper {
-    width: 260px;
-    transition: all .3s ease;
+/* sidebar ปกติ */
+#sidebar-container {
+    transition: width 0.3s ease;
 }
 
-/* ===== COLLAPSED ===== */
-#sidebar-wrapper.sidebar-collapsed {
-    width: 80px;
+/* ตอนย่อ */
+#sidebar-container.sidebar-collapsed {
+    width: 80px !important;
 }
 
-/* ซ่อนเฉพาะข้อความ */
-#sidebar-wrapper.sidebar-collapsed .sidebar-text {
-    display: none;
+/* ซ่อนข้อความ */
+#sidebar-container.sidebar-collapsed .sidebar-text {
+    display: none !important;
 }
 
 /* จัด icon ให้อยู่กลาง */
-#sidebar-wrapper.sidebar-collapsed .nav-link-modern {
+#sidebar-container.sidebar-collapsed .nav-link-modern {
     justify-content: center;
 }
+
+/* icon ใหญ่ขึ้น */
+#sidebar-container.sidebar-collapsed .nav-icon {
+    font-size: 20px;
+}
+/* ===================================================
+   LOGOUT BUTTON ANIMATION (GLOBAL)
+   ใช้ทุกหน้า
+=================================================== */
+
+.logout-btn-modern {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 16px;
+    border-radius: 14px;
+
+    font-weight: 600;
+    color: #ef4444;
+    background: transparent;
+
+    transition: all .25s ease;
+    cursor: pointer;
+}
+
+/* hover */
+.logout-btn-modern:hover {
+    background: rgba(239,68,68,0.08);
+    transform: translateX(4px);
+}
+
+/* icon animation */
+.logout-btn-modern i {
+    transition: all .25s ease;
+}
+
+/* icon slide */
+.logout-btn-modern:hover i {
+    transform: translateX(4px) rotate(-10deg);
+}
+
+/* click effect */
+.logout-btn-modern:active {
+    transform: scale(0.95);
+}
+
+/* glow effect */
+.logout-btn-modern:hover {
+    box-shadow: 0 8px 20px rgba(239,68,68,0.15);
+}
+.sidebar-collapsed .logout-btn-modern span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: all .2s ease;
+}
+.animate__animated {
+    animation-duration: 0.35s;
+}
+
+<style>
+    body {
+        font-family: 'Kanit', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-active {
+        overflow: hidden;
+    }
+
+    .modal-backdrop-blur {
+        backdrop-filter: blur(8px);
+        background-color: rgba(15, 23, 42, 0.4);
+    }
+
+    /* ===== CUSTOM SCROLL ===== */
+    .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    /* ===== PAGE ANIMATION ===== */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

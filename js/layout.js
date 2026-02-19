@@ -99,10 +99,45 @@ function initLogout() {
     if (!btn) return;
 
     btn.onclick = () => {
-        localStorage.removeItem("user");
-        window.location.replace("index.html");
+
+        Swal.fire({
+            title: "ออกจากระบบ ?",
+            text: "คุณต้องการออกจากระบบใช่หรือไม่",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#10b981",
+            cancelButtonColor: "#ef4444",
+            confirmButtonText: "ใช่, ออกจากระบบ",
+            cancelButtonText: "ยกเลิก",
+            reverseButtons: true,
+            backdrop: true,
+            allowOutsideClick: false,
+            showClass: {
+                popup: "animate__animated animate__fadeInDown"
+            },
+            hideClass: {
+                popup: "animate__animated animate__fadeOutUp"
+            }
+
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                // animation ก่อนออก
+                document.body.classList.add("opacity-0","transition","duration-300");
+
+                setTimeout(() => {
+                    localStorage.removeItem("user");
+                    window.location.replace("index.html");
+                }, 300);
+            }
+
+        });
     };
 }
+
+
+
 
 // ==============================
 // SIDEBAR TOGGLE
@@ -110,8 +145,7 @@ function initLogout() {
 function initSidebarToggle() {
 
     const btn = document.getElementById("sidebar-toggle");
-    const sidebar = document.getElementById("sidebar-wrapper");
-    const icon = document.getElementById("toggle-icon");
+    const sidebar = document.getElementById("sidebar-container");
 
     if (!btn || !sidebar) {
         console.log("TOGGLE NOT FOUND");
@@ -119,14 +153,11 @@ function initSidebarToggle() {
     }
 
     btn.onclick = () => {
-
         sidebar.classList.toggle("sidebar-collapsed");
-
-        icon.classList.toggle("fa-chevron-left");
-        icon.classList.toggle("fa-chevron-right");
-
     };
 }
+
+
 
 
 
