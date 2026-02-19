@@ -89,6 +89,7 @@ function initLogout() {
 function authGuard() {
 
     const user = localStorage.getItem("user");
+    console.log("AUTH GUARD CHECK:", user);
 
     if (!user) {
         window.location.href = "index.html";
