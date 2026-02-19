@@ -13,7 +13,7 @@
 <body class="flex min-h-screen">
 
     <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
-    
+
     <div class="flex-1 flex flex-col min-w-0">
         
         <div id="topbar-placeholder"></div>
@@ -23,42 +23,44 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h2 class="text-3xl font-bold text-slate-800 tracking-tight">แผงจัดการงาน Admin</h2>
-                    <p class="text-slate-500 mt-1">ตรวจสอบและดำเนินการใบงานจาก Sale Support</p>
+                    <p class="text-slate-500 mt-1">จัดการสถานะใบงานและติดตาม SLA ของทีม</p>
                 </div>
-                <button onclick="refreshTickets()" class="btn-primary">
-                    <i class="fa-solid fa-rotate text-sm"></i> รีเฟรชข้อมูล
-                </button>
+                <div class="flex gap-3">
+                    <button onclick="window.location.reload()" class="btn-secondary px-6 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition active:scale-95">
+                        <i class="fa-solid fa-rotate mr-2"></i> รีเฟรช
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-8">
+                <div class="glass-card p-8 border-b-4 border-blue-500">
                     <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-inbox"></i>
+                        <i class="fa-solid fa-hourglass-start"></i>
                     </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">งานที่รอรับเรื่อง</p>
-                    <h3 id="admin-stat-pending" class="text-5xl font-bold text-slate-800">0</h3>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">งานค้างรับเรื่อง (Pending)</p>
+                    <h3 id="stat-pending" class="text-5xl font-bold text-slate-800">0</h3>
                 </div>
 
-                <div class="glass-card p-8 border-l-4 border-orange-500">
+                <div class="glass-card p-8 border-b-4 border-orange-500">
                     <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-person-digging"></i>
+                        <i class="fa-solid fa-spinner fa-spin-slow"></i>
                     </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
-                    <h3 id="admin-stat-progress" class="text-5xl font-bold text-slate-800">0</h3>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">กำลังดำเนินการ (In Progress)</p>
+                    <h3 id="stat-progress" class="text-5xl font-bold text-slate-800">0</h3>
                 </div>
 
-                <div class="glass-card p-8">
+                <div class="glass-card p-8 border-b-4 border-emerald-500">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-clipboard-check"></i>
+                        <i class="fa-solid fa-check-double"></i>
                     </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">จัดการเสร็จสิ้นวันนี้</p>
-                    <h3 id="admin-stat-success" class="text-5xl font-bold text-slate-800">0</h3>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">สำเร็จวันนี้ (Closed)</p>
+                    <h3 id="stat-closed" class="text-5xl font-bold text-slate-800">0</h3>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <h4 class="font-bold text-slate-800 px-2 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-primary-green"></i> รายการงานที่ต้องจัดการ
+                    <i class="fa-solid fa-list-check text-[#5c67f2]"></i> รายการงานที่รอการดำเนินการ
                 </h4>
                 
                 <div class="glass-card overflow-hidden">
@@ -66,44 +68,78 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50/50 border-b border-slate-100">
-                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Internet No.</th>
-                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">ผู้แจ้ง / วันที่</th>
+                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-20">ด่วน</th>
+                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">ผู้แจ้ง / Internet No.</th>
                                     <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">หัวข้อ (SLA)</th>
                                     <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">สถานะ</th>
-                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">จัดการ</th>
+                                    <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">จัดการงาน</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-ticket-list" class="divide-y divide-slate-50">
                                 <tr>
-                                    <td colspan="5" class="p-12 text-center text-slate-400 italic">
-                                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังโหลดรายการงาน...
+                                    <td colspan="5" class="p-20 text-center text-slate-400 italic">
+                                        <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> กำลังโหลดข้อมูลงาน...
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div id="no-data-msg" class="hidden p-20 text-center text-slate-400 italic font-medium bg-white">✨ ไม่มีรายการงานค้างในขณะนี้</div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="adminActionModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeAdminModal()"></div>
+        <div class="relative bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden modal-animate">
+            <div class="bg-[#5c56f1] p-8 text-white text-center">
+                <h3 class="text-xl font-bold uppercase tracking-tight">อัปเดตสถานะใบงาน</h3>
+                <p class="text-indigo-100 text-xs mt-1 opacity-80">แจ้งความคืบหน้าให้ Sale ทราบ</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="updateSelectedStatus('Success')" id="btn-status-Success" class="status-btn border-2 border-slate-100 p-4 rounded-3xl flex flex-col items-center gap-2 transition-all hover:bg-slate-50">
+                        <span class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-[10px] font-black uppercase">Complete</span>
+                    </button>
+                    <button onclick="updateSelectedStatus('On Progress')" id="btn-status-On Progress" class="status-btn border-2 border-slate-100 p-4 rounded-3xl flex flex-col items-center gap-2 transition-all hover:bg-slate-50">
+                        <span class="w-3 h-3 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]"></span>
+                        <span class="text-[10px] font-black uppercase">Progress</span>
+                    </button>
+                    <button onclick="updateSelectedStatus('Reject')" id="btn-status-Reject" class="status-btn border-2 border-slate-100 p-4 rounded-3xl flex flex-col items-center gap-2 transition-all hover:bg-slate-50">
+                        <span class="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.4)]"></span>
+                        <span class="text-[10px] font-black uppercase">Reject</span>
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-widest">หมายเหตุจาก Admin</label>
+                    <textarea id="admin-note-input" rows="4" placeholder="ระบุรายละเอียดการแก้ไขหรือสาเหตุที่ Reject..." class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[2rem] outline-none focus:border-[#5c56f1] transition-all"></textarea>
+                </div>
+            </div>
+            <div class="p-8 bg-slate-50 flex gap-4 border-t border-slate-100">
+                <button onclick="closeAdminModal()" class="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-200 rounded-2xl transition">ยกเลิก</button>
+                <button onclick="saveAdminAction()" id="save-btn" class="flex-[2] py-4 bg-[#5c56f1] text-white rounded-2xl font-bold shadow-xl hover:bg-indigo-700 transition active:scale-95">บันทึกข้อมูล</button>
+            </div>
+        </div>
     </div>
 
     <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop-blur opacity-0 transition-opacity duration-300" id="logout-backdrop"></div>
         <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 modal-animate" id="logout-content">
             <div class="text-center">
-                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span class="text-3xl">🚪</span>
-                </div>
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">🚪</div>
                 <h3 class="text-2xl font-bold text-slate-800 mb-2">Logout?</h3>
                 <p class="text-slate-500 mb-8 text-sm">ต้องการออกจากระบบใช่หรือไม่?</p>
                 <div class="flex gap-3">
-                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg active:scale-95">ยืนยัน</button>
-                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg">ยืนยัน</button>
+                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">ยกเลิก</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script type="module" src="./js/admin-management.js"></script>
+
 </body>
 </html>
