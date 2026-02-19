@@ -1,29 +1,40 @@
-/* --- 1. Global Setup --- */
+/* --- 1. Global Setup (Emerald & White Theme) --- */
+:root {
+    --primary-green: #10b981;    /* Emerald 500 */
+    --hover-green: #059669;      /* Emerald 600 */
+    --light-green: #ecfdf5;      /* Emerald 50 */
+    --primary-orange: #f97316;   /* Orange 500 */
+    --bg-main: #f8fafc;
+    --sidebar-width: 280px;
+    --sidebar-mini-width: 80px;
+}
+
 body { 
     font-family: 'Kanit', sans-serif; 
-    background-color: #f8fafc; /* สีพื้นหลังขาวนวลสบายตา */
+    background-color: var(--bg-main);
     color: #1e293b;
     margin: 0;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 /* --- 2. Card Design (Glassmorphism) --- */
 .glass-card { 
     background: white; 
-    border-radius: 2.5rem; /* ความโค้งมนระดับพรีเมียม */
+    border-radius: 2.5rem; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
     border: 1px solid #f1f5f9; 
 }
 
 .glass-card:hover { 
-    transform: translateY(-5px); /* เลื่อนขึ้นเล็กน้อยเมื่อวางเมาส์ */
-    box-shadow: 0 15px 35px rgba(0,0,0,0.06); 
+    transform: translateY(-5px); 
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.08); 
 }
 
-/* --- 3. Interactive Elements (Buttons) --- */
+/* --- 3. Interactive Elements (Green & Orange) --- */
 .btn-primary {
-    background-color: #5c67f2; /* สีน้ำเงินประจำระบบ */
+    background-color: var(--primary-green) !important;
     color: white;
     padding: 0.875rem 2rem;
     border-radius: 1.25rem;
@@ -32,45 +43,41 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(92, 103, 242, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
     border: none;
     cursor: pointer;
 }
 
 .btn-primary:hover {
-    background-color: #4a54d4;
+    background-color: var(--hover-green) !important;
     transform: translateY(-1px);
 }
 
 .btn-primary:active {
-    transform: scale(0.95); /* เอฟเฟกต์ยุบตัวเมื่อกด */
+    transform: scale(0.95);
 }
 
-/* --- 4. Modals & Overlays --- */
-.modal-active { overflow: hidden; } /* ป้องกันการเลื่อนหน้าจอเบื้องหลัง */
-
-.modal-backdrop-blur { 
-    backdrop-filter: blur(8px); 
-    background-color: rgba(15, 23, 42, 0.4); 
-    position: fixed;
-    inset: 0;
+/* --- 4. Sidebar System (Modern Mini & Active) --- */
+#sidebar-placeholder {
+    width: var(--sidebar-width);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    z-index: 1001;
 }
 
-.modal-animate { 
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+/* เมื่อพับเมนู (Mini Mode) */
+#sidebar-placeholder.mini {
+    width: var(--sidebar-mini-width);
 }
 
-/* --- 5. Status Tags --- */
-.status-badge {
-    padding: 0.35rem 1rem;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+/* ซ่อน Text เมื่อเป็น Mini */
+#sidebar-placeholder.mini .sidebar-text,
+#sidebar-placeholder.mini p,
+#sidebar-placeholder.mini .fa-chevron-right {
+    display: none;
 }
-/* --- Sidebar & Nav Links Modern Style --- */
 
-/* 1. สไตล์ลิงก์ปกติ */
+/* ลิงก์เมนู */
 .nav-link-modern {
     display: flex;
     align-items: center;
@@ -81,97 +88,88 @@ body {
     border-radius: 16px;
     transition: all 0.2s ease;
     text-decoration: none;
-    white-space: nowrap; /* ป้องกันตัวหนังสือตกบรรทัดตอนย่อ */
+    white-space: nowrap;
 }
 
-/* 2. สไตล์ Icon และ Emoji ในเมนู */
-.nav-link-modern .nav-icon, 
-.nav-link-modern i {
+.nav-link-modern .nav-icon, .nav-link-modern i {
     width: 24px;
     min-width: 24px;
     text-align: center;
-    font-size: 1.1rem;
-    transition: transform 0.2s;
+    font-size: 1.15rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* 3. Hover Effect */
+/* Hover & Active (Green Theme) */
 .nav-link-modern:hover {
-    background-color: #f5f7ff;
-    color: #5c67f2;
+    background-color: var(--light-green);
+    color: var(--primary-green);
 }
 
-.nav-link-modern:hover .nav-icon,
-.nav-link-modern:hover i {
-    transform: scale(1.2); /* ขยายไอคอนเล็กน้อยเวลาชี้ */
-}
-
-/* 4. Active State (แสดงเมนูที่เลือกอยู่) */
 .nav-link-modern.active {
-    background-color: #f5f7ff;
-    color: #5c67f2;
+    background-color: var(--light-green);
+    color: var(--primary-green);
     font-weight: 700;
-    border-right: 4px solid #5c67f2; /* เพิ่มขีดสีด้านข้างให้รู้ว่าเลือกอยู่ */
+    border-right: 4px solid var(--primary-green);
     border-radius: 16px 4px 4px 16px;
 }
 
-/* 5. รองรับ Mini Sidebar (เมื่อกดพับเมนู) */
-#sidebar-placeholder.mini {
-    width: 80px; /* ลดความกว้างลงให้พอดีไอคอน */
-}
-
-/* ปรับปรุงการย่อ Sidebar */
-#sidebar-placeholder {
-    width: 280px; /* ความกว้างปกติ */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ซ่อนข้อความและลูกศรในปุ่ม Logout เมื่อย่อ */
-#sidebar-placeholder.mini .sidebar-text,
-#sidebar-placeholder.mini .fa-chevron-right {
-    display: none;
-}
-/* ปรับให้เนื้อหาขยับตาม (ถ้าใช้ Flexbox ใน body) */
-.flex-1 {
-    transition: all 0.3s ease;
-}
-/* จัดไอคอนให้อยู่ตรงกลางเมื่อย่อ */
+/* จัดกึ่งกลางไอคอนเมื่อ Mini */
 #sidebar-placeholder.mini .nav-link-modern {
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 12px 0;
 }
 
-/* เมนูที่กำลังใช้งานอยู่ (Active) */
-.nav-link-modern.active {
-    background-color: #f5f7ff;
-    color: #5c67f2;
-    font-weight: 700;
+/* --- 5. Content Transition --- */
+.flex-1 {
+    transition: all 0.3s ease; /* ให้ Content ขยายตาม Sidebar */
 }
 
-/* สไตล์ปุ่ม Logout */
+/* --- 6. Logout Button (Soft Orange/Red) --- */
 .logout-btn-modern {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 12px;
     padding: 14px 20px;
     border-radius: 18px;
-    background-color: #fff1f2;
-    color: #e11d48;
+    background-color: #fff7ed; /* ส้มอ่อนมาก */
+    color: var(--primary-orange);
     border: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s;
 }
 
 .logout-btn-modern:hover {
-    background-color: #e11d48;
+    background-color: var(--primary-orange);
     color: white;
-    box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.2);
 }
 
-.logout-btn-modern:active {
-    transform: scale(0.96);
+#sidebar-placeholder.mini .logout-btn-modern {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+/* --- 7. Modals & Status --- */
+.modal-backdrop-blur { 
+    backdrop-filter: blur(8px); 
+    background-color: rgba(15, 23, 42, 0.4); 
+    position: fixed;
+    inset: 0;
+}
+
+.status-badge {
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* --- 8. Sidebar Toggle Button (Floating) --- */
+#sidebar-toggle {
+    background-color: var(--primary-green) !important;
+    border: 2px solid white;
 }
