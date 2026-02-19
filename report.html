@@ -18,14 +18,14 @@
         .modal-backdrop-blur { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.5); }
         .modal-animate { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
-        /* เพิ่มเติมเพื่อให้เข้ากับ Dashboard layout */
-        aside#sidebar-placeholder { width: 256px; }
+        /* Layout Fix for Sidebar */
+        aside#sidebar-placeholder { width: 256px; min-width: 256px; }
         @media (max-width: 1024px) { aside#sidebar-placeholder { display: none; } }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-    <aside id="sidebar-placeholder" class="hidden lg:block sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block sticky top-0 h-screen bg-white border-r border-slate-200 z-50"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
         <div id="topbar-placeholder" class="sticky top-0 z-40"></div>
@@ -66,7 +66,7 @@
                         </div>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="applyFilters()" class="w-full py-2.5 bg-[#5c56f1] text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">ประมวลผล</button>
+                        <button onclick="applyFilters()" class="w-full py-2.5 bg-[#5c56f1] text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 active:scale-95">ประมวลผล</button>
                     </div>
                 </div>
             </div>
@@ -172,17 +172,7 @@
 
         Chart.register(ChartDataLabels);
 
-        // --- 1. Layout & Auth Logic ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                if (adminDoc.exists()) {
-                    await loadLayout(adminDoc.data(), user.email);
-                    initData();
-                }
-            } else { window.location.replace("login.html"); }
-        });
-
+        // --- 1. Layout Engine ---
         async function loadLayout(userData, email) {
             const comps = [
                 { id: 'sidebar-placeholder', url: './components/sidebar.html' },
@@ -196,7 +186,6 @@
                     el.innerHTML = await res.text();
                     el.classList.remove('hidden');
 
-                    // Run scripts inside injected components
                     el.querySelectorAll("script").forEach(oldScript => {
                         const newScript = document.createElement("script");
                         newScript.type = "module";
@@ -206,7 +195,7 @@
                 }
             }
 
-            // Sync User Info to Topbar
+            // Sync Profile Info to Topbar
             setTimeout(() => {
                 const nameEl = document.querySelector('#topbar-user-name');
                 const emailEl = document.querySelector('#topbar-user-email');
@@ -215,13 +204,23 @@
                 if (emailEl) emailEl.innerText = email;
                 if (avatarEl && userData.name) avatarEl.innerText = userData.name.charAt(0).toUpperCase();
 
-                // Bind Logout Event to Sidebar Button
+                // Connect Sidebar Logout Button
                 const logoutBtn = document.querySelector('#main-logout-btn');
                 if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); openLogoutModal(); };
             }, 600);
         }
 
-        // --- 2. Data Fetching ---
+        // --- 2. Auth & Data Init ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const adminDoc = await getDoc(doc(db, "admin", user.uid));
+                if (adminDoc.exists()) {
+                    await loadLayout(adminDoc.data(), user.email);
+                    initData();
+                }
+            } else { window.location.replace("login.html"); }
+        });
+
         function initData() {
             onSnapshot(collection(db, "tickets"), (snapshot) => {
                 rawTickets = snapshot.docs.map(doc => {
@@ -249,7 +248,7 @@
             });
         }
 
-        // --- 3. UI Interaction & Chart ---
+        // --- 3. Business Logic (Original) ---
         window.toggleFilterUI = () => {
             const mode = document.getElementById('filter-mode').value;
             document.getElementById('ui-daily').classList.toggle('hidden', mode !== 'daily');
@@ -325,14 +324,11 @@
 
         window.handleRowClick = (name) => {
             if (viewLevel === 'MAIN') {
-                viewLevel = 'SUB';
-                currentSelection = name;
+                viewLevel = 'SUB'; currentSelection = name;
                 document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
                 document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
                 render();
-            } else {
-                openDetailModal(name);
-            }
+            } else { openDetailModal(name); }
         };
 
         function openDetailModal(subName) {
@@ -357,7 +353,7 @@
 
         window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-        // --- 4. Modal & Logout Logic ---
+        // --- 4. System Modals ---
         window.openLogoutModal = () => {
             const modal = document.getElementById('logout-modal');
             modal.classList.remove('hidden');
