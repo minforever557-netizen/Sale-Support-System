@@ -9,11 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        #topbar-placeholder { position: sticky; top: 0; z-index: 50; width: 100%; }
-        .glass-card { background: white; border-radius: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 50px rgba(0,0,0,0.04); }
-        textarea { resize: none; line-height: 2; scrollbar-width: none; }
+        .glass-card { background: white; border-radius: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 50px rgba(0,0,0,0.03); }
+        textarea { resize: none; line-height: 1.8; scrollbar-width: none; }
         textarea::-webkit-scrollbar { display: none; }
         
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+
         /* Success Overlay */
         #success-overlay {
             display: none;
@@ -25,62 +28,82 @@
             align-items: center;
             justify-content: center;
         }
+
+        .fade-in-up { animation: fadeInUp 0.4s ease-out; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen overflow-hidden">
 
-    <aside id="sidebar-placeholder"
-class="hidden lg:block flex-shrink-0">
-</aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200 flex-shrink-0"></aside>
 
-    <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder"></div>
+    <div class="flex-1 flex flex-col min-w-0 h-screen">
+        
+        <div id="topbar-placeholder" class="sticky top-0 z-40"></div>
 
-        <main class="p-4 md:p-8 flex justify-center w-full">
-            <div class="w-full max-w-3xl glass-card overflow-hidden">
-                <div class="bg-[#5c67f2] p-10 text-white relative">
-                    <h2 class="text-3xl font-bold tracking-tight">สร้าง Ticket ใหม่</h2>
-                    <p class="text-indigo-100 mt-2 opacity-90">กรุณากรอกข้อมูลต่อท้ายหัวข้อที่ระบบเตรียมไว้ให้</p>
+        <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scroll">
+            <div class="max-w-4xl mx-auto w-full fade-in-up">
+                
+                <div class="mb-8 px-4">
+                    <h2 class="text-3xl font-bold text-slate-800 tracking-tight">สร้างใบงานใหม่</h2>
+                    <p class="text-indigo-600 font-medium text-sm mt-1">Create a new support ticket</p>
                 </div>
 
-                <form id="ticketForm" class="p-8 md:p-10 space-y-8">
-                    <div class="flex items-center gap-4 p-5 bg-indigo-50/50 rounded-[2rem] border border-indigo-100/50">
-                        <div id="form-user-avatar" class="w-12 h-12 bg-[#5c67f2] rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">-</div>
-                        <div>
-                            <p class="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em]">เจ้าหน้าที่ผู้แจ้ง</p>
-                            <p id="form-user-name" class="font-bold text-slate-700 text-lg uppercase">กำลังโหลด...</p>
+                <div class="glass-card overflow-hidden">
+                    <div class="bg-indigo-600 p-8 md:p-10 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h3 class="text-2xl font-bold tracking-tight">Ticket Details</h3>
+                            <p class="text-indigo-100 mt-2 opacity-90 text-sm">กรุณากรอกข้อมูลต่อท้ายหัวข้อที่ระบบเตรียมไว้ให้</p>
                         </div>
+                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-3">
-                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">1. หัวข้อปัญหา</label>
-                            <select id="topic" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] outline-none transition-all font-semibold text-slate-600">
-                                <option value="">เลือกหัวข้อปัญหา</option>
-                            </select>
-                        </div>
-                        <div class="space-y-3">
-                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">2. Internet No.</label>
-                            <input type="text" id="id_number" required placeholder="88XXXXXXXX" 
-                                class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-[#5c67f2] outline-none transition-all font-semibold">
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-start px-2">
-                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-2">3. รายละเอียดปัญหา</label>
-                            <div id="sla-badge" class="hidden bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-right">
-                                <p class="text-[11px] font-black text-emerald-700 uppercase" id="sla-hours-text"></p>
+                    <form id="ticketForm" class="p-8 md:p-10 space-y-8">
+                        <div class="flex items-center gap-4 p-5 bg-indigo-50/50 rounded-[2rem] border border-indigo-100/50">
+                            <div id="form-user-avatar" class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-200">-</div>
+                            <div>
+                                <p class="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em]">เจ้าหน้าที่ผู้แจ้ง</p>
+                                <p id="form-user-name" class="font-bold text-slate-700 text-lg uppercase">กำลังโหลด...</p>
                             </div>
                         </div>
-                        <textarea id="detail-input" rows="10" required 
-                            class="w-full px-8 py-6 bg-white border-2 border-slate-100 rounded-[2rem] focus:border-[#5c67f2] outline-none transition-all text-slate-700 shadow-sm"></textarea>
-                    </div>
 
-                    <button type="submit" id="submitBtn" class="w-full py-5 bg-[#5c67f2] text-white rounded-[2rem] font-bold text-lg hover:bg-[#4a54d4] transition-all shadow-xl flex justify-center items-center gap-3 active:scale-95">
-                        <i class="fa-solid fa-paper-plane text-sm"></i> ยืนยันการส่งข้อมูล
-                    </button>
-                </form>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-3">
+                                <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">1. หัวข้อปัญหา</label>
+                                <select id="topic" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-semibold text-slate-600 cursor-pointer">
+                                    <option value="">เลือกหัวข้อปัญหา</option>
+                                </select>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">2. Internet No.</label>
+                                <input type="text" id="id_number" required placeholder="88XXXXXXXX" 
+                                    class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-semibold text-slate-700">
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center px-2">
+                                <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest">3. รายละเอียดปัญหา</label>
+                                <div id="sla-badge" class="hidden bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full">
+                                    <p class="text-[10px] font-black text-emerald-700 uppercase" id="sla-hours-text"></p>
+                                </div>
+                            </div>
+                            <textarea id="detail-input" rows="8" required 
+                                class="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all text-slate-700 shadow-inner"></textarea>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" id="submitBtn" class="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-lg hover:bg-indigo-700 hover:shadow-2xl hover:shadow-indigo-200 transition-all flex justify-center items-center gap-3 active:scale-[0.98]">
+                                <i class="fa-solid fa-paper-plane text-sm"></i> ยืนยันการส่งข้อมูล
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="h-10"></div>
             </div>
         </main>
     </div>
@@ -91,14 +114,14 @@ class="hidden lg:block flex-shrink-0">
                 <i class="fa-solid fa-check"></i>
             </div>
             <h2 class="text-3xl font-bold text-slate-800 mb-2">ส่งใบงานสำเร็จ!</h2>
-            <p class="text-slate-500">ระบบกำลังนำคุณไปยังรายการใบงานของคุณ...</p>
+            <p class="text-slate-500">ระบบกำลังนำคุณไปยังหน้ารายการใบงาน...</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
@@ -121,7 +144,6 @@ class="hidden lg:block flex-shrink-0">
         const topicSelect = document.getElementById('topic');
         const detailInput = document.getElementById('detail-input');
 
-        // 1. ตรวจสอบสถานะและโหลด Layout
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const adminDoc = await getDoc(doc(db, "admin", user.uid));
@@ -129,7 +151,6 @@ class="hidden lg:block flex-shrink-0">
                 userDataGlobal = adminDoc.exists() ? adminDoc.data() : (userDoc.exists() ? userDoc.data() : {});
                 userDataGlobal.uid = user.uid;
                 userDataGlobal.email = user.email;
-                
                 loadLayout(userDataGlobal);
             } else {
                 window.location.replace("login.html");
@@ -157,12 +178,9 @@ class="hidden lg:block flex-shrink-0">
             setTimeout(() => {
                 document.getElementById('form-user-name').innerText = userData.name || "User";
                 document.getElementById('form-user-avatar').innerText = (userData.name || "U")[0].toUpperCase();
-                const tName = document.querySelector('#topbar-user-name');
-                if(tName) tName.innerText = userData.name;
             }, 800);
         }
 
-        // 2. จัดการหัวข้อ และ Checklist (ป้องกันเบิ้ล)
         onSnapshot(collection(db, "topics"), (snapshot) => {
             topicSelect.innerHTML = '<option value="">เลือกหัวข้อปัญหา</option>';
             snapshot.forEach(doc => {
@@ -193,12 +211,10 @@ class="hidden lg:block flex-shrink-0">
             if (detailInput.value !== restored.join("\n")) detailInput.value = restored.join("\n");
         });
 
-        // 3. บันทึกข้อมูล (ใช้ Field ตามระบบเดิม)
         ticketForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const originalBtn = btn.innerHTML;
-            
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> กำลังบันทึก...`;
 
@@ -208,24 +224,23 @@ class="hidden lg:block flex-shrink-0">
                 const dDate = new Date();
                 dDate.setHours(dDate.getHours() + slaHours);
 
-                // บันทึกเข้า Firebase (ปรับ Field ให้ตรงตามรูปที่ 9)
                 await addDoc(collection(db, "tickets"), {
-                    topic: selectedTopic.name,        // เดิม subject -> topic
-                    topicId: topicSelect.value,       // เพิ่ม id หัวข้อ
+                    topic: selectedTopic.name,
+                    topicId: topicSelect.value,
                     id_number: document.getElementById('id_number').value.trim(),
-                    detail: detailInput.value,        // เดิม details -> detail
-                    status: "Pending",
-                    owner: userDataGlobal.name || "Unknown", // เดิม sender_name -> owner
-                    ownerEmail: userDataGlobal.email || "",  // เพิ่มเมลผู้แจ้ง
+                    detail: detailInput.value,
+                    status: "Open",
+                    owner: userDataGlobal.name || "Unknown",
+                    ownerEmail: userDataGlobal.email || "",
                     sender_uid: userDataGlobal.uid,
                     sender_team: userDataGlobal.Team || "N/A",
                     sender_subteam: userDataGlobal["Sub Team"] || "N/A",
-                    createdAt: serverTimestamp(),     // เดิม created_at -> createdAt
-                    sla_hours: slaHours,              // เดิม sla -> sla_hours
-                    due_at: dDate                     // เวลาครบกำหนด
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    sla_hours: slaHours,
+                    due_at: dDate
                 });
 
-                // แสดง Animation สำเร็จ
                 const overlay = document.getElementById('success-overlay');
                 const content = document.getElementById('success-content');
                 overlay.style.display = 'flex';
@@ -234,9 +249,7 @@ class="hidden lg:block flex-shrink-0">
                     content.classList.replace('scale-95', 'scale-100');
                 }, 50);
 
-                setTimeout(() => { 
-                    window.location.href = "my-ticket.html"; 
-                }, 2200);
+                setTimeout(() => { window.location.href = "my-ticket.html"; }, 2200);
 
             } catch (error) {
                 console.error("Save error:", error);
