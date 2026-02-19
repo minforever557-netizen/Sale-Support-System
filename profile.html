@@ -48,69 +48,75 @@
         </div>
 
         <div class="lg:col-span-8">
-            <form id="profile-form" class="space-y-6">
-                
-                <div class="content-section-box">
-                    <div class="flex items-center gap-3 mb-8">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md">
-                            <i class="fa-solid fa-user-pen"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">ข้อมูลส่วนตัว</h3>
-                    </div>
+    <form id="profile-form" class="space-y-6">
+        
+        <div class="content-section-box shadow-sm">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-address-card"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">ข้อมูลส่วนตัว</h3>
+            </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2 input-group-container">
-                            <label class="field-label">ชื่อ-นามสกุลจริง</label>
-                            <input type="text" id="prof-name" class="profile-input-field" placeholder="ระบุชื่อและนามสกุล">
-                        </div>
-                        <div class="input-group-container">
-                            <label class="field-label">ชื่อผู้ใช้งาน (USERNAME)</label>
-                            <input type="text" id="prof-user" class="profile-input-field" readonly>
-                        </div>
-                        <div class="input-group-container">
-                            <label class="field-label">เบอร์โทรศัพท์</label>
-                            <input type="text" id="prof-phone" class="profile-input-field" placeholder="0XXXXXXXXX">
-                        </div>
-                        <div class="md:col-span-2 input-group-container">
-                            <label class="field-label">อีเมล</label>
-                            <input type="email" id="prof-email" class="profile-input-field">
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div class="md:col-span-2">
+                    <label class="field-label">
+                        <i class="fa-solid fa-user text-[10px] text-emerald-500"></i> ชื่อ-นามสกุลจริง
+                    </label>
+                    <input type="text" id="prof-name" class="profile-input-field" placeholder="ระบุชื่อและนามสกุลที่ถูกต้อง">
                 </div>
 
-                <div class="content-section-box">
-                    <div class="flex items-center gap-3 mb-8">
-                        <div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-md">
-                            <i class="fa-solid fa-layer-group"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">สังกัดและทีม</h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="input-group-container">
-                            <label class="field-label">ทีมหลัก</label>
-                            <select id="prof-main" class="profile-input-field">
-                                <option value="">กำลังโหลด...</option>
-                            </select>
-                        </div>
-                        <div class="input-group-container">
-                            <label class="field-label">ทีมย่อย</label>
-                            <select id="prof-sub" class="profile-input-field">
-                                <option value="">เลือกทีมหลักก่อน</option>
-                            </select>
-                        </div>
-                    </div>
+                <div>
+                    <label class="field-label">
+                        <i class="fa-solid fa-at text-[10px] text-slate-400"></i> ชื่อผู้ใช้งาน
+                    </label>
+                    <input type="text" id="prof-user" class="profile-input-field" readonly>
                 </div>
 
-                <button type="submit" id="saveBtn" class="btn-save-full">
-                    <span>บันทึกข้อมูลส่วนตัว</span>
-                    <i class="fa-solid fa-check-circle"></i>
-                </button>
-            </form>
+                <div>
+                    <label class="field-label">
+                        <i class="fa-solid fa-phone text-[10px] text-emerald-500"></i> เบอร์โทรศัพท์
+                    </label>
+                    <input type="text" id="prof-phone" class="profile-input-field" placeholder="0XXXXXXXXX">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="field-label">
+                        <i class="fa-solid fa-envelope text-[10px] text-emerald-500"></i> อีเมลติดต่องาน
+                    </label>
+                    <input type="email" id="prof-email" class="profile-input-field" placeholder="example@mail.com">
+                </div>
+            </div>
         </div>
-    </div>
-</main>
-    </div>
+
+        <div class="content-section-box shadow-sm">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">สังกัดและทีม</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label class="field-label">ทีมหลัก</label>
+                    <select id="prof-main" class="profile-input-field">
+                        </select>
+                </div>
+                <div>
+                    <label class="field-label">ทีมย่อย</label>
+                    <select id="prof-sub" class="profile-input-field">
+                        </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="saveBtn" class="btn-save-full py-4 text-lg">
+            <span>บันทึกการเปลี่ยนแปลง</span>
+            <i class="fa-solid fa-circle-check"></i>
+        </button>
+    </form>
+</div>
 
     <div id="success-overlay">
         <div class="text-center" id="success-content">
