@@ -68,7 +68,9 @@ body {
     font-weight: 700;
     text-transform: uppercase;
 }
-/* สไตล์ลิงก์เมนู Sidebar แบบโมเดิร์น */
+/* --- Sidebar & Nav Links Modern Style --- */
+
+/* 1. สไตล์ลิงก์ปกติ */
 .nav-link-modern {
     display: flex;
     align-items: center;
@@ -79,22 +81,54 @@ body {
     border-radius: 16px;
     transition: all 0.2s ease;
     text-decoration: none;
+    white-space: nowrap; /* ป้องกันตัวหนังสือตกบรรทัดตอนย่อ */
 }
 
+/* 2. สไตล์ Icon และ Emoji ในเมนู */
+.nav-link-modern .nav-icon, 
 .nav-link-modern i {
-    width: 20px;
+    width: 24px;
+    min-width: 24px;
     text-align: center;
     font-size: 1.1rem;
     transition: transform 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* 3. Hover Effect */
 .nav-link-modern:hover {
     background-color: #f5f7ff;
     color: #5c67f2;
 }
 
+.nav-link-modern:hover .nav-icon,
 .nav-link-modern:hover i {
-    transform: scale(1.1);
+    transform: scale(1.2); /* ขยายไอคอนเล็กน้อยเวลาชี้ */
+}
+
+/* 4. Active State (แสดงเมนูที่เลือกอยู่) */
+.nav-link-modern.active {
+    background-color: #f5f7ff;
+    color: #5c67f2;
+    font-weight: 700;
+    border-right: 4px solid #5c67f2; /* เพิ่มขีดสีด้านข้างให้รู้ว่าเลือกอยู่ */
+    border-radius: 16px 4px 4px 16px;
+}
+
+/* 5. รองรับ Mini Sidebar (เมื่อกดพับเมนู) */
+#sidebar-placeholder.mini .sidebar-text {
+    display: none; /* ซ่อนตัวหนังสือเมื่อย่อ */
+}
+
+#sidebar-placeholder.mini .nav-link-modern {
+    justify-content: center; /* จัดไอคอนไว้ตรงกลาง */
+    padding: 12px 0;
+}
+
+#sidebar-placeholder.mini p.sidebar-text {
+    display: none; /* ซ่อนหัวข้อ Group Menu (Main / Admin) */
 }
 
 /* เมนูที่กำลังใช้งานอยู่ (Active) */
