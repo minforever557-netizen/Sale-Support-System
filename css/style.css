@@ -23,7 +23,7 @@ body {
 }
 
 /* ==========================================================================
-   2. LAYOUT COMPONENTS (Sidebar & Content)
+   2. LAYOUT & SIDEBAR NAVIGATION
    ========================================================================== */
 #sidebar-placeholder {
     width: var(--sidebar-width);
@@ -32,14 +32,10 @@ body {
     z-index: 1001;
 }
 
-/* Content Container Auto-Resize */
 .flex-1 {
     transition: all var(--transition-speed) ease;
 }
 
-/* ==========================================================================
-   3. SIDEBAR NAVIGATION LINKS
-   ========================================================================== */
 .nav-link-modern {
     display: flex;
     align-items: center;
@@ -51,6 +47,7 @@ body {
     transition: all 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
+    position: relative; /* สำหรับแถบ Indicator */
 }
 
 .nav-link-modern .nav-icon, 
@@ -70,33 +67,46 @@ body {
 }
 
 .nav-link-modern.active {
-    background-color: var(--light-green);
-    color: var(--primary-green);
+    background-color: var(--light-green) !important;
+    color: var(--primary-green) !important;
     font-weight: 700;
-    border-right: 4px solid var(--primary-green);
-    border-radius: 16px 4px 4px 16px;
+}
+
+/* แถบบอกตำแหน่งเมนู (Indicator) */
+.nav-link-modern.active::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    height: 100% !important;
+    width: 4px !important;
+    background-color: var(--primary-green) !important;
+    border-radius: 4px 0 0 4px;
+    z-index: 50 !important;
 }
 
 /* ==========================================================================
-   4. MINI SIDEBAR MODE (Toggle Logic)
+   3. MINI SIDEBAR MODE (Toggle Logic)
    ========================================================================== */
-/* 4.1 บีบความกว้าง Sidebar */
+
+/* 3.1 บีบความกว้าง Sidebar */
 #sidebar-placeholder.mini, 
 #sidebar-placeholder.mini #sidebar-wrapper {
     width: var(--sidebar-mini-width) !important;
 }
 
-/* 4.2 ตัดตัวหนังสือออก (เจาะจงเฉพาะคลาสที่ใช้ใน HTML) */
+/* 3.2 จัดการการซ่อนข้อความ (ห้ามซ่อนไอคอน) */
 #sidebar-placeholder.mini .sidebar-text,
 #sidebar-placeholder.mini p,
 #sidebar-placeholder.mini .fa-chevron-right,
-#sidebar-placeholder.mini .logout-btn-modern div {
+#sidebar-placeholder.mini .logout-btn-modern div,
+#sidebar-placeholder.mini .logout-btn-modern .sidebar-text {
     display: none !important;
 }
 
-/* 4.3 จัดไอคอนและปุ่ม Logout ให้อยู่กึ่งกลาง */
+/* 3.3 จัดกึ่งกลางไอคอนในโหมด Mini */
 #sidebar-placeholder.mini .nav-link-modern,
-#sidebar-placeholder.mini .logout-btn-modern,
 #sidebar-placeholder.mini .h-20 {
     justify-content: center !important;
     padding-left: 0 !important;
@@ -104,10 +114,43 @@ body {
     gap: 0 !important;
 }
 
+/* 3.4 จัดการปุ่ม Logout เมื่อย่อ */
+#sidebar-placeholder.mini .logout-btn-modern {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 14px 0 !important;
+    background-color: transparent !important;
+    gap: 0 !important;
+}
+
+#sidebar-placeholder.mini .logout-btn-modern i {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 1.25rem !important;
+    margin: 0 !important;
+}
+
 /* ==========================================================================
-   5. BUTTONS & INTERACTIVE ELEMENTS
+   4. BUTTONS & INTERACTIVE ELEMENTS
    ========================================================================== */
-/* Primary Action Button */
+
+/* ปุ่ม Toggle สีเขียว */
+#sidebar-toggle {
+    z-index: 1002;
+    cursor: pointer;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#sidebar-toggle i {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Primary Action Button (สร้าง Ticket) */
 .btn-primary {
     background-color: var(--primary-green) !important;
     color: white;
@@ -128,11 +171,7 @@ body {
     transform: translateY(-1px);
 }
 
-.btn-primary:active {
-    transform: scale(0.95);
-}
-
-/* Logout Button Logic */
+/* Logout Button (โหมดปกติ) */
 .logout-btn-modern {
     width: 100%;
     display: flex;
@@ -154,17 +193,8 @@ body {
     box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.2);
 }
 
-#sidebar-placeholder.mini .logout-btn-modern {
-    justify-content: center !important;
-    padding: 14px 0 !important;
-}
-
-#sidebar-placeholder.mini .logout-btn-modern div {
-    gap: 0 !important;
-}
-
 /* ==========================================================================
-   6. CARDS, MODALS & STATUS BADGES
+   5. CARDS, MODALS & STATUS BADGES
    ========================================================================== */
 .glass-card { 
     background: white; 
@@ -191,104 +221,4 @@ body {
     border-radius: 999px;
     font-size: 11px;
     font-weight: 700;
-}
-
-/* ==========================================================================
-   2. SIDEBAR NAVIGATION & ACTIVE STATE (แก้ไขแถบซ้อน)
-   ========================================================================== */
-.nav-link-modern {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    color: #64748b;
-    border-radius: 16px;
-    transition: all 0.2s ease;
-    position: relative; /* สำหรับแถบ Indicator */
-}
-
-/* แถบบอกตำแหน่งเมนู (แบบ Indicator เส้นตั้ง) */
-.nav-link-modern.active {
-    background-color: var(--light-green) !important;
-    color: var(--primary-green) !important;
-}
-
-/* สร้างเส้นเขียวด้านขวา เฉพาะตอน Active และลบ border-right ของเก่าออก */
-.nav-link-modern.active::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background-color: var(--primary-green);
-    border-radius: 4px 0 0 4px;
-}
-
-/* ==========================================================================
-   3. MINI SIDEBAR LOGIC (จัดการไอคอน Logout)
-   ========================================================================== */
-#sidebar-placeholder.mini .sidebar-text,
-#sidebar-placeholder.mini p,
-#sidebar-placeholder.mini .fa-chevron-right {
-    display: none !important;
-}
-
-/* จัดการปุ่ม Logout: เมื่อย่อ (mini) ให้ซ่อนรูปทั้งหมด */
-#sidebar-placeholder.mini .logout-btn-modern {
-    display: flex !important; /* ดึงปุ่มกลับมา */
-    justify-content: center !important;
-    padding: 14px 0 !important;
-    background-color: transparent !important; /* เอาพื้นหลังออกตอนย่อให้ดูคลีน */
-}
-/* ซ่อนเฉพาะข้อความในปุ่ม Logout */
-#sidebar-placeholder.mini .logout-btn-modern .sidebar-text,
-#sidebar-placeholder.mini .logout-btn-modern div {
-    display: none !important;
-}
-
-/* บังคับให้ไอคอน i แสดงผลเสมอ */
-#sidebar-placeholder.mini .logout-btn-modern i {
-    display: block !important;
-    font-size: 1.25rem !important;
-    margin: 0 !important;
-}
-
-/* เมื่อไม่ย่อ (ปกติ) ให้แสดงปุ่ม Logout พร้อมไอคอน */
-.logout-btn-modern {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    /* ... สไตล์เดิมของคุณ ... */
-}
-
-/* จัดตำแหน่งปุ่ม Toggle ให้ลอยเหนือกราฟิก */
-#sidebar-toggle {
-    z-index: 1002;
-    cursor: pointer;
-}
-/* --- แก้ไขให้แถบ Active ลอยขึ้นมาหน้าสุด --- */
-.nav-link-modern.active::after {
-    content: "" !important;
-    display: block !important; /* บังคับให้แสดงผล */
-    position: absolute !important;
-    right: 0 !important;
-    z-index: 50 !important; /* ดันให้พ้นการโดนทับ */
-}
-
-/* --- บังคับซ่อนแค่ตัวหนังสือ ห้ามซ่อนไอคอนภายในเมนู --- */
-#sidebar-placeholder.mini .sidebar-text,
-#sidebar-placeholder.mini p {
-    display: none !important;
-}
-
-/* --- บังคับให้ปุ่ม Toggle และไอคอน Logout แสดงผลเสมอ --- */
-#sidebar-toggle, 
-#sidebar-toggle i,
-#sidebar-placeholder.mini .logout-btn-modern,
-#sidebar-placeholder.mini .logout-btn-modern i {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
 }
