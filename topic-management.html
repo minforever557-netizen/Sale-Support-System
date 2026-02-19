@@ -37,7 +37,7 @@
                         <h2 class="text-3xl font-bold text-slate-800 tracking-tight">จัดการหัวข้อและ SLA</h2>
                         <p class="text-slate-500 mt-1">กำหนดหัวข้อปัญหา, ระยะเวลาดำเนินการ และ Checklist สำหรับเจ้าหน้าที่</p>
                     </div>
-                    <button onclick="openTopicModal()" class="bg-[#5d58f0] text-white px-8 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center gap-3 active:scale-95">
+                    <button onclick="openTopicModal()" class="bg-[#5d58f0] text-white px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 transition shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95">
                         <i class="fa-solid fa-plus text-sm"></i> 
                         <span>เพิ่มหัวข้อใหม่</span>
                     </button>
@@ -58,7 +58,7 @@
                                 <tr>
                                     <td colspan="4" class="p-12 text-center">
                                         <div class="flex flex-col items-center gap-3">
-                                            <i class="fa-solid fa-circle-notch animate-spin text-indigo-500 text-2xl"></i>
+                                            <i class="fa-solid fa-circle-notch animate-spin text-emerald-500 text-2xl"></i>
                                             <p class="text-slate-400 text-sm">กำลังโหลดข้อมูลหัวข้อ...</p>
                                         </div>
                                     </td>
@@ -79,24 +79,24 @@
                     <i class="fa-solid fa-gears"></i>
                 </div>
                 <h3 id="modal-title" class="text-2xl font-bold">เพิ่มหัวข้อใหม่</h3>
-                <p class="text-indigo-100 text-sm mt-1">ตั้งค่าชื่อหัวข้อและระยะเวลาดำเนินการ</p>
+                <p class="text-emerald-100 text-sm mt-1">ตั้งค่าชื่อหัวข้อและระยะเวลาดำเนินการ</p>
             </div>
             <div class="p-10 space-y-6">
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">ชื่อหัวข้อ (ภาษาไทย)</label>
-                    <input type="text" id="topic-name" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition" placeholder="เช่น แจ้งปัญหาระบบ, ติดตามงาน">
+                    <input type="text" id="topic-name" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition" placeholder="เช่น แจ้งปัญหาระบบ, ติดตามงาน">
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">SLA (จำนวนชั่วโมง)</label>
-                    <input type="number" id="topic-sla" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition" placeholder="ระบุตัวเลข เช่น 4, 24, 48">
+                    <input type="number" id="topic-sla" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition" placeholder="ระบุตัวเลข เช่น 4, 24, 48">
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Checklist / คำแนะนำ</label>
-                    <textarea id="topic-checklist" rows="4" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition text-sm" placeholder="ระบุสิ่งที่ User ต้องกรอกหรือเตรียมมา..."></textarea>
+                    <textarea id="topic-checklist" rows="4" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition text-sm" placeholder="ระบุสิ่งที่ User ต้องกรอกหรือเตรียมมา..."></textarea>
                 </div>
                 <div class="pt-4 flex gap-4">
                     <button onclick="closeTopicModal()" class="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition">ยกเลิก</button>
-                    <button onclick="saveTopic()" id="save-btn" class="flex-[2] py-4 bg-[#5d58f0] text-white rounded-2xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition active:scale-95">บันทึกข้อมูล</button>
+                    <button onclick="saveTopic()" id="save-btn" class="flex-[2] py-4 bg-[#5d58f0] text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-xl shadow-indigo-100 transition active:scale-95">บันทึกข้อมูล</button>
                 </div>
             </div>
         </div>
@@ -217,14 +217,14 @@
                                 <span class="text-[10px] text-slate-400 font-medium">ID: ${docSnap.id}</span>
                             </td>
                             <td class="p-6 text-center">
-                                <span class="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full font-black text-xs">${d.sla} ชม.</span>
+                                <span class="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full font-black text-xs">${d.sla} ชม.</span>
                             </td>
                             <td class="p-6">
                                 <p class="text-sm text-slate-500 max-w-xs truncate">${d.checklist || '<span class="italic text-slate-300">ไม่มี Checklist</span>'}</p>
                             </td>
                             <td class="p-6 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="openTopicModal('${docSnap.id}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition">แก้ไข</button>
+                                    <button onclick="openTopicModal('${docSnap.id}')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition">แก้ไข</button>
                                     <button onclick="deleteTopic('${docSnap.id}')" class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-xl text-xs font-bold hover:text-red-500 hover:border-red-100 transition">ลบ</button>
                                 </div>
                             </td>
