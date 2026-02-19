@@ -18,26 +18,22 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // 2. Authentication Monitor & Role Check
-// 2. Authentication Monitor & Role Check
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
+            // ดึงข้อมูลจากคอลเลกชัน 'admin' ตาม UID
             const userDoc = await getDoc(doc(db, "admin", user.uid));
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                // บังคับเปลี่ยนเป็นตัวเล็กเพื่อเช็คสิทธิ์ แต่ตอนแสดงผลจะใช้ค่าจริงจาก userData
-                const roleForCheck = (userData.role || "").toLowerCase();
+                // ตรวจสอบ Role (รองรับตัวพิมพ์เล็ก/ใหญ่)
+                const userRole = (userData.role || "").toLowerCase();
 
-                if (['admin', 'user', 'staff'].includes(roleForCheck)) {
-                    // *** จุดสำคัญ: ส่ง userData และ user.email เข้าไปทำงานต่อ ***
+                if (['admin', 'user', 'staff'].includes(userRole)) {
+                    // เริ่มต้นโหลด Layout และส่งข้อมูลผู้ใช้เข้าไป
                     await initGlobalLayout(userData, user.email);
                     
-                    // หลังจากโหลด Layout เสร็จ ให้สั่งอัปเดต Topbar ซ้ำอีกครั้งเพื่อความชัวร์
-                    setTimeout(() => {
-                        updateTopbarDirectly(userData, user.email);
-                    }, 500);
-
+                    // โหลดสถิติ Dashboard
                     if (typeof loadDashboardStats === 'function') {
                         loadDashboardStats(user.email);
                     }
@@ -46,6 +42,10 @@ onAuthStateChanged(auth, async (user) => {
                     await signOut(auth);
                     window.location.replace("login.html");
                 }
+            } else {
+                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
+                await signOut(auth);
+                window.location.replace("login.html");
             }
         } catch (error) {
             console.error("Auth Change Error:", error);
@@ -57,22 +57,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// ฟังก์ชันเสริมสำหรับฉีดข้อมูลเข้า Topbar โดยตรง
-function updateTopbarDirectly(data, email) {
-    const elements = {
-        name: document.getElementById('tp-fullname'),
-        user: document.getElementById('tp-username'),
-        email: document.getElementById('tp-email'),
-        avatar: document.getElementById('tp-avatar-circle')
-    };
-
-    if (elements.name) elements.name.innerText = data.name || "ผู้ใช้งาน";
-    if (elements.user) elements.user.innerText = `@${data.username || "user"}`;
-    if (elements.email) elements.email.innerText = email || data.email;
-    if (elements.avatar && data.name) {
-        elements.avatar.innerText = data.name.charAt(0).toUpperCase();
-    }
-}
 // 3. ฟังก์ชันโหลด Sidebar และ Topbar
 async function initGlobalLayout(userData, email) {
     const components = [
@@ -80,8 +64,8 @@ async function initGlobalLayout(userData, email) {
         { id: 'topbar-placeholder', url: './components/topbar.html' }
     ];
 
-    // 1. โหลด HTML Components
-    for (const comp of components) {
+    // --- ส่วนที่ 1: โหลด HTML Components (ใช้ Promise.all เพื่อความเร็ว) ---
+    await Promise.all(components.map(async (comp) => {
         try {
             const response = await fetch(comp.url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -94,36 +78,40 @@ async function initGlobalLayout(userData, email) {
         } catch (error) {
             console.error(`Error loading ${comp.id}:`, error);
         }
-    }
+    }));
 
-    // 2. ฟังก์ชันอัปเดตข้อมูล Topbar (ใช้ ID ตามไฟล์ topbar.html ล่าสุดของคุณ)
+    // --- ส่วนที่ 2: อัปเดตข้อมูล Topbar ทันทีหลังจากโหลด Component เสร็จ ---
     const updateTopbarUI = () => {
-        // อ้างอิง ID จากโครงสร้างใหม่ที่คุณส่งมา
-        const nameEl = document.getElementById('tp-fullname');
-        const userEl = document.getElementById('tp-username');
-        const emailEl = document.getElementById('tp-email');
-        const avatarEl = document.getElementById('tp-avatar-circle');
-        const clockEl = document.getElementById('tp-clock');
-        const dateEl = document.getElementById('tp-date');
+        const elements = {
+            name: document.getElementById('tp-fullname'),
+            user: document.getElementById('tp-username'),
+            email: document.getElementById('tp-email'),
+            avatar: document.getElementById('tp-avatar-circle'),
+            clock: document.getElementById('tp-clock'),
+            date: document.getElementById('tp-date'),
+            roleBadge: document.getElementById('topbar-role') // เผื่อมี Badge แสดง Role
+        };
 
-        // ใส่ข้อมูลจาก Firestore
-        if (nameEl) nameEl.innerText = userData.name || "ผู้ใช้งานระบบ";
-        if (userEl) userEl.innerText = `@${userData.username || email.split('@')[0]}`;
-        if (emailEl) emailEl.innerText = email;
+        // 1. ข้อมูลผู้ใช้
+        if (elements.name) elements.name.innerText = userData.name || "ผู้ใช้งานระบบ";
+        if (elements.user) elements.user.innerText = `@${userData.username || email.split('@')[0]}`;
+        if (elements.email) elements.email.innerText = email;
         
-        // อัปเดตตัวอักษรแรกในวงกลม Avatar
-        if (avatarEl && userData.name) {
-            avatarEl.innerText = userData.name.charAt(0).toUpperCase();
-            // ปรับสี Gradient ให้เป็นโทนเขียวตาม Theme ใหม่ (ถ้าต้องการ)
-            avatarEl.className = "w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-100 ring-2 ring-white";
+        // 2. Avatar และ Role Badge
+        if (elements.avatar && userData.name) {
+            elements.avatar.innerText = userData.name.charAt(0).toUpperCase();
+            elements.avatar.className = "w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-100 ring-2 ring-white";
+        }
+        if (elements.roleBadge) {
+            elements.roleBadge.innerText = userData.role || "User";
         }
 
-        // ระบบนาฬิกา Real-time
-        if (clockEl && dateEl) {
+        // 3. ระบบนาฬิกา Real-time
+        if (elements.clock && elements.date) {
             const timer = () => {
                 const now = new Date();
-                clockEl.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
-                dateEl.innerText = now.toLocaleDateString('th-TH', { 
+                elements.clock.innerText = now.toLocaleTimeString('th-TH', { hour12: false });
+                elements.date.innerText = now.toLocaleDateString('th-TH', { 
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
                 });
             };
@@ -132,11 +120,13 @@ async function initGlobalLayout(userData, email) {
         }
     };
 
-    // รอให้ไฟล์ HTML โหลดเข้า DOM เรียบร้อยก่อน 150ms
-    setTimeout(updateTopbarUI, 150);
+    // รันการอัปเดต UI ทันทีไม่ต้องรอ Timeout นาน
+    updateTopbarUI();
 
     // เริ่มทำงานระบบ Sidebar (ลูกศรย่อขยาย)
-    initSidebarBehavior(userData);
+    if (typeof initSidebarBehavior === 'function') {
+        initSidebarBehavior(userData);
+    }
 }
 // 4. ระบบควบคุม Sidebar (Toggle, Active Link, Admin Control)
 function initSidebarBehavior(userData) {
