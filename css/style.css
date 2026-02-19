@@ -193,6 +193,46 @@ body {
     padding-right: 0 !important;
 }
 
+/* เมื่อ Sidebar อยู่ในสถานะ mini (ย่อ) */
+#sidebar-placeholder.mini #sidebar-wrapper {
+    width: var(--sidebar-mini-width) !important;
+}
+
+/* 1. ตัดตัวหนังสือและข้อความ p ออกทั้งหมด */
+#sidebar-placeholder.mini .sidebar-text, 
+#sidebar-placeholder.mini #sidebar-wrapper p,
+#sidebar-placeholder.mini span.font-medium,
+#sidebar-placeholder.mini .sidebar-text.font-medium {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+}
+
+/* 2. จัดไอคอนให้อยู่กึ่งกลาง และเอา Gap ออก */
+#sidebar-placeholder.mini .nav-link-modern {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    gap: 0 !important;
+}
+
+/* 3. จัดตำแหน่ง Logo (SaleSupport) ให้เหลือแต่ไอคอนจรวด */
+#sidebar-placeholder.mini .h-20 {
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+/* 4. ปรับปุ่ม Logout ให้เหลือแต่ไอคอน */
+#sidebar-placeholder.mini .logout-btn-modern {
+    justify-content: center !important;
+    padding: 14px 0 !important;
+}
+
+#sidebar-placeholder.mini .logout-btn-modern div {
+    gap: 0 !important;
+}
+
 /* ปรับตำแหน่งปุ่ม Toggle ให้ขยับตามเวลาหด */
 #sidebar-placeholder.mini #sidebar-toggle {
     right: -12px;
