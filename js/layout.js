@@ -120,16 +120,12 @@ function initSidebarToggle() {
         sidebar.classList.toggle("sidebar-collapsed");
 
         // สลับลูกศร
-        if (sidebar.classList.contains("sidebar-collapsed")) {
-            icon.classList.remove("fa-chevron-left");
-            icon.classList.add("fa-chevron-right");
-        } else {
-            icon.classList.remove("fa-chevron-right");
-            icon.classList.add("fa-chevron-left");
-        }
+        icon.classList.toggle("fa-chevron-left");
+        icon.classList.toggle("fa-chevron-right");
 
     });
 }
+
 
 
 // ==============================
