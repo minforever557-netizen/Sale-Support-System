@@ -7,45 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link rel="stylesheet" href="./css/style.css"> 
 
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        
-        /* Form & Card Design */
-        .profile-card { 
-            background: white; 
-            border-radius: 2rem; 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02);
-        }
-        
-        .form-input { 
-            width: 100%; background-color: #fcfdfe; border: 1.5px solid #f1f5f9; border-radius: 1.25rem; 
-            padding: 0.85rem 1.25rem; font-size: 0.95rem; font-weight: 500; color: #334155;
-            transition: all 0.3s ease;
-        }
-        .form-input:focus { 
-            border-color: #6366f1; background-color: #ffffff; outline: none;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
+        .profile-card { background: white; border-radius: 2rem; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02); }
+        .form-input { width: 100%; background-color: #fcfdfe; border: 1.5px solid #f1f5f9; border-radius: 1.25rem; padding: 0.85rem 1.25rem; font-size: 0.95rem; font-weight: 500; color: #334155; transition: all 0.3s ease; }
+        .form-input:focus { border-color: #6366f1; background-color: #ffffff; outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
         .input-readonly { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; border-style: dashed; }
-
-        .label-title { 
-            display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; 
-            text-transform: uppercase; margin-bottom: 0.6rem; margin-left: 0.5rem; letter-spacing: 0.05em;
-        }
-
-        /* Success Overlay */
-        #success-overlay {
-            display: none; position: fixed; inset: 0; z-index: 200;
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px);
-            align-items: center; justify-content: center;
-        }
-
+        .label-title { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.6rem; margin-left: 0.5rem; letter-spacing: 0.05em; }
+        
+        #success-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Modal Animation Helpers */
+        .modal-active { opacity: 1 !important; transform: scale(1) !important; }
+        .backdrop-active { opacity: 1 !important; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -57,39 +35,30 @@
 
         <main class="p-4 md:p-10 fade-in">
             <div class="max-w-5xl mx-auto">
-                
                 <div class="mb-10">
                     <h2 class="text-3xl font-bold text-slate-800 tracking-tight">ตั้งค่าโปรไฟล์</h2>
                     <p class="text-slate-500 mt-1">อัปเดตข้อมูลส่วนตัวและทีมของคุณให้เป็นปัจจุบัน</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    
                     <div class="lg:col-span-4 space-y-6">
                         <div class="profile-card p-8 text-center">
-                            <div class="relative inline-block group">
+                            <div class="relative inline-block">
                                 <div id="avatar-display" class="w-28 h-28 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-[2.5rem] flex items-center justify-center text-4xl text-white font-bold shadow-2xl shadow-indigo-200 uppercase">?</div>
-                                <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-2xl shadow-lg flex items-center justify-center text-indigo-600 border border-slate-50">
-                                    <i class="fa-solid fa-camera text-sm"></i>
-                                </div>
                             </div>
                             <h2 id="name-display" class="text-xl font-bold text-slate-800 mt-6 mb-1">...</h2>
                             <span id="role-display" class="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">Loading</span>
                             
                             <div class="mt-8 pt-8 border-t border-slate-50 space-y-4">
                                 <div class="flex items-center gap-4 text-left p-3 rounded-2xl bg-slate-50/50">
-                                    <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-500">
-                                        <i class="fa-regular fa-envelope"></i>
-                                    </div>
+                                    <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-500"><i class="fa-regular fa-envelope"></i></div>
                                     <div class="overflow-hidden">
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Email Address</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Email</p>
                                         <p id="side-email" class="text-xs font-semibold text-slate-700 truncate">...</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4 text-left p-3 rounded-2xl bg-slate-50/50">
-                                    <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-emerald-500">
-                                        <i class="fa-solid fa-users-rays"></i>
-                                    </div>
+                                    <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-emerald-500"><i class="fa-solid fa-users-rays"></i></div>
                                     <div>
                                         <p class="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Team Unit</p>
                                         <p id="side-team" class="text-xs font-semibold text-slate-700">...</p>
@@ -101,12 +70,9 @@
 
                     <div class="lg:col-span-8">
                         <form id="profile-form" class="profile-card p-6 md:p-10 space-y-10">
-                            
                             <section>
                                 <div class="flex items-center gap-3 mb-6">
-                                    <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-xs shadow-lg shadow-emerald-100">
-                                       <i class="fa-solid fa-user"></i>
-                                    </div>
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-xs shadow-lg shadow-emerald-100"><i class="fa-solid fa-user"></i></div>
                                     <h3 class="font-bold text-slate-800">ข้อมูลทั่วไป</h3>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -115,7 +81,7 @@
                                         <input type="text" id="prof-name" class="form-input" required>
                                     </div>
                                     <div>
-                                        <label class="label-title">Username (Read-only)</label>
+                                        <label class="label-title">Username</label>
                                         <input type="text" id="prof-user" class="form-input input-readonly" readonly>
                                     </div>
                                     <div>
@@ -133,9 +99,7 @@
 
                             <section>
                                 <div class="flex items-center gap-3 mb-6">
-                                    <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-xs shadow-lg shadow-emerald-100">
-                                        <i class="fa-solid fa-layer-group"></i>
-                                    </div>
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-xs shadow-lg shadow-emerald-100"><i class="fa-solid fa-layer-group"></i></div>
                                     <h3 class="font-bold text-slate-800">สังกัดและทีม</h3>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -158,9 +122,7 @@
 
                             <section>
                                 <div class="flex items-center gap-3 mb-6">
-                                    <div class="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center text-white text-xs shadow-lg shadow-rose-100">
-                                        <i class="fa-solid fa-shield-halved"></i>
-                                    </div>
+                                    <div class="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center text-white text-xs shadow-lg shadow-rose-100"><i class="fa-solid fa-shield-halved"></i></div>
                                     <h3 class="font-bold text-slate-800">ความปลอดภัย</h3>
                                 </div>
                                 <div class="relative">
@@ -190,16 +152,15 @@
 
     <div id="success-overlay">
         <div class="text-center scale-90 transition-transform duration-500" id="success-content">
-            <div class="w-24 h-24 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-6 shadow-2xl animate-bounce">
-                <i class="fa-solid fa-check"></i>
-            </div>
+            <div class="w-24 h-24 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-6 shadow-2xl animate-bounce"><i class="fa-solid fa-check"></i></div>
             <h2 class="text-3xl font-bold text-slate-800 mb-2">บันทึกสำเร็จ!</h2>
             <p class="text-slate-500">ข้อมูลโปรไฟล์ของคุณได้รับการอัปเดตแล้ว</p>
         </div>
     </div>
-   <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+
+    <div id="logout-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="logout-backdrop"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 modal-animate" id="logout-content">
+        <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="logout-content">
             <div class="text-center">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-3xl">🚪</span></div>
                 <h3 class="text-2xl font-bold text-slate-800 mb-2">Logout?</h3>
@@ -235,15 +196,14 @@
         let currentUserAuth = null;
         let allTeams = [];
 
-        // 1. ตรวจสอบสถานะการเข้าสู่ระบบและดึงข้อมูล
+        // 1. ตรวจสอบสถานะและดึงข้อมูล
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserAuth = user;
-                // ดึงข้อมูลจาก collection admin (ตามโครงสร้าง Dashboard ของคุณ)
                 const snap = await getDoc(doc(db, "admin", user.uid));
                 if (snap.exists()) {
                     const adminData = snap.data();
-                    await fetchTeams(); // โหลดทีมก่อนเพื่อตั้งค่า Select
+                    await fetchTeams();
                     fillFormData(adminData, user.email);
                 }
             } else {
@@ -251,7 +211,6 @@
             }
         });
 
-        // 2. ดึงข้อมูลทีมจาก Firestore
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
             allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -262,14 +221,12 @@
             });
         }
 
-        // 3. ใส่ข้อมูลลงในฟอร์ม
         function fillFormData(data, email) {
             document.getElementById('avatar-display').innerText = (data.name || "A")[0];
             document.getElementById('name-display').innerText = data.name || "Admin";
             document.getElementById('role-display').innerText = data.role || "Admin";
             document.getElementById('side-email').innerText = email;
             document.getElementById('side-team').innerText = `${data.Team || '-'} / ${data["Sub Team"] || '-'}`;
-
             document.getElementById('prof-name').value = data.name || "";
             document.getElementById('prof-user').value = data.username || "";
             document.getElementById('prof-email').value = email;
@@ -284,7 +241,6 @@
             }
         }
 
-        // 4. จัดการการเลือกทีมย่อย
         document.getElementById('prof-main').addEventListener('change', (e) => renderSubTeams(e.target.value));
 
         function renderSubTeams(parentId, currentSub = null) {
@@ -304,12 +260,47 @@
             }
         }
 
-        // 5. บันทึกข้อมูล
+        // --- เพิ่มส่วนจัดการ Logout (Fix) ---
+
+        window.handleLogout = () => {
+            const modal = document.getElementById('logout-modal');
+            const backdrop = document.getElementById('logout-backdrop');
+            const content = document.getElementById('logout-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                backdrop.classList.add('backdrop-active');
+                content.classList.add('modal-active');
+            }, 10);
+        };
+
+        const closeLogoutModal = () => {
+            const backdrop = document.getElementById('logout-backdrop');
+            const content = document.getElementById('logout-content');
+            backdrop.classList.remove('backdrop-active');
+            content.classList.remove('modal-active');
+            setTimeout(() => document.getElementById('logout-modal').classList.add('hidden'), 300);
+        };
+
+        document.getElementById('close-logout').onclick = closeLogoutModal;
+        document.getElementById('confirm-logout').onclick = async () => {
+            await signOut(auth);
+            window.location.replace("login.html");
+        };
+
+        // ดักฟัง Click จาก Sidebar
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#logout-btn') || e.target.closest('.logout-link') || e.target.closest('[onclick="logout()"]')) {
+                e.preventDefault();
+                window.handleLogout();
+            }
+        });
+
+        // ------------------------------------
+
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
             const originalBtnHtml = btn.innerHTML;
-            
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
@@ -319,7 +310,6 @@
                 const mainTeamName = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
                 const subTeamName = document.getElementById('prof-sub').value;
 
-                // อัปเดต Firestore
                 const adminRef = doc(db, "admin", currentUserAuth.uid);
                 await updateDoc(adminRef, {
                     "name": document.getElementById('prof-name').value.trim(),
@@ -328,7 +318,6 @@
                     "Phone No.": document.getElementById('prof-phone').value.trim()
                 });
 
-                // อัปเดต Firebase Auth (ถ้ามีการเปลี่ยน)
                 let reAuthRequired = false;
                 if (newEmail !== currentUserAuth.email) {
                     await updateEmail(currentUserAuth, newEmail);
@@ -339,18 +328,12 @@
                     reAuthRequired = true;
                 }
 
-                // แสดงผลสำเร็จ
                 document.getElementById('success-overlay').style.display = 'flex';
-                setTimeout(() => {
-                    document.getElementById('success-content').classList.replace('scale-90', 'scale-100');
-                }, 50);
+                setTimeout(() => document.getElementById('success-content').classList.replace('scale-90', 'scale-100'), 50);
 
                 setTimeout(() => {
-                    if (reAuthRequired) {
-                        signOut(auth).then(() => window.location.replace("login.html"));
-                    } else {
-                        location.reload();
-                    }
+                    if (reAuthRequired) signOut(auth).then(() => window.location.replace("login.html"));
+                    else location.reload();
                 }, 2000);
 
             } catch (err) {
@@ -361,7 +344,6 @@
             }
         });
 
-        // Toggle Password Visibility
         document.getElementById('togglePassBtn').onclick = () => {
             const input = document.getElementById('prof-pass');
             const icon = document.getElementById('pass-icon');
