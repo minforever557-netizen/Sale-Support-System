@@ -60,41 +60,93 @@ async function initGlobalLayout(userData, email) {
         { id: 'topbar-placeholder', url: './components/topbar.html' }
     ];
 
+    // 1. โหลดเนื้อหา HTML เข้ามาใน Placeholder
     for (const comp of components) {
         try {
             const response = await fetch(comp.url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const html = await response.text();
             const container = document.getElementById(comp.id);
-            if (container) container.innerHTML = html;
+            if (container) {
+                container.innerHTML = html;
+                // ถ้าเป็น Sidebar ให้ลบ Class hidden ออกเพื่อให้แสดงผลทันที
+                if (comp.id === 'sidebar-placeholder') container.classList.remove('hidden');
+            }
         } catch (error) {
             console.error(`Error loading ${comp.id}:`, error);
         }
     }
 
-    // --- ส่วนแก้ไข Topbar ---
-    const updateTopbar = () => {
-        // อ้างอิง ID ตามที่ปรากฏใน Topbar
-        const nameEl = document.querySelector('#topbar-user-name') || document.querySelector('.topbar-name');
-        const emailEl = document.querySelector('#topbar-user-email') || document.querySelector('.topbar-email');
-        const dateEl = document.querySelector('#topbar-date'); // สำหรับแสดงเวลา
+    // 2. ฟังก์ชันอัปเดตข้อมูล Topbar (ชื่อ, อีเมล, เวลาแบบเรียลไทม์)
+    const updateTopbarUI = () => {
+        // อ้างอิง ID ให้ตรงกับใน topbar.html
+        const nameEl = document.getElementById('topbar-user-name');
+        const emailEl = document.getElementById('topbar-user-email');
+        const timeEl = document.getElementById('topbar-time');
 
-        if (nameEl) nameEl.innerText = userData.name || "Unknown User";
+        // ใส่ข้อมูลผู้ใช้
+        if (nameEl) nameEl.innerText = userData.name || "ผู้ใช้งานระบบ";
         if (emailEl) emailEl.innerText = email || "no-email@system.com";
-        
-        // ระบบนาฬิกา Real-time
-        if (dateEl) {
-            setInterval(() => {
+
+        // ระบบนาฬิกา Real-time โทนสีเขียว
+        if (timeEl) {
+            const renderTime = () => {
                 const now = new Date();
-                dateEl.innerText = now.toLocaleTimeString('th-TH') + " " + now.toLocaleDateString('th-TH');
-            }, 1000);
+                const timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const dateString = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                timeEl.innerHTML = `
+                    <span class="text-emerald-500">●</span> 
+                    <span class="font-mono font-bold text-slate-700">${timeString}</span>
+                    <span class="text-slate-400 text-xs ml-2">${dateString}</span>
+                `;
+            };
+            renderTime(); // รันทันที 1 ครั้ง
+            setInterval(renderTime, 1000); // อัปเดตทุกวินาที
         }
     };
 
-    // รอให้ DOM Render แป๊บนึงแล้วค่อยใส่ค่า
-    setTimeout(updateTopbar, 200);
+    // 3. ตั้งค่าระบบ Sidebar Behavior (Mini Mode / Active Link / Admin Menu)
+    const setupSidebar = () => {
+        const sidebar = document.getElementById('sidebar-placeholder');
+        const toggleBtn = document.getElementById('sidebar-toggle'); // ปุ่มลูกศร
+        const toggleIcon = document.getElementById('toggle-icon');
+        const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
 
-    // เริ่มทำงานระบบ Sidebar
-    initSidebarBehavior(userData);
+        // ตรวจสอบสิทธิ์ Admin เพื่อเปิดเมนูพิเศษ
+        const adminMenu = document.getElementById('admin-menu-section');
+        if (adminMenu && userData.role === 'Admin') {
+            adminMenu.classList.remove('hidden', 'hidden-secure');
+        }
+
+        // ไฮไลท์เมนูปัจจุบัน (Active State)
+        document.querySelectorAll('.nav-link-modern').forEach(link => {
+            if (link.getAttribute('data-page') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+
+        // ระบบพับ Sidebar (Desktop Toggle)
+        if (toggleBtn) {
+            toggleBtn.onclick = () => {
+                sidebar.classList.toggle('mini');
+                // เปลี่ยนทิศทางลูกศร
+                if (toggleIcon) {
+                    if (sidebar.classList.contains('mini')) {
+                        toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+                    } else {
+                        toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+                    }
+                }
+            };
+        }
+    };
+
+    // รันฟังก์ชันทั้งหมดหลังจาก HTML ถูกฉีดเข้าไปแล้ว
+    setTimeout(() => {
+        updateTopbarUI();
+        setupSidebar();
+    }, 150);
 }
 // 4. ระบบควบคุม Sidebar (Toggle, Active Link, Admin Control)
 function initSidebarBehavior(userData) {
