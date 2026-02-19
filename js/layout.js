@@ -112,12 +112,20 @@ function initSidebarToggle() {
     const btn = document.getElementById("sidebarToggle");
     const sidebar = document.getElementById("sidebar-container");
 
-    if (!btn || !sidebar) return;
+    if (!btn || !sidebar) {
+        console.log("toggle not found");
+        return;
+    }
 
     btn.addEventListener("click", () => {
 
-        sidebar.classList.toggle("hidden");
+        // ย่อ / ขยาย
+        sidebar.classList.toggle("w-64");
+        sidebar.classList.toggle("w-20");
 
+        // หมุนลูกศร
+        const icon = document.getElementById("toggleIcon");
+        if (icon) icon.classList.toggle("rotate-180");
     });
 }
 
