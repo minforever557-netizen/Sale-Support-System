@@ -80,46 +80,62 @@ body {
 /* ==========================================================================
    4. MINI SIDEBAR MODE (Toggle Logic)
    ========================================================================== */
-/* Placeholder & Wrapper Scaling */
+/* ==========================================================================
+   4. MINI SIDEBAR MODE (บังคับตัดตัวหนังสือ 100%)
+   ========================================================================== */
+
+/* 4.1 บีบความกว้าง Placeholder และ Wrapper */
 #sidebar-placeholder.mini,
 #sidebar-placeholder.mini #sidebar-wrapper {
     width: var(--sidebar-mini-width) !important;
+    min-width: var(--sidebar-mini-width) !important;
 }
 
-/* 4.1 Hide Elements (Text, Labels, Arrows) */
+/* 4.2 บังคับซ่อนตัวหนังสือทุกประเภท (ใช้ Opacity ร่วมกับ Display) */
 #sidebar-placeholder.mini .sidebar-text, 
-#sidebar-placeholder.mini #sidebar-wrapper p,
-#sidebar-placeholder.mini span.font-medium,
+#sidebar-placeholder.mini span, 
+#sidebar-placeholder.mini p,
+#sidebar-placeholder.mini .font-medium,
 #sidebar-placeholder.mini .fa-chevron-right {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
     width: 0 !important;
+    overflow: hidden !important;
 }
 
-/* 4.2 Centering Icons & Adjusting Spacing */
-#sidebar-placeholder.mini .nav-link-modern,
-#sidebar-placeholder.mini #sidebar-wrapper .px-6 {
+/* 4.3 จัดไอคอนให้อยู่กึ่งกลางเป๊ะๆ และเอา Gap ออก */
+#sidebar-placeholder.mini .nav-link-modern {
     justify-content: center !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     gap: 0 !important;
+    margin: 4px auto !important;
 }
 
-/* 4.3 Sidebar Header (Logo) & Toggle Button */
-#sidebar-placeholder.mini .h-20 {
+#sidebar-placeholder.mini .nav-icon {
+    margin: 0 !important;
+    font-size: 1.3rem !important;
+}
+
+/* 4.4 จัดการ Logo (SaleSupport) ให้เหลือแต่จรวด */
+#sidebar-placeholder.mini #sidebar-wrapper .h-20 {
     justify-content: center !important;
     padding: 0 !important;
 }
 
-#sidebar-toggle {
-    background-color: var(--primary-green) !important;
-    border: 2px solid white;
-    transition: right var(--transition-speed);
+#sidebar-placeholder.mini #sidebar-wrapper .min-w-\[40px\] {
+    margin: 0 !important;
 }
 
-#sidebar-placeholder.mini #sidebar-toggle {
-    right: -12px;
+/* 4.5 จัดการปุ่ม Logout ให้สมดุล */
+#sidebar-placeholder.mini .logout-btn-modern {
+    justify-content: center !important;
+    padding: 14px 0 !important;
+}
+
+#sidebar-placeholder.mini .logout-btn-modern i {
+    margin: 0 !important;
 }
 
 /* ==========================================================================
