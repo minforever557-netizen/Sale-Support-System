@@ -39,6 +39,7 @@ async function loadLayout() {
         initLogout();
         loadUserToTopbar();
         setActiveMenu();
+        initSidebarToggle();
 
         console.log("LAYOUT LOADED OK");
 
@@ -102,6 +103,24 @@ function initLogout() {
         window.location.replace("index.html");
     };
 }
+
+// ==============================
+// SIDEBAR TOGGLE
+// ==============================
+function initSidebarToggle() {
+
+    const btn = document.getElementById("sidebarToggle");
+    const sidebar = document.getElementById("sidebar-container");
+
+    if (!btn || !sidebar) return;
+
+    btn.addEventListener("click", () => {
+
+        sidebar.classList.toggle("hidden");
+
+    });
+}
+
 // ==============================
 // CLOCK
 // ==============================
