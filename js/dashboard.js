@@ -16,23 +16,30 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 console.log("Checking Auth Status..."); // ดูว่าไฟล์นี้เริ่มทำงานหรือยัง
-
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        console.log("Firebase User Found:", user.uid); // 1. เช็คว่าล็อกอินผ่านไหม
+        console.log("Firebase User Found:", user.uid);
         
         try {
+            // ดึงข้อมูล Admin จาก Firestore โดยใช้ UID
             const adminDoc = await getDoc(doc(db, "admin", user.uid));
             
             if (adminDoc.exists()) {
-                console.log("Admin Data Found:", adminDoc.data()); // 2. เช็คว่ามีข้อมูลในคอลเลกชัน admin ไหม
                 const userData = adminDoc.data();
+                console.log("Admin Data Found:", userData);
+
+                // 1. โหลด Layout พื้นฐาน
                 await initGlobalLayout(userData, user.email);
+                
+                // 2. โหลดสถิติ Dashboard
                 loadDashboardStats(user.email);
+
+                // 3. เริ่มทำงานระบบ Sidebar (Toggle, Active Link, Admin Visibility)
+                initSidebarBehavior(userData);
+
             } else {
-                // 🚩 จุดที่น่าจะเสีย: ล็อกอินผ่าน แต่ไม่มีเลข UID นี้ในคอลเลกชัน admin
                 console.error("Critical: User UID not found in 'admin' collection!");
-                alert("สิทธิ์การเข้าใช้งานไม่ถูกต้อง (ไม่พบ UID ในระบบ Admin)");
+                alert("สิทธิ์การเข้าใช้งานไม่ถูกต้อง");
                 await signOut(auth);
                 window.location.replace("login.html");
             }
@@ -40,13 +47,58 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Firestore Error:", error);
         }
     } else {
-        console.log("No User Found. Redirecting..."); // 3. ถ้าเด้งมาตรงนี้แสดงว่า Firebase ยังมองไม่เห็น User
+        console.log("No User Found. Redirecting...");
         if (!window.location.pathname.includes("login.html")) {
             window.location.replace("login.html");
         }
     }
 });
 
+// --- ฟังก์ชันใหม่สำหรับควบคุมพฤติกรรม Sidebar ---
+function initSidebarBehavior(userData) {
+    const sidebar = document.getElementById('sidebar-placeholder');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
+
+    // A. ตรวจสอบสิทธิ์ Admin เพื่อเปิดเมนู
+    const adminSection = document.getElementById('admin-menu-section');
+    if (adminSection && userData.role === 'Admin') {
+        adminSection.classList.remove('hidden-secure');
+        adminSection.classList.remove('hidden'); // กรณีใช้ class พื้นฐานของ Tailwind
+    }
+
+    // B. ตั้งค่า Active Menu (แสดงให้รู้ว่าอยู่เมนูไหน)
+    document.querySelectorAll('.nav-link-modern').forEach(link => {
+        // เทียบค่า data-page กับชื่อไฟล์ปัจจุบัน
+        if (link.getAttribute('data-page') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+
+    // C. ระบบพับ Sidebar (Desktop Toggle)
+    if (toggleBtn) {
+        toggleBtn.onclick = () => {
+            sidebar.classList.toggle('mini');
+            // เปลี่ยนไอคอนลูกศร
+            if (sidebar.classList.contains('mini')) {
+                toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+            } else {
+                toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+            }
+        };
+    }
+
+    // D. ระบบ Mobile Hamburger (กดเปิด/ปิดในมือถือ)
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    if (mobileBtn) {
+        mobileBtn.onclick = () => {
+            sidebar.classList.toggle('active'); // ใช้ class .active ที่เขียนใน CSS ขั้นตอนที่ 2
+        };
+    }
+}
+
 // --- ฟังก์ชันอื่นๆ คงเดิม (เพื่อความกระชับผมขอตัดเนื้อในออก แต่ให้คุณใช้ของเดิมที่คุณมีได้เลย) ---
 async function initGlobalLayout(userData, email) { /* ... โค้ดเดิม ... */ }
 async function loadDashboardStats(userEmail) { /* ... โค้ดเดิม ... */ }
+
