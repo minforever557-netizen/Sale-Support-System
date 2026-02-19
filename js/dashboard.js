@@ -21,52 +21,58 @@ const auth = getAuth(app);
 // 2. Authentication Monitor & Role Check
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        console.log("Firebase User Found:", user.uid);
-        
         try {
-            // ดึงข้อมูลจากคอลเลกชัน 'admin' (ตรวจสอบตาม UID)
             const userDoc = await getDoc(doc(db, "admin", user.uid));
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                
-                // --- จุดแก้ไขสำคัญ: ใช้ .toLowerCase() เพื่อป้องกันปัญหาตัวพิมพ์เล็ก-ใหญ่ ---
-                const rawRole = userData.role || "";
-                const userRole = rawRole.toLowerCase(); 
-                console.log("User Role identified as:", userRole);
+                // บังคับเปลี่ยนเป็นตัวเล็กเพื่อเช็คสิทธิ์ แต่ตอนแสดงผลจะใช้ค่าจริงจาก userData
+                const roleForCheck = (userData.role || "").toLowerCase();
 
-                // ตรวจสอบ Role โดยใช้ตัวพิมพ์เล็กทั้งหมด
-                if (userRole === 'admin' || userRole === 'user' || userRole === 'staff') {
-                    // ถ้ามี Role ที่ถูกต้อง ให้เข้าใช้งานได้
-                    console.log("Access Granted for role:", userRole);
+                if (['admin', 'user', 'staff'].includes(roleForCheck)) {
+                    // *** จุดสำคัญ: ส่ง userData และ user.email เข้าไปทำงานต่อ ***
                     await initGlobalLayout(userData, user.email);
-                    loadDashboardStats(user.email);
+                    
+                    // หลังจากโหลด Layout เสร็จ ให้สั่งอัปเดต Topbar ซ้ำอีกครั้งเพื่อความชัวร์
+                    setTimeout(() => {
+                        updateTopbarDirectly(userData, user.email);
+                    }, 500);
+
+                    if (typeof loadDashboardStats === 'function') {
+                        loadDashboardStats(user.email);
+                    }
                 } else {
-                    // กรณีมีฟิลด์ role แต่ค่าข้างในไม่ได้รับอนุญาต
-                    console.error("Access Denied: Invalid Role Value ->", rawRole);
-                    alert(`สิทธิ์การใช้งานของคุณไม่ถูกต้อง (Role: ${rawRole})`);
+                    alert("สิทธิ์การใช้งานของคุณไม่ถูกต้อง");
                     await signOut(auth);
                     window.location.replace("login.html");
                 }
-
-            } else {
-                // กรณีไม่พบ UID นี้ในคอลเลกชัน 'admin'
-                console.error("Critical: User ID not found in database!");
-                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
-                await signOut(auth);
-                window.location.replace("login.html");
             }
         } catch (error) {
-            console.error("Firestore Error:", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล");
+            console.error("Auth Change Error:", error);
         }
     } else {
-        // ถ้าไม่ได้ Login ให้กลับไปหน้า Login
         if (!window.location.pathname.includes("login.html")) {
             window.location.replace("login.html");
         }
     }
 });
+
+// ฟังก์ชันเสริมสำหรับฉีดข้อมูลเข้า Topbar โดยตรง
+function updateTopbarDirectly(data, email) {
+    const elements = {
+        name: document.getElementById('tp-fullname'),
+        user: document.getElementById('tp-username'),
+        email: document.getElementById('tp-email'),
+        avatar: document.getElementById('tp-avatar-circle')
+    };
+
+    if (elements.name) elements.name.innerText = data.name || "ผู้ใช้งาน";
+    if (elements.user) elements.user.innerText = `@${data.username || "user"}`;
+    if (elements.email) elements.email.innerText = email || data.email;
+    if (elements.avatar && data.name) {
+        elements.avatar.innerText = data.name.charAt(0).toUpperCase();
+    }
+}
 // 3. ฟังก์ชันโหลด Sidebar และ Topbar
 async function initGlobalLayout(userData, email) {
     const components = [
