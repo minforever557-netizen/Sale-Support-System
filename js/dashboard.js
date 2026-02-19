@@ -204,3 +204,38 @@ document.addEventListener('click', (e) => {
         signOut(auth).then(() => window.location.replace("login.html"));
     }
 });
+
+
+//8.ระบบ จับหน้าจอ Active
+function attachSidebarEvents() {
+    const placeholder = document.getElementById('sidebar-placeholder');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    
+    if (!toggleBtn || !placeholder) return;
+
+    // --- ส่วนที่ 1: ระบบตรวจสอบหน้า Active (เพิ่มใหม่) ---
+    const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
+    document.querySelectorAll('.nav-link-modern').forEach(link => {
+        const linkPage = link.getAttribute('href').split("/").pop();
+        if (linkPage === currentPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+
+    // --- ส่วนที่ 2: ระบบ Toggle เดิมของคุณ ---
+    const renderIcon = () => {
+        const isMini = placeholder.classList.contains('mini');
+        const iconClass = isMini ? 'fa-chevron-right' : 'fa-chevron-left';
+        toggleBtn.innerHTML = `<i class="fa-solid ${iconClass}" style="display: block !important; color: white; font-size: 10px;"></i>`;
+    };
+
+    renderIcon();
+
+    toggleBtn.onclick = (e) => {
+        e.preventDefault();
+        placeholder.classList.toggle('mini');
+        renderIcon();
+    };
+}
