@@ -7,9 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="./css/style.css">
+
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        .user-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; }
+        .user-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; }
         .user-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
         .modal-backdrop { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
         .form-input { 
@@ -18,29 +21,32 @@
         }
         .form-input:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background-color: white; }
         .label-title { display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; margin-left: 0.2rem; letter-spacing: 0.025em; }
+        
+        /* Custom Scrollbar สำหรับ Modal */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-    <aside id="sidebar-placeholder"
-class="hidden lg:block flex-shrink-0">
-</aside>
+    <aside id="sidebar-placeholder" class="hidden lg:block w-64 sticky top-0 h-screen bg-white border-r border-slate-200"></aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <div id="topbar-placeholder"></div>
+        <div id="topbar-placeholder" class="sticky top-0 z-40"></div>
 
-        <main class="p-6 md:p-10">
+        <main class="p-6 md:p-10 max-w-7xl mx-auto w-full">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                 <div>
                     <h2 class="text-3xl font-bold text-slate-800 tracking-tight">จัดการผู้ใช้งาน</h2>
-                    <p class="text-slate-500">ตรวจสอบและแก้ไขข้อมูลสมาชิกในระบบทั้งหมด</p>
+                    <p class="text-slate-500 mt-1">ตรวจสอบและแก้ไขข้อมูลสมาชิกในระบบทั้งหมด</p>
                 </div>
             </div>
 
             <div id="user-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="col-span-full py-20 text-center text-slate-400">
                     <i class="fa-solid fa-circle-notch animate-spin text-3xl mb-4 text-indigo-500"></i>
-                    <p>กำลังโหลดข้อมูลพนักงาน...</p>
+                    <p class="font-medium tracking-wide">กำลังโหลดข้อมูลพนักงาน...</p>
                 </div>
             </div>
         </main>
@@ -48,30 +54,30 @@ class="hidden lg:block flex-shrink-0">
 
     <div id="editModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden">
+        <div class="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div class="bg-slate-900 p-8 text-white">
                 <div class="flex justify-between items-start">
                     <h3 class="text-2xl font-bold flex items-center gap-3">
                         <i class="fa-solid fa-user-gear text-indigo-400"></i> จัดการโปรไฟล์พนักงาน
                     </h3>
                     <button onclick="closeModal()" class="bg-white/10 hover:bg-white/20 p-2 rounded-xl transition">
-                        <i class="fa-solid fa-xmark"></i>
+                        <i class="fa-solid fa-xmark w-5 h-5 flex items-center justify-center"></i>
                     </button>
                 </div>
             </div>
 
-            <form id="edit-user-form" class="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+            <form id="edit-user-form" class="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scroll">
                 <input type="hidden" id="edit-uid">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2"><h4 class="text-xs font-black text-indigo-500 uppercase tracking-widest border-b pb-2">Login Credentials</h4></div>
                     <div>
                         <label class="label-title">Username</label>
-                        <input type="text" id="edit-username" class="form-input">
+                        <input type="text" id="edit-username" class="form-input" placeholder="ไอดีผู้ใช้">
                     </div>
                     <div>
                         <label class="label-title">Email Address</label>
-                        <input type="email" id="edit-email" class="form-input">
+                        <input type="email" id="edit-email" class="form-input" placeholder="email@company.com">
                     </div>
                 </div>
 
@@ -79,11 +85,11 @@ class="hidden lg:block flex-shrink-0">
                     <div class="md:col-span-2"><h4 class="text-xs font-black text-emerald-500 uppercase tracking-widest border-b pb-2">Profile Details</h4></div>
                     <div class="md:col-span-2">
                         <label class="label-title">ชื่อ-นามสกุลจริง</label>
-                        <input type="text" id="edit-name" class="form-input" required>
+                        <input type="text" id="edit-name" class="form-input" required placeholder="ระบุชื่อจริง">
                     </div>
                     <div>
                         <label class="label-title">เบอร์โทรศัพท์</label>
-                        <input type="text" id="edit-phone" class="form-input">
+                        <input type="text" id="edit-phone" class="form-input" placeholder="08x-xxx-xxxx">
                     </div>
                     <div>
                         <label class="label-title">บทบาท (Role)</label>
@@ -102,15 +108,17 @@ class="hidden lg:block flex-shrink-0">
                     </div>
                 </div>
 
-                <div class="pt-6 flex gap-3 sticky bottom-0 bg-white">
+                <div class="pt-6 flex gap-3 sticky bottom-0 bg-white border-t mt-4">
                     <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
-                    <button type="submit" id="saveBtn" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                    <button type="submit" id="saveBtn" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลพนักงาน
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <script type="module" src="./js/dashboard.js"></script>
 
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -134,27 +142,17 @@ class="hidden lg:block flex-shrink-0">
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const adminSnap = await getDoc(doc(db, "admin", user.uid));
+                // ตรวจสอบสิทธิ์ Admin ก่อนให้เข้าถึงหน้านี้
                 if (adminSnap.exists() && adminSnap.data().role === 'admin') {
-                    loadLayout();
                     await fetchTeams();
                     listenToUsers();
-                } else { window.location.replace("dashboard.html"); }
-            } else { window.location.replace("login.html"); }
-        });
-
-        async function loadLayout() {
-            const comps = [{ id: 'sidebar-placeholder', url: './components/sidebar.html' }, { id: 'topbar-placeholder', url: './components/topbar.html' }];
-            for (const comp of comps) {
-                const res = await fetch(comp.url);
-                if (res.ok) {
-                    const el = document.getElementById(comp.id);
-                    el.innerHTML = await res.text();
-                    el.querySelectorAll("script").forEach(s => {
-                        const ns = document.createElement("script"); ns.type = "module"; ns.textContent = s.textContent; document.head.appendChild(ns);
-                    });
+                } else { 
+                    window.location.replace("dashboard.html"); 
                 }
+            } else { 
+                window.location.replace("login.html"); 
             }
-        }
+        });
 
         async function fetchTeams() {
             const snap = await getDocs(collection(db, "teams"));
@@ -169,16 +167,33 @@ class="hidden lg:block flex-shrink-0">
                 const container = document.getElementById('user-list');
                 container.innerHTML = snapshot.docs.map(docSnap => {
                     const u = docSnap.data();
+                    const initial = (u.name || "U")[0];
+                    const roleColor = u.role === 'admin' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600';
+                    
                     return `
                         <div class="user-card bg-white p-6 rounded-[2.5rem] flex flex-col items-center">
-                            <div class="w-16 h-16 bg-slate-100 text-indigo-600 rounded-2xl flex items-center justify-center text-xl font-bold mb-3 border border-slate-50">${(u.name || "U")[0]}</div>
-                            <h3 class="font-bold text-slate-800">${u.name || 'ไม่ระบุชื่อ'}</h3>
-                            <p class="text-[10px] text-slate-400 mb-4 uppercase tracking-widest font-bold">${u.role || 'user'}</p>
-                            <div class="w-full text-xs space-y-2 mb-4 border-t pt-4">
-                                <div class="flex justify-between"><span class="text-slate-400">Team</span><span>${u.Team || '-'}</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Phone</span><span>${u["Phone No."] || '-'}</span></div>
+                            <div class="w-20 h-20 ${roleColor} rounded-[1.8rem] flex items-center justify-center text-2xl font-bold mb-4 shadow-inner">
+                                ${initial}
                             </div>
-                            <button onclick="openEditModal('${docSnap.id}')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-[11px] font-bold hover:bg-indigo-600 transition">แก้ไขข้อมูล</button>
+                            <h3 class="font-bold text-slate-800 text-lg">${u.name || 'ไม่ระบุชื่อ'}</h3>
+                            <span class="px-3 py-1 bg-slate-50 text-[10px] text-slate-400 rounded-full uppercase tracking-tighter font-black mt-1 mb-6 border border-slate-100">
+                                ${u.role || 'user'}
+                            </span>
+                            
+                            <div class="w-full text-[13px] space-y-3 mb-6 px-2">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-50">
+                                    <span class="text-slate-400 font-medium">Team</span>
+                                    <span class="text-slate-700 font-bold">${u.Team || '-'}</span>
+                                </div>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-50">
+                                    <span class="text-slate-400 font-medium">Phone</span>
+                                    <span class="text-slate-700 font-bold">${u["Phone No."] || '-'}</span>
+                                </div>
+                            </div>
+                            
+                            <button onclick="openEditModal('${docSnap.id}')" class="w-full py-4 bg-slate-900 text-white rounded-2xl text-[12px] font-bold hover:bg-indigo-600 transition shadow-lg shadow-slate-100">
+                                <i class="fa-solid fa-pen-to-square mr-2"></i>แก้ไขข้อมูล
+                            </button>
                         </div>
                     `;
                 }).join('');
@@ -206,9 +221,14 @@ class="hidden lg:block flex-shrink-0">
                 renderSubTeams(null);
             }
             document.getElementById('editModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         };
 
-        window.closeModal = () => document.getElementById('editModal').classList.add('hidden');
+        window.closeModal = () => {
+            document.getElementById('editModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
         document.getElementById('edit-main-team').onchange = (e) => renderSubTeams(e.target.value);
 
         function renderSubTeams(parentId, currentSub = null) {
@@ -229,14 +249,13 @@ class="hidden lg:block flex-shrink-0">
             const btn = document.getElementById('saveBtn');
             
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> บันทึก...`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
             try {
                 const mainSelect = document.getElementById('edit-main-team');
                 const mainTeamName = mainSelect.options[mainSelect.selectedIndex].text;
                 const adminRef = doc(db, "admin", uid);
 
-                // แก้ไขจุดนี้: ใช้โครงสร้างเดียวกับหน้า Profile
                 await updateDoc(adminRef, 
                     "name", document.getElementById('edit-name').value.trim(),
                     "username", document.getElementById('edit-username').value.trim(),
@@ -248,10 +267,10 @@ class="hidden lg:block flex-shrink-0">
                 );
 
                 closeModal();
-                alert("อัปเดตข้อมูลพนักงานสำเร็จ!");
+                alert("อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว!");
             } catch (err) { 
                 console.error(err);
-                alert("Error: " + err.message); 
+                alert("เกิดข้อผิดพลาด: " + err.message); 
             } finally { 
                 btn.disabled = false; 
                 btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลพนักงาน`; 
