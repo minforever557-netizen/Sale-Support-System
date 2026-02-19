@@ -18,27 +18,37 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // 2. Authentication Monitor & Role Check
+// 2. Authentication Monitor & Role Check
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("Firebase User Found:", user.uid);
         
         try {
-            // ดึงข้อมูลจากคอลเลกชัน admin โดยใช้ UID เป็น Document ID
-            const adminDoc = await getDoc(doc(db, "admin", user.uid));
+            // ดึงข้อมูลจากคอลเลกชัน 'admin' (แม้ชื่อคอลเลกชันจะเขียนแบบนั้น แต่เราจะเช็คที่ฟิลด์ role)
+            const userDoc = await getDoc(doc(db, "admin", user.uid));
             
-            if (adminDoc.exists()) {
-                const userData = adminDoc.data();
-                console.log("Admin Data Found:", userData);
-
-                // เริ่มโหลดส่วนประกอบหน้าเว็บ (Sidebar, Topbar)
-                await initGlobalLayout(userData, user.email);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
                 
-                // โหลดตัวเลขสถิติบน Dashboard
-                loadDashboardStats(user.email);
+                // --- จุดที่แก้ไข: เช็คจากฟิลด์ role เท่านั้น ---
+                const userRole = userData.role; // ดึงค่าจากฟิลด์ role ใน Firestore
+                console.log("User Role identified as:", userRole);
+
+                if (userRole === 'Admin' || userRole === 'User' || userRole === 'Staff') {
+                    // ถ้ามี Role ที่ถูกต้อง ให้เข้าใช้งานได้
+                    await initGlobalLayout(userData, user.email);
+                    loadDashboardStats(user.email);
+                } else {
+                    // ถ้าไม่มีฟิลด์ role หรือ Role ไม่ได้รับอนุญาต
+                    console.error("Access Denied: Invalid Role");
+                    alert("สิทธิ์การใช้งานของคุณไม่ถูกต้อง (Invalid Role)");
+                    await signOut(auth);
+                    window.location.replace("login.html");
+                }
 
             } else {
-                console.error("Critical: User UID not found in 'admin' collection!");
-                alert("คุณไม่มีสิทธิ์เข้าถึงระบบนี้");
+                console.error("Critical: User ID not found in database!");
+                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
                 await signOut(auth);
                 window.location.replace("login.html");
             }
@@ -46,13 +56,11 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Firestore Error:", error);
         }
     } else {
-        console.log("No User Found. Redirecting to Login...");
         if (!window.location.pathname.includes("login.html")) {
             window.location.replace("login.html");
         }
     }
 });
-
 // 3. ฟังก์ชันโหลด Sidebar และ Topbar
 async function initGlobalLayout(userData, email) {
     const components = [
