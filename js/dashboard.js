@@ -134,31 +134,42 @@ function initLiveClock() {
 }
 
 // 5. ระบบ Sidebar Toggle & Active Link
-// 5. ระบบ Sidebar Toggle & Active Link (แก้ไขให้รองรับโครงสร้าง Placeholder)
+// 5. ระบบ Sidebar Toggle (แก้ไขเพื่อให้ย่อพื้นที่ Placeholder ด้วย)
 function attachSidebarEvents() {
-    const sidebar = document.getElementById('sidebar-wrapper'); // ตัวจริงใน sidebar.html
-    const placeholder = document.getElementById('sidebar-placeholder'); // ตัวหุ้มใน dashboard.html
+    const sidebar = document.getElementById('sidebar-wrapper'); // ตัว Sidebar จริง
+    const placeholder = document.getElementById('sidebar-placeholder'); // พื้นที่จองใน Dashboard
     const toggleBtn = document.getElementById('sidebar-toggle');
     const toggleIcon = document.getElementById('toggle-icon');
 
     if (toggleBtn && sidebar) {
         toggleBtn.onclick = (e) => {
             e.preventDefault();
-            // สั่งย่อทั้งตัว Placeholder และ Wrapper เพื่อความชัวร์
+            
+            // 1. สลับคลาส mini ที่ตัว Sidebar
             sidebar.classList.toggle('mini');
-            if (placeholder) placeholder.classList.toggle('w-20'); // ปรับความกว้าง placeholder ด้วย
-            if (placeholder) placeholder.classList.toggle('w-64'); 
+            
+            // 2. สลับความกว้างที่ตัว Placeholder (เพื่อให้ Content ขยับตาม)
+            if (placeholder) {
+                if (sidebar.classList.contains('mini')) {
+                    placeholder.style.width = '80px';
+                    placeholder.style.minWidth = '80px';
+                } else {
+                    placeholder.style.width = '256px';
+                    placeholder.style.minWidth = '256px';
+                }
+            }
 
-            // เปลี่ยนไอคอนลูกศร
+            // 3. เปลี่ยนไอคอนลูกศร
             if (toggleIcon) {
                 const isMini = sidebar.classList.contains('mini');
                 toggleIcon.className = isMini ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
             }
+            
+            console.log("Toggle Sidebar: " + (sidebar.classList.contains('mini') ? "Mini" : "Full"));
         };
-        console.log("✅ Sidebar Toggle System Ready");
     }
 
-    // จัดการ Active Menu
+    // จัดการ Active Menu (คงเดิม)
     const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
     document.querySelectorAll('.nav-link-modern').forEach(link => {
         if (link.getAttribute('data-page') === currentPath) {
@@ -166,7 +177,6 @@ function attachSidebarEvents() {
         }
     });
 }
-
 // 6. ฟังก์ชันสถิติ Dashboard
 async function loadDashboardStats(userEmail) {
     try {
