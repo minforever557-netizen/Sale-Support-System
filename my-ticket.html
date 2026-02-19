@@ -235,11 +235,13 @@
             const docSnap = await getDoc(doc(db, "tickets", id));
             if (docSnap.exists()) {
                 const t = docSnap.data();
-                document.getElementById('det-modal-id').innerText = `ID: ${id}`;
+                 document.getElementById('det-modal-id').innerText = `ID: ${id}`;
                 document.getElementById('det-id-number').innerText = t.id_number || '-';
                 document.getElementById('det-create-date').innerText = t.createdAt?.toDate().toLocaleString('th-TH') || '-';
                 document.getElementById('det-topic').innerText = t.topic;
                 document.getElementById('det-detail').innerText = t.detail;
+                document.getElementById('det-admin-user').innerText = t.adminName || 'System';
+                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกเพิ่มเติมจากแอดมิน';
                 document.getElementById('detail-modal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
