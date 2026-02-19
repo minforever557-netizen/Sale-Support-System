@@ -1,7 +1,7 @@
 // ==============================
 // LOAD SIDEBAR + TOPBAR
 // ==============================
-
+console.log("layout loaded");
 async function loadLayout() {
 
     // ---------- SIDEBAR ----------
