@@ -268,3 +268,27 @@ body {
     z-index: 1002;
     cursor: pointer;
 }
+/* --- แก้ไขให้แถบ Active ลอยขึ้นมาหน้าสุด --- */
+.nav-link-modern.active::after {
+    content: "" !important;
+    display: block !important; /* บังคับให้แสดงผล */
+    position: absolute !important;
+    right: 0 !important;
+    z-index: 50 !important; /* ดันให้พ้นการโดนทับ */
+}
+
+/* --- บังคับซ่อนแค่ตัวหนังสือ ห้ามซ่อนไอคอนภายในเมนู --- */
+#sidebar-placeholder.mini .sidebar-text,
+#sidebar-placeholder.mini p {
+    display: none !important;
+}
+
+/* --- บังคับให้ปุ่ม Toggle และไอคอน Logout แสดงผลเสมอ --- */
+#sidebar-toggle, 
+#sidebar-toggle i,
+#sidebar-placeholder.mini .logout-btn-modern,
+#sidebar-placeholder.mini .logout-btn-modern i {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
