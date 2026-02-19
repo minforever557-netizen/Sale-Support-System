@@ -192,3 +192,37 @@ body {
     font-size: 11px;
     font-weight: 700;
 }
+
+/* --- 1. เพิ่มแถบบอกตำแหน่งเมนู (Active Indicator) --- */
+.nav-link-modern.active {
+    background-color: var(--light-green) !important;
+    color: var(--primary-green) !important;
+    position: relative;
+}
+
+/* สร้างแถบเส้นสีเขียวด้านขวาเมื่อ Active */
+.nav-link-modern.active::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 4px;
+    background-color: var(--primary-green);
+    border-radius: 4px 0 0 4px;
+}
+
+/* --- 2. แก้ไขไอคอนออกจากระบบให้แสดงผลแม้ในโหมด Mini --- */
+.logout-btn-modern i {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 1.25rem;
+}
+
+/* จัดกึ่งกลางปุ่ม Logout เมื่อย่อ */
+#sidebar-placeholder.mini .logout-btn-modern {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 14px 0 !important;
+}
