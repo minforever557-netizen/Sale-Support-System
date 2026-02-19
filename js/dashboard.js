@@ -129,24 +129,33 @@ async function initGlobalLayout(userData, email) {
 // 4. ระบบควบคุม Sidebar (Toggle, Active Link, Admin Control)
 function initSidebarBehavior(userData) {
     const sidebar = document.getElementById('sidebar-placeholder');
-    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleBtn = document.getElementById('sidebar-toggle'); // ลูกศร Desktop
     const toggleIcon = document.getElementById('toggle-icon');
     const currentPath = window.location.pathname.split("/").pop() || "dashboard.html";
 
-    // A. ตรวจสอบสิทธิ์เพื่อแสดง Admin Menu (ตามโครงสร้าง html ของคุณ)
+    // --- 1. ตรวจสอบสิทธิ์จากฟิลด์ role เท่านั้น ---
     const adminSection = document.getElementById('admin-menu-section');
-    if (adminSection && userData.role === 'Admin') {
-        adminSection.classList.remove('hidden', 'hidden-secure');
+    if (adminSection) {
+        // เช็คจากค่าในฟิลด์ role ที่ดึงมาจาก Firestore
+        if (userData && userData.role === 'Admin') {
+            adminSection.classList.remove('hidden', 'hidden-secure');
+            console.log("Admin access granted to menu");
+        } else {
+            // หากไม่ใช่ Admin ให้ลบทิ้งเพื่อความปลอดภัย ไม่ให้เห็นแม้แต่โครงสร้าง
+            adminSection.remove(); 
+        }
     }
 
-    // B. ตั้งค่า Active State ให้เมนู
+    // --- 2. ตั้งค่า Active State (ไฮไลท์เมนูที่เลือก) ---
     document.querySelectorAll('.nav-link-modern').forEach(link => {
+        // ลบ active เก่าออกก่อนเพื่อความชัวร์
+        link.classList.remove('active');
         if (link.getAttribute('data-page') === currentPath) {
             link.classList.add('active');
         }
     });
 
-    // C. ระบบพับ Sidebar (Desktop)
+    // --- 3. ระบบพับ Sidebar สำหรับ Desktop (ลูกศรข้าง Sidebar) ---
     if (toggleBtn) {
         toggleBtn.onclick = () => {
             sidebar.classList.toggle('mini');
@@ -160,11 +169,12 @@ function initSidebarBehavior(userData) {
         };
     }
 
-    // D. ระบบ Mobile Hamburger (ปุ่ม Bars)
+    // --- 4. ระบบ Mobile Hamburger (ปุ่ม Bars ที่อาจจะมีในหน้าจอเล็ก) ---
     const mobileBtn = document.getElementById('mobile-menu-btn');
     if (mobileBtn) {
         mobileBtn.onclick = () => {
-            sidebar.classList.toggle('active');
+            // ใช้ class 'active' หรือ 'translate-x-0' ขึ้นอยู่กับ CSS ของคุณ
+            sidebar.classList.toggle('active'); 
         };
     }
 }
