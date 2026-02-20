@@ -23,34 +23,23 @@ let currentTickets = [];
 
 
 /* ================= WAIT LAYOUT LOAD ================= */
-
-/* ================= WAIT LAYOUT LOAD ================= */
+/* ⭐ รอ sidebar/topbar โหลดก่อน */
 
 document.addEventListener("layoutLoaded", () => {
 
   onAuthStateChanged(auth, (user) => {
+
     if (!user) {
       window.location.replace("login.html");
       return;
     }
 
     initTicketListener(user.email);
-    initEvents(); // ⭐ เพิ่มตัวนี้
+    initEvents();
   });
 
 });
 
-
-/* ================= AUTH CHECK ================= */
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.replace("login.html");
-    return;
-  }
-
-  initTicketListener(user.email);
-});
 
 /* ================= LOAD TICKETS ================= */
 
@@ -58,7 +47,7 @@ function initTicketListener(email) {
 
   const sortEl = document.getElementById("sortOrder");
 
-  // ✅ ป้องกัน DOM ยังไม่โหลด
+  // ✅ กัน DOM ยังไม่มา
   if (!sortEl) {
     console.warn("sortOrder not ready");
     return;
@@ -73,6 +62,7 @@ function initTicketListener(email) {
   );
 
   onSnapshot(q, (snapshot) => {
+
     currentTickets = snapshot.docs.map(d => ({
       id: d.id,
       ...d.data()
@@ -82,13 +72,17 @@ function initTicketListener(email) {
   });
 }
 
+
 /* ================= RENDER ================= */
 
 function renderTickets(tickets) {
 
   const list = document.getElementById("ticket-list");
-  const searchTerm =
-    document.getElementById("searchInput").value.toLowerCase();
+  const searchInput = document.getElementById("searchInput");
+
+  if (!list || !searchInput) return;
+
+  const searchTerm = searchInput.value.toLowerCase();
 
   const filtered = tickets.filter(t =>
     t.id_number?.toLowerCase().includes(searchTerm) ||
@@ -137,12 +131,12 @@ function renderTickets(tickets) {
   }).join("");
 }
 
+
 /* ================= DETAIL ================= */
 
 window.viewDetail = async (id) => {
 
   const docSnap = await getDoc(doc(db, "tickets", id));
-
   if (!docSnap.exists()) return;
 
   const t = docSnap.data();
@@ -154,18 +148,28 @@ window.viewDetail = async (id) => {
   document.getElementById("det-topic").innerText = t.topic;
   document.getElementById("det-detail").innerText = t.detail;
 
-  document.getElementById("detail-modal").classList.remove("hidden");
+  document.getElementById("detail-modal")
+    .classList.remove("hidden");
 };
+
 
 /* ================= EVENTS ================= */
 
-document
-  .getElementById("searchInput")
-  .addEventListener("input", () => renderTickets(currentTickets));
+function initEvents() {
 
-document
-  .getElementById("sortOrder")
-  .addEventListener("change", () => {
-    const user = auth.currentUser;
-    if (user) initTicketListener(user.email);
-  });
+  const searchInput = document.getElementById("searchInput");
+  const sortOrder = document.getElementById("sortOrder");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () =>
+      renderTickets(currentTickets)
+    );
+  }
+
+  if (sortOrder) {
+    sortOrder.addEventListener("change", () => {
+      const user = auth.currentUser;
+      if (user) initTicketListener(user.email);
+    });
+  }
+}
