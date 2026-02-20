@@ -1,14 +1,31 @@
-document.addEventListener("layoutLoaded", () => {
+document.addEventListener("layoutLoaded", async () => {
 
-    console.log("ROLE CHECK START");
+  console.log("ROLE CHECK START");
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) return;
+  const userData = JSON.parse(localStorage.getItem("userData"));
 
-    const role = user.role;
+  if (!userData) {
+    console.warn("No userData");
+    return;
+  }
 
-    if (role === "admin") {
-        document.querySelectorAll(".admin-menu")
-            .forEach(el => el.classList.remove("hidden"));
-    }
+  // ✅ แก้ตรงนี้
+  const role = (userData.role || "").toLowerCase();
+
+  console.log("ROLE =", role);
+
+  // ===== MENU =====
+  const adminMenus = document.querySelectorAll(".menu-admin");
+  const userMenus = document.querySelectorAll(".menu-user");
+
+  if (role === "admin") {
+
+    adminMenus.forEach(el => el.classList.remove("hidden"));
+    userMenus.forEach(el => el.classList.remove("hidden"));
+
+  } else {
+
+    adminMenus.forEach(el => el.classList.add("hidden"));
+  }
+
 });
