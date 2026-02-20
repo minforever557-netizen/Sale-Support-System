@@ -24,9 +24,9 @@ let currentTickets = [];
 
 /* ================= WAIT LAYOUT LOAD ================= */
 
-document.addEventListener("layoutLoaded", () => {
+/* ================= WAIT LAYOUT LOAD ================= */
 
-  console.log("DASHBOARD READY");
+document.addEventListener("layoutLoaded", () => {
 
   onAuthStateChanged(auth, (user) => {
     if (!user) {
@@ -35,7 +35,7 @@ document.addEventListener("layoutLoaded", () => {
     }
 
     initTicketListener(user.email);
-    initEvents();
+    initEvents(); // ⭐ เพิ่มตัวนี้
   });
 
 });
