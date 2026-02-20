@@ -155,35 +155,67 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     };
 
     window.viewDetail = async (id) => {
-        try {
-            const docSnap = await getDoc(doc(db, "tickets", id));
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-                
-                // อัปเดตข้อมูลใน Modal
-                const elements = {
-                    'det-modal-id': `ID: ${id}`,
-                    'det-id-number': t.id_number || t.internetNo || '-',
-                    'det-topic': t.topic || 'รายละเอียดใบงาน',
-                    'det-detail': t.detail || 'ไม่มีรายละเอียด',
-                    'det-admin-remark': t.adminNote || 'ไม่มีบันทึกจากเจ้าหน้าที่'
-                };
+    try {
+        const docSnap = await getDoc(doc(db, "tickets", id));
+        if (docSnap.exists()) {
+            const t = docSnap.data();
+            
+            // 1. User ที่เปิด (ใช้ ownerEmail หรือชื่อถ้ามี)
+            document.getElementById('det-user').innerText = t.ownerEmail || '-';
+            
+            // 2. หัวข้อ
+            document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
+            
+            // 3. Internet No.
+            document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
+            
+            // 4. รายละเอียด
+            document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
+            
+            // 5. วันเวลาที่เปิด (แปลงจาก Timestamp)
+            document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
+                ? t.createdAt.toDate().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) 
+                : '-';
+            
+            // 6. Status & Badge Color
+            const status = t.status || 'Pending';
+            const badge = document.getElementById('det-status-badge');
+            badge.innerText = status;
+            
+            // ล้างสีเดิมออกก่อน
+            badge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1";
+            const statusColors = {
+                'Open': 'bg-blue-100 text-blue-700',
+                'On Progress': 'bg-orange-100 text-orange-700',
+                'Success': 'bg-emerald-100 text-emerald-700',
+                'Reject': 'bg-red-100 text-red-700',
+                'Pending': 'bg-slate-100 text-slate-600'
+            };
+            badge.classList.add(...(statusColors[status] || statusColors['Pending']).split(' '));
 
-                for (const [id, value] of Object.entries(elements)) {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = value;
-                }
+            // 7. หมายเหตุจาก Admin
+            document.getElementById('det-admin-remark').innerText = t.adminNote || 'รอดำเนินการ...';
+            
+            // 8. วันเวลาที่ปิด/อัปเดตล่าสุด
+            document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
+                ? t.updatedAt.toDate().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) 
+                : '-';
+            
+            // 9. User Admin (ชื่อแอดมินผู้รับงาน)
+            document.getElementById('det-admin-name').innerText = t.adminName || (t.handledBy || 'รอมอบหมาย');
 
-                const badge = document.getElementById('det-status-badge');
-                if (badge) badge.innerText = t.status || 'Pending';
+            // ID อ้างอิง
+            document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
 
-                document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        } catch (e) {
-            console.error("View Error:", e);
+            // แสดง Modal
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
-    };
+    } catch (e) {
+        console.error("View Detail Error:", e);
+        alert("ไม่สามารถดึงข้อมูลได้ โปรดลองอีกครั้ง");
+    }
+};
 
     // --- ส่วนการจัดการข้อมูล ---
 
