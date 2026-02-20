@@ -111,114 +111,86 @@ REALTIME
 </div>
 
 <script type="module">
-    // 1. Import ตัวแปร db และ auth จากไฟล์ firebase.js ที่คุณเตรียมไว้
-    import { db, auth } from "./firebase.js";
-    
-    // 2. Import ฟังก์ชัน Firestore/Auth ที่จำเป็นจาก CDN
-    import { 
-        collection, 
-        query, 
-        where, 
-        onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    // 1. Import ตรงจาก Firebase CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    /* ================= DASHBOARD REALTIME ================= */
+    // 2. ตั้งค่า Config (ใส่ค่าเดิมของคุณ)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
+        authDomain: "salesupportsystemapp.firebaseapp.com",
+        projectId: "salesupportsystemapp",
+        storageBucket: "salesupportsystemapp.firebasestorage.app",
+        messagingSenderId: "840890441207",
+        appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
+    };
+
+    // 3. Initialize
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    /* ================= การดึงข้อมูล Realtime ================= */
     onAuthStateChanged(auth, (user) => {
         if (!user) {
             window.location.replace("login.html");
             return;
         }
 
-        // อ้างอิง Element สำหรับแสดงตัวเลข KPI
-        const elTotal = document.getElementById("totalCase");
-        const elPending = document.getElementById("pendingCase");
-        const elProgress = document.getElementById("progressCase");
-        const elDone = document.getElementById("doneCase");
-        const elClose = document.getElementById("closeCase");
-        const tableBody = document.getElementById("recentTicketTable");
+        // อ้างอิง Element
+        const fields = {
+            total: document.getElementById("totalCase"),
+            pending: document.getElementById("pendingCase"),
+            progress: document.getElementById("progressCase"),
+            done: document.getElementById("doneCase"),
+            close: document.getElementById("closeCase"),
+            table: document.getElementById("recentTicketTable")
+        };
 
-        // Query ข้อมูลเฉพาะที่เป็นของ User คนนี้
-        const q = query(
-            collection(db, "tickets"),
-            where("createdBy", "==", user.uid)
-        );
+        const q = query(collection(db, "tickets"), where("createdBy", "==", user.uid));
 
-        // ฟังการเปลี่ยนแปลงข้อมูลแบบ Realtime
         onSnapshot(q, (snapshot) => {
-            let total = 0, pending = 0, progress = 0, done = 0, close = 0;
+            let stats = { total: 0, pending: 0, progress: 0, done: 0, close: 0 };
             const rows = [];
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                total++;
-
-                // นับจำนวนสถานะ
-                const status = data.status?.toLowerCase();
-                if (status === "pending") pending++;
-                else if (status === "progress") progress++;
-                else if (status === "done") done++;
-                else if (status === "close") close++;
-
+                stats.total++;
+                if (stats[data.status] !== undefined) stats[data.status]++;
                 rows.push({ id: doc.id, ...data });
             });
 
-            // เรียงลำดับตามวันที่สร้าง (Client-side Sort)
-            rows.sort((a, b) => {
-                const timeA = a.createdAt?.seconds || 0;
-                const timeB = b.createdAt?.seconds || 0;
-                return timeB - timeA;
+            // อัปเดตตัวเลขบน Card
+            Object.keys(stats).forEach(key => {
+                if (fields[key]) fields[key].innerText = stats[key].toLocaleString();
             });
 
-            // ✅ แสดงตัวเลขในหน้า Dashboard
-            if (elTotal) elTotal.innerText = total.toLocaleString();
-            if (elPending) elPending.innerText = pending.toLocaleString();
-            if (elProgress) elProgress.innerText = progress.toLocaleString();
-            if (elDone) elDone.innerText = done.toLocaleString();
-            if (elClose) elClose.innerText = close.toLocaleString();
-
-            // ✅ แสดงข้อมูลในตาราง (5 รายการล่าสุด)
-            tableBody.innerHTML = "";
-
-            if (rows.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center py-10 text-slate-400">ยังไม่มีข้อมูล</td>
-                    </tr>`;
-            } else {
-                rows.slice(0, 5).forEach(t => {
-                    const tr = document.createElement("tr");
-                    tr.className = "border-b hover:bg-slate-50 transition-colors";
-                    
-                    // ปรับสี Badge ตามสถานะ
-                    const statusClass = t.status === 'close' ? 'status-badge-green' : 'status-badge-blue';
-
-                    tr.innerHTML = `
-                        <td class="py-4 font-semibold text-slate-700">#${t.id.slice(0, 5)}...</td>
-                        <td class="py-4">${t.title || t.topic || "-"}</td>
-                        <td class="py-4">${t.team || t.sender_team || "-"}</td>
-                        <td class="py-4">
-                            <span class="status-badge ${statusClass} uppercase text-[10px]">
-                                ${t.status || "pending"}
-                            </span>
-                        </td>
-                        <td class="py-4 text-slate-500">${formatDate(t.createdAt || t.timestamp)}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
+            // อัปเดตตาราง
+            renderTable(rows, fields.table);
         });
     });
 
-    // ฟังก์ชันจัดรูปแบบวันที่
-    function formatDate(timestamp) {
-        if (!timestamp) return "-";
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        return date.toLocaleDateString("th-TH", {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
+    function renderTable(rows, tableEl) {
+        rows.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        tableEl.innerHTML = "";
+
+        if (rows.length === 0) {
+            tableEl.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400">ยังไม่มีข้อมูล</td></tr>`;
+            return;
+        }
+
+        rows.slice(0, 5).forEach(t => {
+            const tr = document.createElement("tr");
+            tr.className = "border-b hover:bg-slate-50";
+            tr.innerHTML = `
+                <td class="py-4 font-semibold">#${t.id.slice(0, 5)}</td>
+                <td>${t.title || t.topic || "-"}</td>
+                <td>${t.team || t.sender_team || "-"}</td>
+                <td><span class="status-badge status-badge-green uppercase text-[10px]">${t.status}</span></td>
+                <td class="text-slate-500">${t.createdAt ? t.createdAt.toDate().toLocaleDateString("th-TH") : "-"}</td>
+            `;
+            tableEl.appendChild(tr);
         });
     }
 </script>
@@ -226,7 +198,7 @@ REALTIME
 
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
-   <script type="module" src="firebase.js"></script>
+  //<script type="module" src="firebase.js"></script>
 
 </body>
 </html>
