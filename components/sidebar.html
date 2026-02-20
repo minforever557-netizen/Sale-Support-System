@@ -8,80 +8,85 @@
         </h1>
     </div>
 
-    <!-- MENU AREA -->
-    <div class="pt-6">
+    <!-- ===== MENU AREA (SCROLL ENABLED) ===== -->
+    <div class="flex-1 overflow-y-auto custom-scroll">
 
-        <nav class="space-y-1">
+        <div class="pt-6">
+            <nav class="space-y-1">
 
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4 sidebar-text">
-                Main Menu
-            </p>
-
-            <a href="dashboard.html" class="nav-link-modern" data-page="dashboard.html">
-                <span class="nav-icon">🏠</span>
-                <span class="sidebar-text font-medium">Dashboard</span>
-            </a>
-
-            <a href="new-ticket.html" class="nav-link-modern" data-page="new-ticket.html">
-                <span class="nav-icon">➕</span>
-                <span class="sidebar-text font-medium">สร้าง Ticket</span>
-            </a>
-
-            <a href="my-ticket.html" class="nav-link-modern" data-page="my-ticket.html">
-                <span class="nav-icon">📋</span>
-                <span class="sidebar-text font-medium">ใบงานของฉัน</span>
-            </a>
-
-            <a href="all-ticket.html" class="nav-link-modern" data-page="all-ticket.html">
-                <span class="nav-icon">🎫</span>
-                <span class="sidebar-text font-medium">ใบงานทั้งหมด</span>
-            </a>
-
-            <a href="profile.html" class="nav-link-modern" data-page="profile.html">
-                <span class="nav-icon">👤</span>
-                <span class="sidebar-text font-medium">ข้อมูลส่วนตัว</span>
-            </a>
-
-            <!-- ADMIN -->
-            <div id="admin-menu-section" class="pt-6 border-t border-slate-100 mt-4" style="display:none;">
-
-                <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 sidebar-text">
-                    Admin Control
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4 sidebar-text">
+                    Main Menu
                 </p>
 
-                <a href="admin-manage.html" class="nav-link-modern font-bold" data-page="admin-manage.html">
-                    <span class="nav-icon">🛠️</span>
-                    <span class="sidebar-text">จัดการงาน Admin</span>
+                <a href="dashboard.html" class="nav-link-modern" data-page="dashboard.html">
+                    <span class="nav-icon">🏠</span>
+                    <span class="sidebar-text font-medium">Dashboard</span>
                 </a>
 
-                <a href="user-management.html" class="nav-link-modern" data-page="user-management.html">
-                    <span class="nav-icon">👥</span>
-                    <span class="sidebar-text">จัดการผู้ใช้งาน</span>
+                <a href="new-ticket.html" class="nav-link-modern" data-page="new-ticket.html">
+                    <span class="nav-icon">➕</span>
+                    <span class="sidebar-text font-medium">สร้าง Ticket</span>
                 </a>
 
-                <a href="topic-management.html" class="nav-link-modern" data-page="topic-management.html">
-                    <span class="nav-icon">📂</span>
-                    <span class="sidebar-text">จัดการหัวข้อร้องเรียน</span>
+                <a href="my-ticket.html" class="nav-link-modern" data-page="my-ticket.html">
+                    <span class="nav-icon">📋</span>
+                    <span class="sidebar-text font-medium">ใบงานของฉัน</span>
                 </a>
 
-                <a href="team-management.html" class="nav-link-modern" data-page="team-management.html">
-                    <span class="nav-icon">🛡️</span>
-                    <span class="sidebar-text">จัดการทีม</span>
+                <a href="all-ticket.html" class="nav-link-modern" data-page="all-ticket.html">
+                    <span class="nav-icon">🎫</span>
+                    <span class="sidebar-text font-medium">ใบงานทั้งหมด</span>
                 </a>
 
-                <a href="report.html" class="nav-link-modern" data-page="report.html">
-                    <span class="nav-icon">📊</span>
-                    <span class="sidebar-text">Report Dashboard</span>
+                <a href="profile.html" class="nav-link-modern" data-page="profile.html">
+                    <span class="nav-icon">👤</span>
+                    <span class="sidebar-text font-medium">ข้อมูลส่วนตัว</span>
                 </a>
 
-                <a href="logs.html" class="nav-link-modern" data-page="logs.html">
-                    <span class="nav-icon">📜</span>
-                    <span class="sidebar-text">System Logs</span>
-                </a>
+                <!-- ADMIN -->
+                <div id="admin-menu-section"
+                     class="pt-6 border-t border-slate-100 mt-4"
+                     style="display:none;">
 
-            </div>
+                    <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 sidebar-text">
+                        Admin Control
+                    </p>
 
-        </nav>
+                    <a href="admin-manage.html" class="nav-link-modern font-bold" data-page="admin-manage.html">
+                        <span class="nav-icon">🛠️</span>
+                        <span class="sidebar-text">จัดการงาน Admin</span>
+                    </a>
+
+                    <a href="user-management.html" class="nav-link-modern" data-page="user-management.html">
+                        <span class="nav-icon">👥</span>
+                        <span class="sidebar-text">จัดการผู้ใช้งาน</span>
+                    </a>
+
+                    <a href="topic-management.html" class="nav-link-modern" data-page="topic-management.html">
+                        <span class="nav-icon">📂</span>
+                        <span class="sidebar-text">จัดการหัวข้อร้องเรียน</span>
+                    </a>
+
+                    <a href="team-management.html" class="nav-link-modern" data-page="team-management.html">
+                        <span class="nav-icon">🛡️</span>
+                        <span class="sidebar-text">จัดการทีม</span>
+                    </a>
+
+                    <a href="report.html" class="nav-link-modern" data-page="report.html">
+                        <span class="nav-icon">📊</span>
+                        <span class="sidebar-text">Report Dashboard</span>
+                    </a>
+
+                    <a href="logs.html" class="nav-link-modern" data-page="logs.html">
+                        <span class="nav-icon">📜</span>
+                        <span class="sidebar-text">System Logs</span>
+                    </a>
+
+                </div>
+
+            </nav>
+        </div>
+
     </div>
 
     <!-- LOGOUT -->
@@ -92,4 +97,25 @@
         </button>
     </div>
 
-</div>
+</aside>
+
+
+<!-- ===== CUSTOM SCROLL CSS ===== -->
+<style>
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
