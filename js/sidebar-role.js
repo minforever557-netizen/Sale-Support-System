@@ -1,32 +1,67 @@
+import { db, auth } from "./firebase.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+
+console.log("ROLE CHECK START");
+
 document.addEventListener("layoutLoaded", () => {
 
-  console.log("ROLE CHECK START");
+  onAuthStateChanged(auth, async (user) => {
 
-  const user = window.currentUser;
+    if (!user) return;
 
-  if (!user) {
-    console.warn("currentUser not found");
-    return;
-  }
+    try {
 
-  const role = (user.role || "").toLowerCase();
+      // ✅ ไปอ่าน USER PROFILE จาก database
+      const q = query(
+        collection(db, "admin"), // ⭐ collection ที่เก็บ user profile
+        where("email", "==", user.email)
+      );
 
-  console.log("USER ROLE =", role);
+      const snap = await getDocs(q);
 
-  const adminSection =
-    document.getElementById("admin-menu-section");
+      if (snap.empty) {
+        console.warn("User profile not found");
+        return;
+      }
 
-  if (!adminSection) {
-    console.warn("admin-menu-section missing");
-    return;
-  }
+      const userData = snap.docs[0].data();
+      const role = (userData.role || "").toLowerCase();
 
-  // ✅ รองรับ Admin / admin / ADMIN
-  if (role === "admin") {
-    adminSection.style.display = "block";
-    console.log("ADMIN MENU SHOW");
-  } else {
-    adminSection.style.display = "none";
-  }
+      console.log("USER ROLE =", role);
+
+      const adminMenu =
+        document.getElementById("admin-menu-section");
+
+      // ✅ เช็คจาก FIELD role โดยตรง
+      if (role === "admin") {
+
+        console.log("ADMIN MENU SHOW");
+
+        if (adminMenu)
+          adminMenu.style.display = "block";
+
+      } else {
+
+        console.log("NORMAL USER");
+
+        if (adminMenu)
+          adminMenu.style.display = "none";
+      }
+
+    } catch (err) {
+      console.error("ROLE LOAD ERROR:", err);
+    }
+
+  });
 
 });
