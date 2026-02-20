@@ -193,6 +193,19 @@ body {
     color: white;
     box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.2);
 }
+aside {
+    min-width: 0;
+}
+
+#sidebar-wrapper,
+.custom-scroll {
+    min-width: 0;
+}
+
+/* กันเนื้อหาดัน sidebar ตอนย่อ */
+.custom-scroll {
+    overflow-x: hidden;
+}
 
 /* ==========================================================================
    5. CARDS, MODALS & STATUS BADGES
