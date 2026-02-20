@@ -34,7 +34,8 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     <div class="px-2 shrink-0">
         <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
             <span class="p-2 md:p-3 bg-emerald-100 text-emerald-600 rounded-2xl text-lg md:text-xl shadow-sm">
-                <i class="fa-solid fa-file-signature"></i> </span>
+                <i class="fa-solid fa-file-signature"></i> 
+            </span>
             สร้างใบงานใหม่
         </h2>
         <p class="text-slate-500 mt-1 font-medium text-xs md:text-sm">กรอกข้อมูลเพื่อแจ้งปัญหาหรือขอรับบริการให้ครบถ้วน</p>
@@ -56,20 +57,21 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             
             <div class="flex items-center gap-4 p-4 bg-slate-50/80 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
                 <div id="form-user-avatar" class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200/50 shrink-0">
-                    <i class="fa-solid fa-user-tie text-xl"></i> </div>
+                    <i class="fa-solid fa-user-tie text-xl"></i> 
+                </div>
                 <div class="overflow-hidden">
                     <p class="text-[9px] text-emerald-600 font-black uppercase tracking-[0.2em] mb-0.5">เจ้าหน้าที่ผู้แจ้งระบบ</p>
-                    <p id="form-user-name" class="font-bold text-slate-800 text-base tracking-tight truncate">ณัฐวุฒิ ธรรมจินดา</p>
+                    <p id="form-user-name" class="font-bold text-slate-800 text-base tracking-tight truncate">กำลังโหลด...</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="group space-y-2">
-                    <label class="input-label">
+                    <label class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-circle-exclamation text-emerald-500"></i> 1. หัวข้อปัญหา
                     </label>
                     <div class="relative">
-                        <select id="topic" required class="w-full pl-12 pr-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none appearance-none font-bold text-slate-700 cursor-pointer shadow-sm text-sm">
+                        <select id="topic" required class="w-full pl-12 pr-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl focus:bg-white focus:border-emerald-500 outline-none appearance-none font-bold text-slate-700 cursor-pointer shadow-sm text-sm">
                             <option value="">เลือกหัวข้อปัญหา</option>
                         </select>
                         <i class="fa-solid fa-list-ul absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500/50 text-xs pointer-events-none"></i>
@@ -78,12 +80,11 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                 </div>
 
                 <div class="group space-y-2">
-                    <label class="input-label">
+                    <label class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-fingerprint text-emerald-500"></i> 2. Internet No.
                     </label>
                     <div class="relative">
-                        <input type="text" id="id_number" required placeholder="88XXXXXXXX" 
-                            class="w-full pl-12 pr-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-800 placeholder:text-slate-300 shadow-sm text-sm">
+                        <input type="text" id="id_number" required placeholder="88XXXXXXXX" class="w-full pl-12 pr-5 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl focus:bg-white focus:border-emerald-500 outline-none font-bold text-slate-800 shadow-sm text-sm">
                         <i class="fa-solid fa-hashtag absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500/50 text-xs pointer-events-none"></i>
                     </div>
                 </div>
@@ -91,7 +92,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
             <div class="group space-y-3">
                 <div class="flex justify-between items-center px-1">
-                    <label class="input-label">
+                    <label class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-comment-dots text-emerald-500"></i> 3. รายละเอียดปัญหา
                     </label>
                     <div id="sla-badge" class="hidden animate-in zoom-in duration-300">
@@ -102,13 +103,13 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                 </div>
                 <div class="relative">
                     <textarea id="detail-input" rows="4" required placeholder="อธิบายอาการเสียหรือสิ่งที่ต้องการ..."
-                        class="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-slate-700 font-medium shadow-sm leading-relaxed text-sm"></textarea>
+                        class="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-emerald-500 outline-none text-slate-700 font-medium shadow-sm leading-relaxed text-sm"></textarea>
                     <i class="fa-solid fa-pen-fancy absolute left-5 top-5 text-emerald-500/50 text-xs pointer-events-none"></i>
                 </div>
             </div>
 
-            <div class="pt-2 sticky bottom-0 bg-white/50 backdrop-blur-sm pb-2">
-                <button type="submit" id="submitBtn" class="group w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-base hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-300/50 transition-all duration-300 flex justify-center items-center gap-3 active:scale-[0.98]">
+            <div class="pt-4 pb-10">
+                <button type="submit" id="submitBtn" class="group w-full py-4 bg-[#0f172a] text-white rounded-2xl font-black text-base hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-300/50 transition-all duration-300 flex justify-center items-center gap-3 active:scale-[0.98]">
                     <span>ส่งข้อมูลใบงาน</span>
                     <i class="fa-solid fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                 </button>
