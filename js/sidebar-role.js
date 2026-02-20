@@ -1,21 +1,14 @@
-// รอให้ layout โหลด sidebar เสร็จก่อน
 document.addEventListener("layoutLoaded", () => {
 
-    const role = (localStorage.getItem("userRole") || "")
-        .toLowerCase()
-        .trim();
+    console.log("ROLE CHECK START");
 
-    console.log("ROLE CHECK =", role);
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) return;
 
-    const adminMenu = document.getElementById("admin-menu-section");
+    const role = user.role;
 
-    if (!adminMenu) {
-        console.log("ADMIN MENU NOT FOUND");
-        return;
+    if (role === "admin") {
+        document.querySelectorAll(".admin-menu")
+            .forEach(el => el.classList.remove("hidden"));
     }
-
-    // ✅ แสดงเฉพาะ admin
-    adminMenu.style.display =
-        role === "admin" ? "block" : "none";
-
 });
