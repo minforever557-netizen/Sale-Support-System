@@ -640,38 +640,52 @@ body {
     --primary-emerald: #10b981;
 }
 
-/* ปรับให้ Label ชัดเจนขึ้น */
+/* style.css */
+
+/* ปรับให้หน้าจอหลักเลื่อนได้อิสระ */
+html, body {
+    height: auto !important;
+    overflow-y: auto !important;
+    background-color: #f8fafc;
+}
+
+/* สีหัวข้อใหม่: เข้ม ชัดเจน และดู Premium */
 .input-label {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-size: 13px; /* ใหญ่ขึ้นเล็กน้อย */
-    font-weight: 800; /* หนาพิเศษ */
-    color: var(--text-label) !important; /* บังคับสีให้เข้มขึ้น */
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.4rem;
+    gap: 8px;
+    font-size: 14px; /* ใหญ่ขึ้นเล็กน้อย */
+    font-weight: 800;
+    color: #1e293b !important; /* สี Slate-900 เข้มสะใจ */
+    margin-bottom: 8px;
+    text-transform: none; /* เอาตัวพิมพ์ใหญ่ออกเพื่อให้ดูทันสมัย */
 }
 
-/* ปรับช่อง Input ให้เพรียวขึ้น */
+/* ปรับช่อง Input ให้ดูเพรียว (ไม่สูงเกินไป) */
 .compact-input {
-    padding: 0.75rem 1.25rem 0.75rem 3rem !important; /* เว้นที่ด้านซ้ายสำหรับ Icon */
-    background-color: #f8fafc !important;
+    width: 100%;
+    padding: 12px 16px 12px 45px !important; /* เว้นที่ด้านซ้ายให้ Icon */
+    background-color: #ffffff !important;
     border: 1.5px solid #e2e8f0 !important;
     border-radius: 12px !important;
+    font-size: 14px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    color: #334155;
+    transition: all 0.2s;
 }
 
 .compact-input:focus {
-    border-color: var(--primary-emerald) !important;
-    background-color: white !important;
+    border-color: #10b981 !important;
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    outline: none;
 }
 
-/* จัดการความสูงของ Card ไม่ให้ดูอ้วน */
+/* ปรับ Card ให้ยาวตามเนื้อหา (No fixed height) */
 .glass-card {
-    max-height: 90vh; /* จำกัดไม่ให้ล้นจอ */
-    display: flex;
-    flex-direction: column;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important; /* ให้ยืดออกไปด้านนอก */
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
 }
