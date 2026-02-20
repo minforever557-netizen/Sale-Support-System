@@ -91,47 +91,42 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             <hr class="border-slate-100">
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">รายละเอียดปัญหา</p>
-                <div class="bg-slate-50 p-4 rounded-2xl text-slate-600 leading-relaxed min-h-[80px]" id="det-detail">-</div>
+                <div class="bg-slate-50 p-4 rounded-2xl text-slate-600 min-h-[80px]" id="det-detail">-</div>
             </div>
             <div>
-                <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">บันทึกจากเจ้าหน้าที่ (Admin Note)</p>
-                <div class="bg-emerald-50 p-4 rounded-2xl text-emerald-800 font-medium" id="det-admin-remark">ไม่มีบันทึกจากแอดมิน</div>
+                <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">บันทึกจากเจ้าหน้าที่</p>
+                <div class="bg-emerald-50 p-4 rounded-2xl text-emerald-800 font-medium" id="det-admin-remark">-</div>
             </div>
-            <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg">ปิดหน้าต่าง</button>
+            <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all">ปิดหน้าต่าง</button>
         </div>
     </div>
 </div>
 
 <script type="module">
+    // ตรวจสอบเส้นทางไฟล์ firebase.js ให้ถูกต้องตามโครงสร้างโฟลเดอร์ของคุณ
     import { db, auth } from "./js/firebase.js";
-    import { 
-        collection, query, where, orderBy, onSnapshot, getDoc, doc 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, query, where, orderBy, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     let currentTickets = [];
 
-    // ฟังก์ชันเปิด/ปิด Modal
+    // ฟังก์ชัน Modal ต้องผูกกับ window เพื่อให้เรียกจาก HTML ได้
     window.closeModal = () => {
         document.getElementById('detail-modal').classList.add('hidden');
         document.body.style.overflow = 'auto';
     };
 
-    // 1. ตรวจสอบ Login และดึงชื่อจริงผู้ใช้
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.replace("login.html");
             return;
         }
 
+        // แสดงชื่อผู้ใช้
         const headerName = document.getElementById('userNameHeader');
         try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().displayName) {
-                headerName.innerText = `ผู้แจ้ง: ${userDoc.data().displayName}`;
-            } else {
-                headerName.innerText = `ผู้แจ้ง: ${user.email.split('@')[0]}`;
-            }
+            headerName.innerText = `ผู้แจ้ง: ${userDoc.exists() ? (userDoc.data().displayName || user.email) : user.email}`;
         } catch (e) {
             headerName.innerText = `ผู้แจ้ง: ${user.email}`;
         }
@@ -139,28 +134,33 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         initTicketListener(user.email);
     });
 
-    // 2. ดึงข้อมูลแบบ Realtime
     function initTicketListener(email) {
         const list = document.getElementById('ticket-list');
-        const sortVal = document.getElementById('sortOrder').value;
-        const [field, direction] = sortVal.split('-');
+        const [field, direction] = document.getElementById('sortOrder').value.split('-');
         
-        const q = query(
-            collection(db, "tickets"),
-            where("ownerEmail", "==", email), 
-            orderBy(field, direction)
-        );
+        try {
+            // คิวรีข้อมูลเฉพาะของ User ที่ Login
+            const q = query(
+                collection(db, "tickets"),
+                where("ownerEmail", "==", email), 
+                orderBy(field, direction)
+            );
 
-        onSnapshot(q, (snapshot) => {
-            currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderTickets(currentTickets);
-        }, (error) => {
-            console.error("Firebase Error:", error);
-            list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-400 font-medium italic">ไม่สามารถโหลดข้อมูลได้ (ตรวจสอบ Firestore Index ใน Console)</td></tr>`;
-        });
+            onSnapshot(q, (snapshot) => {
+                currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderTickets(currentTickets);
+            }, (error) => {
+                console.error("Firestore Error:", error);
+                // ถ้า Error เรื่อง Index จะมี Link ให้กดใน Console
+                list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-red-400">
+                    คลิกขวาดู Console: หากพบ error 'index' ให้กดลิงก์ในนั้นเพื่อเปิดใช้งานการเรียงลำดับ
+                </td></tr>`;
+            });
+        } catch (err) {
+            console.error("Query Error:", err);
+        }
     }
 
-    // 3. แสดงผลข้อมูลลงในตาราง
     function renderTickets(tickets) {
         const list = document.getElementById('ticket-list');
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -172,33 +172,36 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         );
 
         if (filtered.length === 0) {
-            list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-400 font-medium">ไม่พบรายการใบงานของคุณ</td></tr>`;
+            list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-400 font-medium">ไม่พบรายการใบงาน</td></tr>`;
             return;
         }
 
         list.innerHTML = filtered.map(t => {
-            const createDate = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) : '-';
-            const updateDate = t.updatedAt?.toDate ? t.updatedAt.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) : '-';
-            
+            const createDate = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
+            const updateDate = t.updatedAt?.toDate ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
             const status = t.status || 'Pending';
-            let statusClass = "bg-slate-100 text-slate-600";
-            if(status === 'Open') statusClass = "bg-blue-100 text-blue-700";
-            if(status === 'On Progress') statusClass = "bg-orange-100 text-orange-700";
-            if(status === 'Success') statusClass = "bg-emerald-100 text-emerald-700";
-            if(status === 'Reject') statusClass = "bg-red-100 text-red-700";
+            
+            // กำหนดสีตามสถานะ
+            const statusClasses = {
+                'Open': 'bg-blue-100 text-blue-700',
+                'On Progress': 'bg-orange-100 text-orange-700',
+                'Success': 'bg-emerald-100 text-emerald-700',
+                'Reject': 'bg-red-100 text-red-700',
+                'Pending': 'bg-slate-100 text-slate-600'
+            };
 
             return `
                 <tr class="hover:bg-slate-50 transition-all border-b border-slate-50 last:border-0 group">
-                    <td class="p-6 font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">${t.id_number || t.internetNo || '-'}</td>
+                    <td class="p-6 font-bold text-slate-700">${t.id_number || t.internetNo || '-'}</td>
                     <td class="p-6 text-slate-400 text-[12px]">${createDate}</td>
                     <td class="p-6 text-slate-700 font-medium">${t.topic || 'ไม่มีหัวข้อ'}</td>
                     <td class="p-6 text-center">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${statusClass}">${status}</span>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${statusClasses[status] || statusClasses['Pending']}">${status}</span>
                     </td>
                     <td class="p-6 text-slate-400 text-[12px]">${updateDate}</td>
                     <td class="p-6 text-right">
                         <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-600 px-5 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm">
-                            <i class="fa-solid fa-eye mr-2"></i>ดูข้อมูล
+                            ดูข้อมูล
                         </button>
                     </td>
                 </tr>
@@ -206,43 +209,32 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         }).join('');
     }
 
-    // 4. ฟังก์ชันดูรายละเอียดใน Modal
     window.viewDetail = async (id) => {
         try {
             const docSnap = await getDoc(doc(db, "tickets", id));
             if (docSnap.exists()) {
                 const t = docSnap.data();
-                
-                // ใส่ข้อมูลลงใน Modal
-                document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
+                document.getElementById('det-modal-id').innerText = `ID: ${id}`;
                 document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
-                document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
-                document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
-                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกจากเจ้าหน้าที่ในขณะนี้';
+                document.getElementById('det-topic').innerText = t.topic || 'รายละเอียดใบงาน';
+                document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียด';
+                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกจากเจ้าหน้าที่';
                 
-                // จัดการสีของ Badge สถานะใน Modal
-                const statusBadge = document.getElementById('det-status-badge');
-                const status = t.status || 'Pending';
-                statusBadge.innerText = status;
-                statusBadge.className = `px-3 py-1 rounded-full text-[10px] font-black uppercase `;
-                if(status === 'Success') statusBadge.classList.add('bg-emerald-100', 'text-emerald-700');
-                else if(status === 'Reject') statusBadge.classList.add('bg-red-100', 'text-red-700');
-                else statusBadge.classList.add('bg-slate-100', 'text-slate-600');
-
-                // แสดง Modal
+                const badge = document.getElementById('det-status-badge');
+                badge.innerText = t.status || 'Pending';
+                
                 document.getElementById('detail-modal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
         } catch (e) {
-            console.error("View Detail Error:", e);
+            console.error("View Error:", e);
         }
     };
 
-    // Event Listeners
+    // Listeners
     document.getElementById('searchInput').addEventListener('input', () => renderTickets(currentTickets));
     document.getElementById('sortOrder').addEventListener('change', () => {
-        const authUser = auth.currentUser;
-        if (authUser) initTicketListener(authUser.email);
+        if (auth.currentUser) initTicketListener(auth.currentUser.email);
     });
 </script>
 <script src="./js/layout.js"></script>
