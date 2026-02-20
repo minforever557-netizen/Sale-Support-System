@@ -641,50 +641,42 @@ body {
 }
 /* style.css */
 
-/* ปรับให้หน้าจอหลักเลื่อนได้อิสระ */
-html, body {
-    height: auto !important;
-    overflow-y: auto !important;
+/* style.css */
+
+/* ปรับให้เลื่อนจากหน้าหลัก (ด้านนอก) */
+body {
     background-color: #f8fafc;
+    overflow-y: auto !important;
+    height: auto !important;
 }
 
-/* สีหัวข้อใหม่: เข้ม ชัดเจน และดู Premium */
+/* หัวข้อสีเข้ม ชัดเจน */
 .input-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px; /* ใหญ่ขึ้นเล็กน้อย */
+    gap: 10px;
+    font-size: 14px;
     font-weight: 800;
-    color: #1e293b !important; /* สี Slate-900 เข้มสะใจ */
-    margin-bottom: 8px;
-    text-transform: none; /* เอาตัวพิมพ์ใหญ่ออกเพื่อให้ดูทันสมัย */
+    color: #0f172a !important; /* Slate-900 เข้มสะใจ */
+    margin-bottom: 10px;
 }
 
-/* ปรับช่อง Input ให้ดูเพรียว (ไม่สูงเกินไป) */
-.compact-input {
+/* ปรับแต่ง Drop Down และ Input ให้เพรียว */
+.compact-select, .compact-input {
     width: 100%;
-    padding: 12px 16px 12px 45px !important; /* เว้นที่ด้านซ้ายให้ Icon */
+    padding: 12px 16px 12px 48px !important;
     background-color: #ffffff !important;
     border: 1.5px solid #e2e8f0 !important;
     border-radius: 12px !important;
     font-size: 14px;
     font-weight: 600;
     color: #334155;
+    appearance: none; /* เอาลูกศรเดิมออก */
     transition: all 0.2s;
 }
 
-.compact-input:focus {
+.compact-select:focus, .compact-input:focus {
     border-color: #10b981 !important;
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
     outline: none;
-}
-
-/* ปรับ Card ให้ยาวตามเนื้อหา (No fixed height) */
-.glass-card {
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important; /* ให้ยืดออกไปด้านนอก */
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
 }
