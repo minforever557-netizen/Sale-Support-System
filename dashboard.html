@@ -37,30 +37,30 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200"></aside>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-8 bg-white">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-ticket"></i>
-                    </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">ใบงานทั้งหมด</p>
-                    <h3 id="stat-total" class="text-5xl font-bold text-slate-800">0</h3>
-                </div>
+    <div class="glass-card p-8 bg-white border-b-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 text-2xl shadow-inner">
+            <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">ใบงานทั้งหมด</p>
+        <h3 id="stat-total" class="text-5xl font-bold text-slate-800">0</h3>
+    </div>
 
-                <div class="glass-card p-8 bg-white">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-spinner"></i>
-                    </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
-                    <h3 id="stat-progress" class="text-5xl font-bold text-slate-800">0</h3>
-                </div>
+    <div class="glass-card p-8 bg-white border-b-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 text-2xl shadow-inner">
+            <i class="fa-solid fa-arrows-spin fa-spin-pulse"></i>
+        </div>
+        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
+        <h3 id="stat-progress" class="text-5xl font-bold text-slate-800">0</h3>
+    </div>
 
-                <div class="glass-card p-8 bg-white">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 text-xl">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">ปิดงานแล้ว</p>
-                    <h3 id="stat-closed" class="text-5xl font-bold text-slate-800">0</h3>
-                </div>
-            </div>
+    <div class="glass-card p-8 bg-white border-b-4 border-emerald-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 text-2xl shadow-inner">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">ปิดงานแล้ว</p>
+        <h3 id="stat-closed" class="text-5xl font-bold text-slate-800">0</h3>
+    </div>
+</div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-6">
