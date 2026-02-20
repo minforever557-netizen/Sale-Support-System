@@ -1,31 +1,32 @@
-document.addEventListener("layoutLoaded", async () => {
+document.addEventListener("layoutLoaded", () => {
 
   console.log("ROLE CHECK START");
 
   const userData = JSON.parse(localStorage.getItem("userData"));
 
   if (!userData) {
-    console.warn("No userData");
+    console.warn("No userData found");
     return;
   }
 
-  // ✅ แก้ตรงนี้
+  // ✅ กันพังเรื่องตัวใหญ่ตัวเล็ก
   const role = (userData.role || "").toLowerCase();
 
-  console.log("ROLE =", role);
+  console.log("USER ROLE =", role);
 
-  // ===== MENU =====
-  const adminMenus = document.querySelectorAll(".menu-admin");
-  const userMenus = document.querySelectorAll(".menu-user");
+  // ===== เปิด ADMIN MENU =====
+  const adminSection = document.getElementById("admin-menu-section");
+
+  if (!adminSection) {
+    console.warn("admin-menu-section not found");
+    return;
+  }
 
   if (role === "admin") {
-
-    adminMenus.forEach(el => el.classList.remove("hidden"));
-    userMenus.forEach(el => el.classList.remove("hidden"));
-
+    adminSection.style.display = "block";
+    console.log("ADMIN MENU SHOW");
   } else {
-
-    adminMenus.forEach(el => el.classList.add("hidden"));
+    adminSection.style.display = "none";
   }
 
 });
