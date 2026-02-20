@@ -31,32 +31,129 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         <!-- MAIN CONTENT -->
         <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
 
-            <h2 class="text-3xl font-bold text-slate-800">
-                แผงควบคุมระบบ
-            </h2>
+<!-- ================= MAIN WRAPPER ================= -->
+<div class="flex-1 flex flex-col min-h-screen">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- ================= PAGE HEADER ================= -->
+    <header class="flex items-center justify-between px-8 py-6">
 
-                <div class="glass-card p-8">
-                    <p>ใบงานทั้งหมด</p>
-                    <h3 id="stat-total" class="text-4xl font-bold">0</h3>
-                </div>
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">
+                Dashboard
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                ภาพรวมเคสที่คุณเปิดใช้งานในระบบ
+            </p>
+        </div>
 
-                <div class="glass-card p-8">
-                    <p>กำลังดำเนินการ</p>
-                    <h3 id="stat-progress" class="text-4xl font-bold">0</h3>
-                </div>
+        <button class="btn-primary">
+            ➕ สร้าง Ticket ใหม่
+        </button>
 
-                <div class="glass-card p-8">
-                    <p>ปิดงานแล้ว</p>
-                    <h3 id="stat-closed" class="text-4xl font-bold">0</h3>
-                </div>
+    </header>
+<!-- ================= MAIN WRAPPER ================= -->
+<div class="flex-1 flex flex-col min-h-screen">
+
+    <!-- ================= PAGE HEADER ================= -->
+    <header class="flex items-center justify-between px-8 py-6">
+
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">
+                Dashboard
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                ภาพรวมเคสที่คุณเปิดใช้งานในระบบ
+            </p>
+        </div>
+
+        <button class="btn-primary">
+            ➕ สร้าง Ticket ใหม่
+        </button>
+
+    </header>
+
+
+    <!-- ================= CONTENT ================= -->
+    <main class="px-8 pb-10 fade-in space-y-8">
+
+        <!-- ===== STATUS SUMMARY ===== -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-sm">เคสทั้งหมด</p>
+                <h2 id="totalCase" class="text-3xl font-bold mt-2">0</h2>
+            </div>
+
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-sm">รอดำเนินการ</p>
+                <h2 id="pendingCase" class="text-3xl font-bold mt-2">0</h2>
+            </div>
+
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-sm">กำลังดำเนินการ</p>
+                <h2 id="progressCase" class="text-3xl font-bold mt-2">0</h2>
+            </div>
+
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-sm">เสร็จสิ้น</p>
+                <h2 id="doneCase" class="text-3xl font-bold mt-2">0</h2>
+            </div>
+
+            <div class="glass-card p-6">
+                <p class="text-slate-400 text-sm">ปิดงาน</p>
+                <h2 id="closeCase" class="text-3xl font-bold mt-2">0</h2>
+            </div>
+
+        </div>
+
+
+        <!-- ===== RECENT TICKETS ===== -->
+        <div class="glass-card p-8">
+
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">
+                    เคสล่าสุดของคุณ
+                </h2>
+
+                <span class="status-badge status-badge-green">
+                    REALTIME
+                </span>
+            </div>
+
+            <!-- TABLE -->
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="text-slate-400 border-b">
+                        <tr>
+                            <th class="text-left py-3">Ticket ID</th>
+                            <th class="text-left">หัวข้อ</th>
+                            <th class="text-left">ทีม</th>
+                            <th class="text-left">สถานะ</th>
+                            <th class="text-left">วันที่</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="recentTicketTable">
+
+                        <tr>
+                            <td colspan="5" class="text-center py-10 text-slate-400">
+                                ยังไม่มีข้อมูล
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
 
             </div>
 
-        </main>
+        </div>
 
-    </div>
+    </main>
+
+</div>
 
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
