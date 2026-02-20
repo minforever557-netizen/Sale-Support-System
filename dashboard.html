@@ -10,274 +10,243 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./css/style.css">
-
 </head>
 
 <body class="flex h-screen overflow-hidden bg-slate-50">
 
-    <!-- SIDEBAR -->
+<!-- SIDEBAR -->
 <aside id="sidebar-container"
-class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
-</aside>
+class="w-64 shrink-0 h-full bg-white border-r border-slate-200"></aside>
 
+<!-- RIGHT AREA -->
+<div class="flex-1 flex flex-col min-w-0">
 
+<div id="topbar-container"></div>
 
-    <!-- RIGHT AREA -->
-    <div class="flex-1 flex flex-col min-w-0">
+<!-- ================= MAIN ================= -->
+<main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
 
-        <!-- TOPBAR -->
-        <div id="topbar-container"></div>
+<header class="flex items-center justify-between">
 
-        <!-- MAIN CONTENT -->
-        <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
+<div>
+<h1 class="text-3xl font-bold text-slate-800">Dashboard</h1>
+<p class="text-slate-400 text-sm mt-1">
+ภาพรวมเคสที่คุณเปิดใช้งานในระบบ
+</p>
+</div>
 
-    </header>
-<!-- ================= MAIN WRAPPER ================= -->
-<div class="flex-1 flex flex-col min-h-screen">
+<button class="btn-primary">
+➕ สร้าง Ticket ใหม่
+</button>
 
-    <!-- ================= PAGE HEADER ================= -->
-    <header class="flex items-center justify-between px-8 py-6">
+</header>
 
-        <div>
-            <h1 class="text-3xl font-bold text-slate-800">
-                Dashboard
-            </h1>
-            <p class="text-slate-400 text-sm mt-1">
-                ภาพรวมเคสที่คุณเปิดใช้งานในระบบ
-            </p>
-        </div>
+<!-- ===== STATUS SUMMARY ===== -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
 
-        <button class="btn-primary">
-            ➕ สร้าง Ticket ใหม่
-        </button>
+<div class="glass-card p-6">
+<p class="text-slate-400 text-sm">เคสทั้งหมด</p>
+<h2 id="totalCase" class="text-3xl font-bold mt-2">0</h2>
+</div>
 
-    </header>
+<div class="glass-card p-6">
+<p class="text-slate-400 text-sm">รอดำเนินการ</p>
+<h2 id="pendingCase" class="text-3xl font-bold mt-2">0</h2>
+</div>
 
+<div class="glass-card p-6">
+<p class="text-slate-400 text-sm">กำลังดำเนินการ</p>
+<h2 id="progressCase" class="text-3xl font-bold mt-2">0</h2>
+</div>
 
-    <!-- ================= CONTENT ================= -->
-    <main class="px-8 pb-10 fade-in space-y-8">
+<div class="glass-card p-6">
+<p class="text-slate-400 text-sm">เสร็จสิ้น</p>
+<h2 id="doneCase" class="text-3xl font-bold mt-2">0</h2>
+</div>
 
-        <!-- ===== STATUS SUMMARY ===== -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
-
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-sm">เคสทั้งหมด</p>
-                <h2 id="totalCase" class="text-3xl font-bold mt-2">0</h2>
-            </div>
-
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-sm">รอดำเนินการ</p>
-                <h2 id="pendingCase" class="text-3xl font-bold mt-2">0</h2>
-            </div>
-
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-sm">กำลังดำเนินการ</p>
-                <h2 id="progressCase" class="text-3xl font-bold mt-2">0</h2>
-            </div>
-
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-sm">เสร็จสิ้น</p>
-                <h2 id="doneCase" class="text-3xl font-bold mt-2">0</h2>
-            </div>
-
-            <div class="glass-card p-6">
-                <p class="text-slate-400 text-sm">ปิดงาน</p>
-                <h2 id="closeCase" class="text-3xl font-bold mt-2">0</h2>
-            </div>
-
-        </div>
-
-
-        <!-- ===== RECENT TICKETS ===== -->
-        <div class="glass-card p-8">
-
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold">
-                    เคสล่าสุดของคุณ
-                </h2>
-
-                <span class="status-badge status-badge-green">
-                    REALTIME
-                </span>
-            </div>
-
-            <!-- TABLE -->
-            <div class="overflow-x-auto">
-
-                <table class="w-full text-sm">
-
-                    <thead class="text-slate-400 border-b">
-                        <tr>
-                            <th class="text-left py-3">Ticket ID</th>
-                            <th class="text-left">หัวข้อ</th>
-                            <th class="text-left">ทีม</th>
-                            <th class="text-left">สถานะ</th>
-                            <th class="text-left">วันที่</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="recentTicketTable">
-
-                        <tr>
-                            <td colspan="5" class="text-center py-10 text-slate-400">
-                                ยังไม่มีข้อมูล
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </main>
+<div class="glass-card p-6">
+<p class="text-slate-400 text-sm">ปิดงาน</p>
+<h2 id="closeCase" class="text-3xl font-bold mt-2">0</h2>
+</div>
 
 </div>
-            <script type="module">
 
-/* ================= FIREBASE IMPORT ================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+<!-- ===== RECENT TICKETS ===== -->
+<div class="glass-card p-8">
+
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-bold">เคสล่าสุดของคุณ</h2>
+
+<span class="status-badge status-badge-green">
+REALTIME
+</span>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+
+<thead class="text-slate-400 border-b">
+<tr>
+<th class="text-left py-3">Ticket ID</th>
+<th class="text-left">หัวข้อ</th>
+<th class="text-left">ทีม</th>
+<th class="text-left">สถานะ</th>
+<th class="text-left">วันที่</th>
+</tr>
+</thead>
+
+<tbody id="recentTicketTable">
+<tr>
+<td colspan="5" class="text-center py-10 text-slate-400">
+กำลังโหลด...
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+
+</main>
+</div>
+
+<!-- ================= FIREBASE ================= -->
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
-    getFirestore,
-    collection,
-    query,
-    where,
-    orderBy,
-    onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+getFirestore,
+collection,
+query,
+where,
+onSnapshot
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-    getAuth,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+getAuth,
+onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
-/* ================= YOUR FIREBASE CONFIG ================= */
-/* ใช้ config เดิมของระบบคุณ */
+/* ✅ ใช้ CONFIG จริงของคุณ */
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
+apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
+authDomain: "salesupportsystemapp.firebaseapp.com",
+projectId: "salesupportsystemapp",
+storageBucket: "salesupportsystemapp.firebasestorage.app",
+messagingSenderId: "840890441207",
+appId: "1:840890441207:web:f3a5076d46e963a90de2f2"
 };
 
-/* ================= INIT ================= */
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 
 /* ================= DASHBOARD REALTIME ================= */
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth,(user)=>{
 
-    if (!user) {
-        window.location.replace("login.html");
-        return;
-    }
+if(!user){
+window.location.replace("login.html");
+return;
+}
 
-    /* query ticket ของ user คนนี้ */
-    const q = query(
-        collection(db, "tickets"),
-        where("createdBy", "==", user.uid),
-        orderBy("createdAt", "desc")
-    );
+/* 🔥 IMPORTANT
+   ไม่ใช้ orderBy เพื่อกัน Firestore index error */
+const q = query(
+collection(db,"tickets"),
+where("createdBy","==",user.uid)
+);
 
-    onSnapshot(q, (snapshot) => {
+onSnapshot(q,(snapshot)=>{
 
-        let total = 0;
-        let pending = 0;
-        let progress = 0;
-        let done = 0;
-        let close = 0;
+let total=0,pending=0,progress=0,done=0,close=0;
 
-        const table = document.getElementById("recentTicketTable");
-        table.innerHTML = "";
+const rows=[];
 
-        snapshot.forEach((doc) => {
+snapshot.forEach(doc=>{
+const data=doc.data();
+total++;
 
-            const data = doc.data();
-            total++;
+switch(data.status){
+case "pending": pending++; break;
+case "progress": progress++; break;
+case "done": done++; break;
+case "close": close++; break;
+}
 
-            /* ===== COUNT STATUS ===== */
-            switch (data.status) {
-                case "pending": pending++; break;
-                case "progress": progress++; break;
-                case "done": done++; break;
-                case "close": close++; break;
-            }
+rows.push({id:doc.id,...data});
+});
 
-        });
+/* ===== SORT ล่าสุดใน CLIENT ===== */
+rows.sort((a,b)=>{
+return (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0);
+});
 
-        /* ===== UPDATE KPI ===== */
-        document.getElementById("totalCase").innerText = total;
-        document.getElementById("pendingCase").innerText = pending;
-        document.getElementById("progressCase").innerText = progress;
-        document.getElementById("doneCase").innerText = done;
-        document.getElementById("closeCase").innerText = close;
+/* ===== KPI ===== */
+totalCase.innerText=total;
+pendingCase.innerText=pending;
+progressCase.innerText=progress;
+doneCase.innerText=done;
+closeCase.innerText=close;
 
 
-        /* ===== SHOW LAST 5 TICKETS ===== */
-        let count = 0;
+/* ===== TABLE ===== */
+const table=document.getElementById("recentTicketTable");
+table.innerHTML="";
 
-        snapshot.forEach((doc) => {
+rows.slice(0,5).forEach(t=>{
 
-            if (count >= 5) return;
+const tr=document.createElement("tr");
+tr.className="border-b hover:bg-slate-50";
 
-            const t = doc.data();
+tr.innerHTML=`
+<td class="py-4 font-semibold">${t.id}</td>
+<td>${t.title??"-"}</td>
+<td>${t.team??"-"}</td>
+<td>
+<span class="status-badge status-badge-green">
+${t.status??"-"}
+</span>
+</td>
+<td>${formatDate(t.createdAt)}</td>
+`;
 
-            const tr = document.createElement("tr");
-            tr.className = "border-b hover:bg-slate-50";
+table.appendChild(tr);
 
-            tr.innerHTML = `
-                <td class="py-4 font-semibold">${doc.id}</td>
-                <td>${t.title ?? "-"}</td>
-                <td>${t.team ?? "-"}</td>
-                <td>
-                    <span class="status-badge status-badge-green">
-                        ${t.status}
-                    </span>
-                </td>
-                <td>${formatDate(t.createdAt)}</td>
-            `;
+});
 
-            table.appendChild(tr);
-            count++;
+if(total===0){
+table.innerHTML=`
+<tr>
+<td colspan="5" class="text-center py-10 text-slate-400">
+ยังไม่มีข้อมูล
+</td>
+</tr>`;
+}
 
-        });
-
-        if (total === 0) {
-            table.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-10 text-slate-400">
-                        ยังไม่มีข้อมูล
-                    </td>
-                </tr>`;
-        }
-
-    });
+});
 
 });
 
 
-/* ================= DATE FORMAT ================= */
-function formatDate(timestamp) {
-
-    if (!timestamp) return "-";
-
-    const date = timestamp.toDate();
-    return date.toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-    });
+function formatDate(timestamp){
+if(!timestamp) return "-";
+return timestamp.toDate().toLocaleDateString("th-TH",{
+year:"numeric",
+month:"short",
+day:"numeric"
+});
 }
 
 </script>
 
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
-<script type="module" src="./js/dashboard.js"></script>
 
 </body>
 </html>
