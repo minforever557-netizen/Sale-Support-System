@@ -42,6 +42,10 @@ async function loadLayout() {
         initSidebarToggle();
 
         console.log("LAYOUT LOADED OK");
+        // รอ DOM render จริงก่อนยิง event
+setTimeout(() => {
+    document.dispatchEvent(new Event("layoutLoaded"));
+}, 0);
     } catch (err) {
         console.error("LAYOUT LOAD ERROR:", err);
     }
