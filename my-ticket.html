@@ -103,58 +103,106 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 </div>
 
 <script type="module">
-    // ตรวจสอบเส้นทางไฟล์ firebase.js ให้ถูกต้องตามโครงสร้างโฟลเดอร์ของคุณ
+    // 1. นำเข้า Services จากไฟล์ js/firebase.js ตามโครงสร้างของคุณ
     import { db, auth } from "./js/firebase.js";
-    import { collection, query, where, orderBy, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    
+    // 2. ใช้ Version เดียวกับใน firebase.js (10.7.1) เพื่อความเสถียร
+    import { 
+        collection, query, where, orderBy, onSnapshot, getDoc, doc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let currentTickets = [];
+    let unsubscribe = null; // สำหรับหยุดฟังข้อมูลอันเก่าเมื่อเปลี่ยน Sort
 
-    // ฟังก์ชัน Modal ต้องผูกกับ window เพื่อให้เรียกจาก HTML ได้
+    // --- ฟังก์ชันสำหรับ UI (ผูกกับ Window) ---
+
     window.closeModal = () => {
-        document.getElementById('detail-modal').classList.add('hidden');
+        const modal = document.getElementById('detail-modal');
+        if (modal) modal.classList.add('hidden');
         document.body.style.overflow = 'auto';
     };
 
+    window.viewDetail = async (id) => {
+        try {
+            const docSnap = await getDoc(doc(db, "tickets", id));
+            if (docSnap.exists()) {
+                const t = docSnap.data();
+                
+                // อัปเดตข้อมูลใน Modal
+                const elements = {
+                    'det-modal-id': `ID: ${id}`,
+                    'det-id-number': t.id_number || t.internetNo || '-',
+                    'det-topic': t.topic || 'รายละเอียดใบงาน',
+                    'det-detail': t.detail || 'ไม่มีรายละเอียด',
+                    'det-admin-remark': t.adminNote || 'ไม่มีบันทึกจากเจ้าหน้าที่'
+                };
+
+                for (const [id, value] of Object.entries(elements)) {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = value;
+                }
+
+                const badge = document.getElementById('det-status-badge');
+                if (badge) badge.innerText = t.status || 'Pending';
+
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        } catch (e) {
+            console.error("View Error:", e);
+        }
+    };
+
+    // --- ส่วนการจัดการข้อมูล ---
+
     onAuthStateChanged(auth, async (user) => {
+        const headerName = document.getElementById('userNameHeader');
         if (!user) {
             window.location.replace("login.html");
             return;
         }
 
-        // แสดงชื่อผู้ใช้
-        const headerName = document.getElementById('userNameHeader');
         try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
-            headerName.innerText = `ผู้แจ้ง: ${userDoc.exists() ? (userDoc.data().displayName || user.email) : user.email}`;
+            if (headerName) {
+                headerName.innerText = `ผู้แจ้ง: ${userDoc.exists() ? (userDoc.data().displayName || user.email) : user.email}`;
+            }
         } catch (e) {
-            headerName.innerText = `ผู้แจ้ง: ${user.email}`;
+            if (headerName) headerName.innerText = `ผู้แจ้ง: ${user.email}`;
         }
 
         initTicketListener(user.email);
     });
 
     function initTicketListener(email) {
+        // หยุด Listener ตัวเก่า (ถ้ามี) ก่อนเริ่มตัวใหม่
+        if (unsubscribe) unsubscribe();
+
         const list = document.getElementById('ticket-list');
-        const [field, direction] = document.getElementById('sortOrder').value.split('-');
-        
+        const sortOrderEl = document.getElementById('sortOrder');
+        if (!sortOrderEl) return;
+
+        const [field, direction] = sortOrderEl.value.split('-');
+
         try {
-            // คิวรีข้อมูลเฉพาะของ User ที่ Login
             const q = query(
                 collection(db, "tickets"),
-                where("ownerEmail", "==", email), 
+                where("ownerEmail", "==", email),
                 orderBy(field, direction)
             );
 
-            onSnapshot(q, (snapshot) => {
+            unsubscribe = onSnapshot(q, (snapshot) => {
                 currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderTickets(currentTickets);
             }, (error) => {
                 console.error("Firestore Error:", error);
-                // ถ้า Error เรื่อง Index จะมี Link ให้กดใน Console
-                list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-red-400">
-                    คลิกขวาดู Console: หากพบ error 'index' ให้กดลิงก์ในนั้นเพื่อเปิดใช้งานการเรียงลำดับ
-                </td></tr>`;
+                if (list) {
+                    list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-red-400">
+                        เกิดข้อผิดพลาด: โปรดตรวจสอบการตั้งค่า Index ใน Firebase Console
+                    </td></tr>`;
+                }
             });
         } catch (err) {
             console.error("Query Error:", err);
@@ -163,10 +211,13 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     function renderTickets(tickets) {
         const list = document.getElementById('ticket-list');
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        if (!list) return;
 
-        const filtered = tickets.filter(t => 
-            (t.id_number && String(t.id_number).toLowerCase().includes(searchTerm)) || 
+        const searchInput = document.getElementById('searchInput');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+
+        const filtered = tickets.filter(t =>
+            (t.id_number && String(t.id_number).toLowerCase().includes(searchTerm)) ||
             (t.internetNo && String(t.internetNo).toLowerCase().includes(searchTerm)) ||
             (t.topic && t.topic.toLowerCase().includes(searchTerm))
         );
@@ -180,8 +231,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             const createDate = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
             const updateDate = t.updatedAt?.toDate ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
             const status = t.status || 'Pending';
-            
-            // กำหนดสีตามสถานะ
+
             const statusClasses = {
                 'Open': 'bg-blue-100 text-blue-700',
                 'On Progress': 'bg-orange-100 text-orange-700',
@@ -209,32 +259,14 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         }).join('');
     }
 
-    window.viewDetail = async (id) => {
-        try {
-            const docSnap = await getDoc(doc(db, "tickets", id));
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-                document.getElementById('det-modal-id').innerText = `ID: ${id}`;
-                document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
-                document.getElementById('det-topic').innerText = t.topic || 'รายละเอียดใบงาน';
-                document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียด';
-                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกจากเจ้าหน้าที่';
-                
-                const badge = document.getElementById('det-status-badge');
-                badge.innerText = t.status || 'Pending';
-                
-                document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        } catch (e) {
-            console.error("View Error:", e);
-        }
-    };
+    // --- Event Listeners ---
 
-    // Listeners
-    document.getElementById('searchInput').addEventListener('input', () => renderTickets(currentTickets));
-    document.getElementById('sortOrder').addEventListener('change', () => {
-        if (auth.currentUser) initTicketListener(auth.currentUser.email);
+    document.getElementById('searchInput')?.addEventListener('input', () => renderTickets(currentTickets));
+    
+    document.getElementById('sortOrder')?.addEventListener('change', () => {
+        if (auth.currentUser) {
+            initTicketListener(auth.currentUser.email);
+        }
     });
 </script>
 <script src="./js/layout.js"></script>
