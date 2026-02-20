@@ -56,8 +56,15 @@ onAuthStateChanged(auth, (user) => {
 
 function initTicketListener(email) {
 
-  const sortVal = document.getElementById("sortOrder").value;
-  const [field, direction] = sortVal.split("-");
+  const sortEl = document.getElementById("sortOrder");
+
+  // ✅ ป้องกัน DOM ยังไม่โหลด
+  if (!sortEl) {
+    console.warn("sortOrder not ready");
+    return;
+  }
+
+  const [field, direction] = sortEl.value.split("-");
 
   const q = query(
     collection(db, "tickets"),
