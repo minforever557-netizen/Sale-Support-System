@@ -27,81 +27,90 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         <div id="topbar-container"></div>
 
         <!-- MAIN CONTENT -->
-        <main class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+ <main class="p-4 md:p-10 max-w-5xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
         <div>
-            <h2 class="text-3xl font-bold text-slate-800 tracking-tight">สร้างใบงานใหม่</h2>
-            <p class="text-slate-500 mt-1">กรุณากรอกข้อมูลเพื่อแจ้งปัญหาหรือขอรับบริการ</p>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                <span class="p-3 bg-emerald-100 text-emerald-600 rounded-2xl text-xl">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                </span>
+                สร้างใบงานใหม่
+            </h2>
+            <p class="text-slate-500 mt-2 font-medium">กรุณากรอกข้อมูลเพื่อแจ้งปัญหาหรือขอรับบริการให้ครบถ้วน</p>
         </div>
     </div>
 
-    <div id="logout-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="logout-backdrop"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
-            <div class="text-center">
-                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-3xl">🚪</span></div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-2">Logout?</h3>
-                <p class="text-slate-500 mb-8 text-sm">ต้องการออกจากระบบใช่หรือไม่?</p>
-                <div class="flex gap-3">
-                    <button id="confirm-logout" class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition shadow-lg">ยืนยัน</button>
-                    <button id="close-logout" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200">ยกเลิก</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="glass-card overflow-hidden">
-        <div class="bg-emerald-600 p-8 md:p-10 text-white relative overflow-hidden">
+    <div class="glass-card rounded-[3rem] overflow-hidden border-0 shadow-2xl">
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-8 md:p-12 text-white relative overflow-hidden">
             <div class="relative z-10">
                 <h3 class="text-2xl font-bold tracking-tight">Ticket Details</h3>
-                <p class="text-emerald-100 mt-2 opacity-90 text-sm">กรุณากรอกข้อมูลต่อท้ายหัวข้อที่ระบบเตรียมไว้ให้</p>
+                <p class="text-emerald-50 mt-2 opacity-90 font-light">ข้อมูลของคุณจะถูกส่งถึงเจ้าหน้าที่เทคนิคโดยตรง</p>
             </div>
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="absolute right-20 bottom-0 w-24 h-24 bg-emerald-400/20 rounded-full blur-2xl"></div>
         </div>
 
-        <form id="ticketForm" class="p-8 md:p-10 space-y-8">
-            <div class="flex items-center gap-4 p-5 bg-emerald-50/50 rounded-[2rem] border border-emerald-100/50">
-                <div id="form-user-avatar" class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-200">-</div>
+        <form id="ticketForm" class="p-8 md:p-12 space-y-10">
+            
+            <div class="flex items-center gap-5 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 shadow-sm transition-hover hover:shadow-md">
+                <div id="form-user-avatar" class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-200/50">
+                    -
+                </div>
                 <div>
-                    <p class="text-[10px] text-emerald-500 font-black uppercase tracking-[0.2em]">เจ้าหน้าที่ผู้แจ้ง</p>
-                    <p id="form-user-name" class="font-bold text-slate-700 text-lg uppercase">กำลังโหลด...</p>
+                    <p class="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mb-0.5">เจ้าหน้าที่ผู้แจ้งระบบ</p>
+                    <p id="form-user-name" class="font-bold text-slate-800 text-xl tracking-tight">กำลังโหลด...</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">1. หัวข้อปัญหา</label>
-                    <select id="topic" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-semibold text-slate-600 cursor-pointer">
-                        <option value="">เลือกหัวข้อปัญหา</option>
-                    </select>
-                </div>
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">2. Internet No.</label>
-                    <input type="text" id="id_number" required placeholder="88XXXXXXXX" 
-                        class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-semibold text-slate-700">
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="flex justify-between items-center px-2">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest">3. รายละเอียดปัญหา</label>
-                    <div id="sla-badge" class="hidden bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full">
-                        <p class="text-[10px] font-black text-emerald-700 uppercase" id="sla-hours-text"></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="group space-y-3">
+                    <label class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] ml-2 group-focus-within:text-emerald-500 transition-colors">
+                        <i class="fa-solid fa-list-check text-[10px]"></i> 1. หัวข้อปัญหา
+                    </label>
+                    <div class="relative">
+                        <select id="topic" required class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-50 rounded-[1.5rem] focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none appearance-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                            <option value="">เลือกหัวข้อปัญหา</option>
+                        </select>
+                        <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
                     </div>
                 </div>
-                <textarea id="detail-input" rows="8" required 
-                    class="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] focus:bg-white focus:border-emerald-500 outline-none transition-all text-slate-700 shadow-inner"></textarea>
+
+                <div class="group space-y-3">
+                    <label class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] ml-2 group-focus-within:text-emerald-500 transition-colors">
+                        <i class="fa-solid fa-hashtag text-[10px]"></i> 2. Internet No.
+                    </label>
+                    <input type="text" id="id_number" required placeholder="เช่น 88XXXXXXXX" 
+                        class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-50 rounded-[1.5rem] focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-800 placeholder:text-slate-300 shadow-sm">
+                </div>
             </div>
 
-            <div class="pt-4">
-                <button type="submit" id="submitBtn" class="w-full py-5 bg-emerald-600 text-white rounded-[2rem] font-bold text-lg hover:bg-emerald-700 hover:shadow-2xl hover:shadow-emerald-200 transition-all flex justify-center items-center gap-3 active:scale-[0.98]">
-                    <i class="fa-solid fa-paper-plane text-sm"></i> ยืนยันการส่งข้อมูล
+            <div class="group space-y-4">
+                <div class="flex justify-between items-center px-2">
+                    <label class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] group-focus-within:text-emerald-500 transition-colors">
+                        <i class="fa-solid fa-pen-nib text-[10px]"></i> 3. รายละเอียดปัญหา
+                    </label>
+                    <div id="sla-badge" class="hidden animate-in zoom-in duration-300">
+                        <div class="bg-emerald-500 text-white px-4 py-1.5 rounded-full shadow-lg shadow-emerald-200">
+                             <p class="text-[10px] font-black uppercase tracking-wider" id="sla-hours-text"></p>
+                        </div>
+                    </div>
+                </div>
+                <textarea id="detail-input" rows="6" required placeholder="อธิบายอาการเสียหรือสิ่งที่ต้องการให้ปรับปรุง..."
+                    class="w-full px-8 py-7 bg-slate-50 border-2 border-slate-50 rounded-[2.5rem] focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-slate-700 font-medium shadow-sm leading-relaxed"></textarea>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" id="submitBtn" class="group w-full py-6 bg-slate-900 text-white rounded-[2.5rem] font-black text-lg hover:bg-emerald-600 hover:shadow-2xl hover:shadow-emerald-300/50 transition-all duration-300 flex justify-center items-center gap-4 active:scale-[0.97]">
+                    <span>ยืนยันการส่งข้อมูลใบงาน</span>
+                    <i class="fa-solid fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
                 </button>
+                <p class="text-center text-slate-400 text-[10px] mt-6 font-bold uppercase tracking-widest">ความรวดเร็วในการบริการขึ้นอยู่กับความชัดเจนของข้อมูล</p>
             </div>
         </form>
     </div>
-    
-    <div class="h-10"></div>
 </main>
 
 <div id="success-overlay" class="fixed inset-0 bg-white/95 z-[200] hidden items-center justify-center">
