@@ -135,6 +135,145 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     </main>
 
 </div>
+            <script type="module">
+
+/* ================= FIREBASE IMPORT ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    orderBy,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+/* ================= YOUR FIREBASE CONFIG ================= */
+/* ใช้ config เดิมของระบบคุณ */
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+};
+
+/* ================= INIT ================= */
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+/* ================= DASHBOARD REALTIME ================= */
+onAuthStateChanged(auth, (user) => {
+
+    if (!user) {
+        window.location.replace("login.html");
+        return;
+    }
+
+    /* query ticket ของ user คนนี้ */
+    const q = query(
+        collection(db, "tickets"),
+        where("createdBy", "==", user.uid),
+        orderBy("createdAt", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+
+        let total = 0;
+        let pending = 0;
+        let progress = 0;
+        let done = 0;
+        let close = 0;
+
+        const table = document.getElementById("recentTicketTable");
+        table.innerHTML = "";
+
+        snapshot.forEach((doc) => {
+
+            const data = doc.data();
+            total++;
+
+            /* ===== COUNT STATUS ===== */
+            switch (data.status) {
+                case "pending": pending++; break;
+                case "progress": progress++; break;
+                case "done": done++; break;
+                case "close": close++; break;
+            }
+
+        });
+
+        /* ===== UPDATE KPI ===== */
+        document.getElementById("totalCase").innerText = total;
+        document.getElementById("pendingCase").innerText = pending;
+        document.getElementById("progressCase").innerText = progress;
+        document.getElementById("doneCase").innerText = done;
+        document.getElementById("closeCase").innerText = close;
+
+
+        /* ===== SHOW LAST 5 TICKETS ===== */
+        let count = 0;
+
+        snapshot.forEach((doc) => {
+
+            if (count >= 5) return;
+
+            const t = doc.data();
+
+            const tr = document.createElement("tr");
+            tr.className = "border-b hover:bg-slate-50";
+
+            tr.innerHTML = `
+                <td class="py-4 font-semibold">${doc.id}</td>
+                <td>${t.title ?? "-"}</td>
+                <td>${t.team ?? "-"}</td>
+                <td>
+                    <span class="status-badge status-badge-green">
+                        ${t.status}
+                    </span>
+                </td>
+                <td>${formatDate(t.createdAt)}</td>
+            `;
+
+            table.appendChild(tr);
+            count++;
+
+        });
+
+        if (total === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-10 text-slate-400">
+                        ยังไม่มีข้อมูล
+                    </td>
+                </tr>`;
+        }
+
+    });
+
+});
+
+
+/* ================= DATE FORMAT ================= */
+function formatDate(timestamp) {
+
+    if (!timestamp) return "-";
+
+    const date = timestamp.toDate();
+    return date.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
+}
+
+</script>
 
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
