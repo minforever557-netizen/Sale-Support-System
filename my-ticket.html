@@ -26,8 +26,8 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 <main class="h-full overflow-y-auto p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8 custom-scroll">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 tracking-tight">ใบงานของฉัน</h2>
-                    <p class="text-emerald-600 font-medium text-sm mt-1" id="userNameHeader">กำลังโหลดข้อมูลผู้ใช้...</p>
+                    <h1 class="text-3xl font-bold text-slate-800 tracking-tight">ใบงานของฉัน</h1>
+                    <p id="user-name-display" class="text-emerald-600">กำลังโหลดข้อมูลผู้ใช้...</p>
                 </div>
     </div>
 
@@ -234,8 +234,18 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         }
     };
 
-    onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
         if (!user) return window.location.replace("login.html");
+        
+        // --- ส่วนที่เพิ่มใหม่: แสดงชื่อผู้ใช้ที่หัวข้อใบงาน ---
+        const userDisplay = document.getElementById('user-name-display') || document.querySelector('.username-text');
+        if (userDisplay) {
+            // ดึงชื่อจาก displayName ถ้าไม่มีให้ใช้ Email
+            userDisplay.innerText = user.displayName || user.email.split('@')[0];
+            userDisplay.classList.remove('animate-pulse'); // หยุดการกระพริบ (ถ้ามี)
+        }
+        // ------------------------------------------
+
         initTicketListener(user.email);
     });
 
