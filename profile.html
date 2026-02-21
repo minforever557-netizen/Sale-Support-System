@@ -183,7 +183,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     // 1. นำเข้า Firebase - ปรับ Path ให้ถูกต้องเพื่อแก้ปัญหา MIME Type
     import { db, auth } from "./js/firebase.js"; 
     import { 
-        doc, getDoc, getDocs, updateDoc, collection 
+        doc, getDoc, getDocs, updateDoc, collection , FieldPath 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { 
         onAuthStateChanged, updatePassword, updateEmail, signOut 
@@ -300,38 +300,30 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     try {
         const adminRef = doc(db, "admin", currentUserAuth.uid);
         
-        // 1. เตรียมข้อมูลใส่ Object ก่อนส่ง (วิธีนี้จะช่วยเลี่ยงปัญหาชื่อ Field ที่มีจุด)
-        const updateData = {};
-        updateData["name"] = document.getElementById('prof-name').value.trim();
-        updateData["Phone No."] = document.getElementById('prof-phone').value.trim();
-        updateData["Team"] = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
-        updateData["Sub Team"] = document.getElementById('prof-sub').value || "-";
+        // ดึงข้อมูลจาก UI
+        const mainTeamLabel = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
+        const subTeamValue = document.getElementById('prof-sub').value || "-";
 
-        // 2. อัปเดต Firestore ด้วย Object ที่เตรียมไว้
-        await updateDoc(adminRef, updateData);
+        // ✅ ท่าไม้ตาย: ใช้ FieldPath เพื่อจัดการฟิลด์ "Phone No." ที่มีจุด
+        await updateDoc(adminRef, 
+            "name", document.getElementById('prof-name').value.trim(),
+            "Team", mainTeamLabel,
+            "Sub Team", subTeamValue,
+            new FieldPath("Phone No."), document.getElementById('prof-phone').value.trim() // แก้ปัญหาจุดตรงนี้ครับ
+        );
 
-        // 3. ตรวจสอบการเปลี่ยนรหัสผ่าน (ถ้ามีการกรอกมา)
+        // จัดการ Password ถ้ามีการกรอก
         const newPass = document.getElementById('prof-pass').value;
         if (newPass && newPass.trim() !== "") {
-            if (newPass.length < 6) throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
             await updatePassword(currentUserAuth, newPass);
-            alert("บันทึกข้อมูลและรหัสผ่านใหม่เรียบร้อย!");
-        } else {
-            alert("อัปเดตข้อมูลสำเร็จ!");
         }
 
+        alert("อัปเดตข้อมูลเรียบร้อยแล้ว!");
         location.reload();
 
     } catch (error) {
         console.error("Update Error:", error);
-        let msg = "เกิดข้อผิดพลาด: " + error.message;
-        
-        // กรณี Error เรื่องความปลอดภัย (Login ไว้นานเกินไป)
-        if (error.code === 'auth/requires-recent-login') {
-            msg = "เพื่อความปลอดภัย กรุณาออกจากระบบแล้วเข้าใหม่ก่อนเปลี่ยนรหัสผ่าน";
-        }
-        
-        alert(msg);
+        alert("เกิดข้อผิดพลาด: " + error.message);
         btn.disabled = false;
         btn.innerHTML = originalHtml;
     }
