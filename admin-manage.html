@@ -92,7 +92,6 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
   <script type="module">
-    // 1. ใช้ Relative Path ให้ถูกหลัก GitHub Pages
     import { db, auth } from "./js/firebase.js"; 
     import { 
         collection, query, orderBy, onSnapshot, getDoc, doc, updateDoc, serverTimestamp 
@@ -146,11 +145,9 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             const start = t.createdAt ? t.createdAt.toDate() : new Date();
             const due = getBusinessDueDate(start, t.sla_hours || 0);
             
-            // 🔥 [FIX] ป้องกัน SyntaxError: ลบอักขระที่ทำให้ JS พัง (การขึ้นบรรทัดใหม่ และ Single Quote)
-            const cleanNoteForJS = (t.adminNote || "")
-                .replace(/[']/g, "\\'")     // ป้องกัน Single Quote
-                .replace(/[\r\n]+/g, " ")   // ป้องกันการขึ้นบรรทัดใหม่ (Unescaped line break)
-                .trim();
+            // ดึงข้อความล่าสุดมาแสดงในตาราง (ตัดประวัติเก่าออก)
+            const noteArray = t.adminNote ? t.adminNote.split(/\[\d{2}\/\d{2}\/\d{2}\s\d{2}:\d{2}\]/g).filter(x => x.trim()) : [];
+            const displayNote = noteArray.length > 0 ? noteArray[noteArray.length - 1].trim() : 'ยังไม่มีโน้ต';
             
             let statusColor = t.status === 'On Progress' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600';
             if(t.status === 'Pending') statusColor = 'bg-blue-100 text-blue-600 animate-pulse';
@@ -161,14 +158,14 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                     <td class="p-6 font-bold text-slate-600">${t.internetNo || t.id_number || '-'}</td>
                     <td class="p-6">
                         <p class="font-bold text-slate-700">${t.topic || 'No Topic'}</p>
-                        <p class="text-[10px] text-indigo-500 mt-1 italic line-clamp-1">${t.adminNote || 'ยังไม่มีโน้ต'}</p>
+                        <p class="text-[10px] text-indigo-500 mt-1 italic line-clamp-1">${displayNote}</p>
                     </td>
                     <td class="p-6 text-center">
                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusColor}">${t.status}</span>
                     </td>
                     <td class="p-6 text-[13px] font-bold text-slate-600">${due.toLocaleString('th-TH')}</td>
                     <td class="p-6 text-right">
-                        <button onclick="openManageModal('${t.id}', '${t.status}', '${cleanNoteForJS}')" 
+                        <button onclick="openManageModal('${t.id}', '${t.status}')" 
                                 class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">
                             จัดการ
                         </button>
@@ -179,28 +176,31 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     }
 
     // --- ระบบ Modal ---
-    window.openManageModal = (id, status, note) => {
+    window.openManageModal = async (id, status) => {
         const modal = document.getElementById('adminActionModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            // คืนค่าความชัดเจนให้ Modal (แก้ปัญหาหายตัว)
-            const box = modal.querySelector('div');
-            if (box) box.style.opacity = "1";
+        if (!modal) return;
 
-            document.getElementById('admin-note-input').value = note || "";
-            window.currentId = id;
-            
-            // Reset ปุ่มบันทึก
-            const btn = document.getElementById('save-btn');
-            if(btn) {
+        try {
+            // ดึงข้อมูลล่าสุดจาก DB เพื่อเอา adminNote เดิมมาเก็บไว้
+            const docSnap = await getDoc(doc(db, "tickets", id));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                window.oldAdminNote = data.adminNote || ""; // เก็บโน้ตเก่าไว้เพื่อ Append
+                window.currentId = id;
+
+                modal.classList.remove('hidden');
+                document.getElementById('admin-note-input').value = ""; // เคลียร์ช่องพิมพ์เพื่อให้ใส่เฉพาะของใหม่
+                
+                const initialStatus = (status === 'Pending' || status === 'Open') ? 'On Progress' : status;
+                window.updateSelectedStatus(initialStatus);
+
+                // Reset ปุ่ม
+                const btn = document.getElementById('save-btn');
                 btn.disabled = false;
                 btn.innerHTML = "บันทึกข้อมูล";
                 btn.className = "flex-1 bg-[#5c56f1] text-white py-4 rounded-2xl font-black text-sm shadow-xl";
             }
-
-            const initialStatus = (status === 'Pending' || status === 'Open') ? 'On Progress' : status;
-            window.updateSelectedStatus(initialStatus);
-        }
+        } catch (e) { console.error(e); }
     };
 
     window.closeAdminModal = () => {
@@ -216,31 +216,36 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         if (activeBtn) activeBtn.classList.add('ring-4', 'ring-indigo-200', 'border-indigo-500', 'bg-indigo-50');
     };
 
-    // --- บันทึกข้อมูล ---
+    // --- บันทึกข้อมูล (Append Mode) ---
     window.saveAdminAction = async () => {
         const noteInput = document.getElementById('admin-note-input');
         const btn = document.getElementById('save-btn');
-        if (!noteInput.value.trim()) return alert("กรุณาระบุรายละเอียด");
+        const newText = noteInput.value.trim();
+
+        if (!newText) return alert("กรุณาระบุรายละเอียดการอัปเดต");
 
         btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>...`;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...`;
 
-        // Stamp วันที่/เวลา
+        // สร้าง Timestamp แบบ [วว/ดด/ปป HH:mm]
         const now = new Date();
         const d = now.getDate().toString().padStart(2, '0');
         const mo = (now.getMonth() + 1).toString().padStart(2, '0');
         const y = (now.getFullYear() + 543).toString().slice(-2);
         const h = now.getHours().toString().padStart(2, '0');
         const mi = now.getMinutes().toString().padStart(2, '0');
-        const timeStamp = `[${d}/${mo}/${y} ${h}:${mi}] `;
+        const timeHeader = `[${d}/${mo}/${y} ${h}:${mi}]`;
         
-        const finalNote = timeStamp + noteInput.value.trim();
+        // ต่อท้ายโน้ตเดิม (ใช้ \n เพื่อให้ฟังก์ชัน split ทำงานง่ายขึ้น)
+        const updatedNote = window.oldAdminNote 
+            ? `${window.oldAdminNote}\n${timeHeader} ${newText}` 
+            : `${timeHeader} ${newText}`;
 
         try {
             const ticketRef = doc(db, "tickets", window.currentId);
             await updateDoc(ticketRef, {
                 status: window.selectedStatus,
-                adminNote: finalNote,
+                adminNote: updatedNote,
                 updatedAt: serverTimestamp(),
                 ...( ['Success', 'Reject'].includes(window.selectedStatus) ? { closedAt: serverTimestamp() } : {} )
             });
@@ -251,6 +256,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         } catch (error) {
             alert("Error: " + error.message);
             btn.disabled = false;
+            btn.innerHTML = "บันทึกข้อมูล";
         }
     };
 
