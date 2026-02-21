@@ -117,93 +117,114 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             </div>
         </div>
     </div>
-    <script>
+    <script type="module">
+    // 1. Import สิ่งที่จำเป็น (อ้างอิงจาก firebase.js ของนาย)
+    import { db, auth } from "./firebase.js";
+    import { collection, query, orderBy, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // 2. ประกาศตัวแปร Global ไว้เก็บข้อมูลสำหรับ Search
+    let currentTickets = [];
+
+    // 3. เริ่มทำงานเมื่อสถานะการล็อกอินเปลี่ยน และรอ Layout โหลด (Ref: layout.js)
+    document.addEventListener("layoutLoaded", () => {
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 initTicketListener();
+                initEvents();
             } else {
                 window.location.replace("login.html");
             }
         });
+    });
 
-        function initTicketListener() {
-            const [field, direction] = document.getElementById('sortOrder').value.split('-');
-            const q = query(collection(db, "tickets"), orderBy(field, direction));
+    function initTicketListener() {
+        const sortEl = document.getElementById('sortOrder');
+        if (!sortEl) return;
 
-            onSnapshot(q, (snapshot) => {
-                currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderTickets(currentTickets);
-            });
+        const [field, direction] = sortEl.value.split('-');
+        // ดึงข้อมูลทั้งหมด (All Tickets) สำหรับ Admin
+        const q = query(collection(db, "tickets"), orderBy(field, direction));
+
+        onSnapshot(q, (snapshot) => {
+            currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderTickets(currentTickets);
+        });
+    }
+
+    function renderTickets(tickets) {
+        const list = document.getElementById('ticket-list');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        if (!list) return;
+
+        const filtered = tickets.filter(t => 
+            t.id_number?.toLowerCase().includes(searchTerm) || 
+            t.topic?.toLowerCase().includes(searchTerm)
+        );
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-400">ไม่พบใบงานที่ค้นหา</td></tr>`;
+            return;
         }
 
-        function renderTickets(tickets) {
-            const list = document.getElementById('ticket-list');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        list.innerHTML = filtered.map(t => {
+            const createDate = t.createdAt?.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) || '-';
+            const updateDate = t.updatedAt?.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) || '-';
+            
+            // ⭐ ใช้ Class สีสถานะ (Ref: CSS Master)
+            let statusClass = "bg-slate-100 text-slate-600";
+            if(t.status === 'Open') statusClass = "bg-blue-100 text-blue-700";
+            if(t.status === 'On Progress') statusClass = "bg-orange-100 text-orange-700";
+            if(t.status === 'Success') statusClass = "bg-emerald-100 text-emerald-700";
+            if(t.status === 'Reject') statusClass = "bg-red-100 text-red-700";
 
-            const filtered = tickets.filter(t => 
-                t.id_number?.toLowerCase().includes(searchTerm) || 
-                t.topic?.toLowerCase().includes(searchTerm)
-            );
+            return `
+                <tr class="hover:bg-slate-50 transition-all border-b border-slate-50 last:border-0 group">
+                    <td class="p-6 font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">${t.id_number || '-'}</td>
+                    <td class="p-6 text-slate-400 text-[12px]">${createDate}</td>
+                    <td class="p-6 text-slate-700 font-medium">${t.topic}</td>
+                    <td class="p-6 text-center">
+                        <span class="status-badge ${statusClass}">${t.status}</span>
+                    </td>
+                    <td class="p-6 text-slate-400 text-[12px]">${updateDate}</td>
+                    <td class="p-6 text-right">
+                        <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-100 text-slate-600 hover:border-emerald-500 hover:text-emerald-600 px-5 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm">
+                            <i class="fa-solid fa-eye mr-2"></i>ดูข้อมูล
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
 
-            if (filtered.length === 0) {
-                list.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-slate-400">ไม่พบใบงานที่ค้นหา</td></tr>`;
-                return;
-            }
+    // ⭐ ผูกฟังก์ชันกับ Window เพื่อให้ HTML เรียกใช้งานได้ (สำคัญสำหรับ Module)
+    window.viewDetail = async (id) => {
+        const docSnap = await getDoc(doc(db, "tickets", id));
+        if (docSnap.exists()) {
+            const t = docSnap.data();
+            document.getElementById('det-modal-id').innerText = `ID: ${id}`;
+            document.getElementById('det-id-number').innerText = t.id_number || '-';
+            document.getElementById('det-create-date').innerText = t.createdAt?.toDate().toLocaleString('th-TH') || '-';
+            document.getElementById('det-topic').innerText = t.topic;
+            document.getElementById('det-detail').innerText = t.detail;
+            document.getElementById('det-admin-user').innerText = t.adminName || 'System';
+            document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกเพิ่มเติมจากแอดมิน';
 
-            list.innerHTML = filtered.map(t => {
-                const createDate = t.createdAt?.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) || '-';
-                const updateDate = t.updatedAt?.toDate().toLocaleString('th-TH', {dateStyle:'short', timeStyle:'short'}) || '-';
-                
-                let statusClass = "bg-slate-100 text-slate-600";
-                if(t.status === 'Open') statusClass = "bg-blue-100 text-blue-700";
-                if(t.status === 'On Progress') statusClass = "bg-orange-100 text-orange-700";
-                if(t.status === 'Success') statusClass = "bg-emerald-100 text-emerald-700";
-                if(t.status === 'Reject') statusClass = "bg-red-100 text-red-700";
-
-                return `
-                    <tr class="hover:bg-slate-50 transition-all border-b border-slate-50 last:border-0 group">
-                        <td class="p-6 font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">${t.id_number || '-'}</td>
-                        <td class="p-6 text-slate-400 text-[12px]">${createDate}</td>
-                        <td class="p-6 text-slate-700 font-medium">${t.topic}</td>
-                        <td class="p-6 text-center">
-                            <span class="status-badge ${statusClass}">${t.status}</span>
-                        </td>
-                        <td class="p-6 text-slate-400 text-[12px]">${updateDate}</td>
-                        <td class="p-6 text-right">
-                            <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-100 text-slate-600 hover:border-emerald-500 hover:text-emerald-600 px-5 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm">
-                                <i class="fa-solid fa-eye mr-2"></i>ดูข้อมูล
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
+    };
 
-        window.viewDetail = async (id) => {
-            const docSnap = await getDoc(doc(db, "tickets", id));
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-                document.getElementById('det-modal-id').innerText = `ID: ${id}`;
-                document.getElementById('det-id-number').innerText = t.id_number || '-';
-                document.getElementById('det-create-date').innerText = t.createdAt?.toDate().toLocaleString('th-TH') || '-';
-                document.getElementById('det-topic').innerText = t.topic;
-                document.getElementById('det-detail').innerText = t.detail;
-                document.getElementById('det-admin-user').innerText = t.adminName || 'System';
-                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึกเพิ่มเติมจากแอดมิน';
+    window.closeDetailModal = () => {
+        document.getElementById('detail-modal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    };
 
-                document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        };
-
-        window.closeDetailModal = () => {
-            document.getElementById('detail-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        };
-
+    function initEvents() {
         document.getElementById('searchInput').addEventListener('input', () => renderTickets(currentTickets));
         document.getElementById('sortOrder').addEventListener('change', initTicketListener);
-    </script>
+    }
+</script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
     <script type="module" src="firebase.js"></script>
