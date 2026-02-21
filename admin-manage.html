@@ -92,7 +92,8 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
   <script type="module">
-    import { db, auth } from "./js/firebase.js";
+    // 1. แก้ไข Path ของ firebase.js ให้ถูกต้อง (ลองตรวจสอบว่าไฟล์อยู่ที่ ./js/ หรือ ../js/)
+    import { db, auth } from "./js/firebase.js"; 
     import { 
         collection, query, orderBy, onSnapshot, getDoc, doc, updateDoc, serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -101,6 +102,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     let currentTickets = [];
     let unsubscribe = null;
 
+    // --- ฟังก์ชัน SLA ---
     function getBusinessDueDate(startDate, hoursToAdd) {
         let date = new Date(startDate);
         let addedHours = 0;
@@ -111,23 +113,20 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         return date;
     }
 
-    function calcRemainingSLA(createdAt, slaH) {
-        if (!createdAt) return { text: "-", class: "", urgent: false };
-        const start = createdAt.toDate();
-        const due = getBusinessDueDate(start, slaH);
-        const diff = due.getTime() - new Date().getTime();
-        if (diff <= 0) return { text: "OVER SLA", class: "text-red-600 font-black", urgent: true };
-        const h = Math.floor(diff/3600000);
-        const m = Math.floor((diff%3600000)/60000);
-        return { text: `${h}ชม. ${m}น.`, class: h < 2 ? "text-orange-500" : "text-green-600", urgent: h < 1 };
-    }
-
+    // --- ดึงข้อมูลจาก Firebase ---
     function initTicketsListener() {
         if (unsubscribe) unsubscribe();
+        // ตรวจสอบว่า db โหลดมาได้จริงหรือไม่
+        if (!db) {
+            console.error("Firebase DB not found. Check your firebase.js path.");
+            return;
+        }
         const q = query(collection(db, "tickets"), orderBy("createdAt", "asc"));
         unsubscribe = onSnapshot(q, (snapshot) => {
             currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             renderAdminTickets(currentTickets);
+        }, (error) => {
+            console.error("Snapshot error:", error);
         });
     }
 
@@ -144,7 +143,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         );
 
         if (filtered.length === 0) {
-            list.innerHTML = "";
+            list.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400">ไม่พบข้อมูลใบงาน</td></tr>';
             document.getElementById('no-data-msg')?.classList.remove('hidden');
             return;
         }
@@ -154,8 +153,8 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             const start = t.createdAt ? t.createdAt.toDate() : new Date();
             const due = getBusinessDueDate(start, t.sla_hours || 0);
             
-            // ✨ ป้องกัน Error: ล้างตัวอักษรพิเศษและการขึ้นบรรทัดใหม่ก่อนใส่ใน onclick
-            const safeNote = (t.adminNote || "").replace(/['"\n\r]/g, " "); 
+            // ✨ ป้องกัน SyntaxError: ล้างค่าตัวอักษรพิเศษที่ทำให้ JavaScript พัง
+            const cleanNote = (t.adminNote || "").replace(/['"\n\r]/g, " ").trim();
             
             let statusColor = t.status === 'On Progress' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600';
             if(t.status === 'Pending') statusColor = 'bg-blue-100 text-blue-600 animate-pulse';
@@ -173,22 +172,25 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                     </td>
                     <td class="p-6 text-[13px] font-bold text-slate-600">${due.toLocaleString('th-TH')}</td>
                     <td class="p-6 text-right">
-                        <button onclick="openManageModal('${t.id}', '${t.status}', '${safeNote}')" class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">จัดการ</button>
+                        <button onclick="openManageModal('${t.id}', '${t.status}', '${cleanNote}')" 
+                                class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">
+                            จัดการ
+                        </button>
                     </td>
                 </tr>
             `;
         }).join('');
     }
 
+    // --- ระบบบันทึก ---
     window.saveAdminAction = async () => {
         const noteInput = document.getElementById('admin-note-input');
         const btn = document.getElementById('save-btn');
         if (!noteInput.value.trim()) return alert("กรุณาระบุรายละเอียด");
 
         btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...`;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> บันทึก...`;
 
-        // ✨ Stamp วันที่ + เวลา [21/02/69 10:45]
         const now = new Date();
         const d = now.getDate().toString().padStart(2, '0');
         const mo = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -217,6 +219,11 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             btn.innerHTML = "บันทึกข้อมูล";
         }
     };
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) { initTicketsListener(); } 
+        else { window.location.replace("login.html"); }
+    });
 
     document.getElementById('adminSearchInput')?.addEventListener('input', () => renderAdminTickets(currentTickets));
 </script>
