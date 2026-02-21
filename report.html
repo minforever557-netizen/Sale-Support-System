@@ -126,221 +126,216 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
 
-    <script>
-        let rawTickets = [];
-        let filteredData = [];
-        let chart = null;
-        let viewLevel = 'MAIN';
-        let currentSelection = '';
+    <script type="module">
+    // 1. นำเข้า Firebase โดยใช้ Path ที่ถูกต้องตามหน้าก่อนๆ
+    import { auth, db, doc, getDoc, collection, onSnapshot, signOut, onAuthStateChanged } from "./js/firebase.js";
 
+    // --- คง Logic เดิมของนายไว้ทั้งหมด ---
+    let rawTickets = [];
+    let filteredData = [];
+    let chart = null;
+    let viewLevel = 'MAIN';
+    let currentSelection = '';
+
+    if (typeof Chart.register === 'function' && typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
+    }
 
-        // --- 1. Layout Engine ---
-        async function loadLayout(userData, email) {
-            const comps = [
-                { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-                { id: 'topbar-placeholder', url: './components/topbar.html' }
-            ];
-            
-            for (const comp of comps) {
-                const res = await fetch(comp.url);
-                if (res.ok) {
-                    const el = document.getElementById(comp.id);
-                    el.innerHTML = await res.text();
-                    el.classList.remove('hidden');
+    // --- 1. Layout Engine (คงเดิม) ---
+    async function loadLayout(userData, email) {
+        const comps = [
+            { id: 'sidebar-placeholder', url: './components/sidebar.html' },
+            { id: 'topbar-placeholder', url: './components/topbar.html' }
+        ];
+        
+        for (const comp of comps) {
+            const res = await fetch(comp.url);
+            if (res.ok) {
+                const el = document.getElementById(comp.id);
+                el.innerHTML = await res.text();
+                el.classList.remove('hidden');
 
-                    el.querySelectorAll("script").forEach(oldScript => {
-                        const newScript = document.createElement("script");
-                        newScript.type = "module";
-                        newScript.textContent = oldScript.textContent;
-                        document.head.appendChild(newScript);
-                    });
-                }
+                el.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    newScript.type = "module";
+                    newScript.textContent = oldScript.textContent;
+                    document.head.appendChild(newScript);
+                });
             }
-
-            // Sync Profile Info to Topbar
-            setTimeout(() => {
-                const nameEl = document.querySelector('#topbar-user-name');
-                const emailEl = document.querySelector('#topbar-user-email');
-                const avatarEl = document.querySelector('#topbar-avatar-text');
-                if (nameEl) nameEl.innerText = userData.name || "Admin";
-                if (emailEl) emailEl.innerText = email;
-                if (avatarEl && userData.name) avatarEl.innerText = userData.name.charAt(0).toUpperCase();
-
-                // Connect Sidebar Logout Button
-                const logoutBtn = document.querySelector('#main-logout-btn');
-                if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); openLogoutModal(); };
-            }, 600);
         }
 
-        // --- 2. Auth & Data Init ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                if (adminDoc.exists()) {
-                    await loadLayout(adminDoc.data(), user.email);
-                    initData();
-                }
-            } else { window.location.replace("login.html"); }
+        setTimeout(() => {
+            const nameEl = document.querySelector('#topbar-user-name');
+            const emailEl = document.querySelector('#topbar-user-email');
+            const avatarEl = document.querySelector('#topbar-avatar-text');
+            if (nameEl) nameEl.innerText = userData.name || "Admin";
+            if (emailEl) emailEl.innerText = email;
+            if (avatarEl && userData.name) avatarEl.innerText = userData.name.charAt(0).toUpperCase();
+
+            const logoutBtn = document.querySelector('#main-logout-btn');
+            if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); window.openLogoutModal(); };
+        }, 600);
+    }
+
+    // --- 2. Auth & Data Init (เชื่อม Firebase เข้ากับ Logic เดิม) ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const adminDoc = await getDoc(doc(db, "admin", user.uid));
+            if (adminDoc.exists()) {
+                await loadLayout(adminDoc.data(), user.email);
+                initData(); // เรียกใช้ Logic เดิมของนาย
+            }
+        } else { window.location.replace("login.html"); }
+    });
+
+    function initData() {
+        onSnapshot(collection(db, "tickets"), (snapshot) => {
+            rawTickets = snapshot.docs.map(doc => {
+                const d = doc.data();
+                const ts = d.timestamp?.toDate() || new Date();
+                const keys = Object.keys(d);
+                const getVal = (targets) => {
+                    const k = keys.find(key => targets.includes(key.trim().toLowerCase()));
+                    return k ? d[k] : null;
+                };
+
+                return {
+                    id: doc.id,
+                    mainTeam: getVal(["sender team", "team", "sender_team", "main team"]) || "ไม่ระบุทีมหลัก",
+                    subTeam: getVal(["sender subteam", "subteam", "sender_subteam", "sub team"]) || "ไม่ระบุทีมย่อย",
+                    owner: getVal(["owner", "name"]) || "Unknown",
+                    topic: getVal(["topic", "subject"]) || "Other",
+                    status: d.sla_status || "Pending",
+                    dateStr: ts.toISOString().split('T')[0],
+                    q: 'Q' + Math.ceil((ts.getMonth() + 1) / 3),
+                    y: ts.getFullYear()
+                };
+            });
+            window.applyFilters(); // เรียกใช้ Logic เดิม
+        });
+    }
+
+    // --- 3. Business Logic (คงเดิม แต่ปรับ UI Class ให้ขอบชัด) ---
+    window.toggleFilterUI = () => {
+        const mode = document.getElementById('filter-mode').value;
+        document.getElementById('ui-daily').classList.toggle('hidden', mode !== 'daily');
+        document.getElementById('ui-quarter').classList.toggle('hidden', mode !== 'quarter');
+    };
+
+    window.applyFilters = () => {
+        const mode = document.getElementById('filter-mode').value;
+        const d = document.getElementById('val-date').value;
+        const q = document.getElementById('val-q').value;
+        const y = parseInt(document.getElementById('val-y').value);
+
+        filteredData = rawTickets.filter(t => {
+            if (mode === 'daily') return t.dateStr === d;
+            if (mode === 'quarter') return t.y === y && t.q === q;
+            return true;
+        });
+        render();
+    };
+
+    function render() {
+        document.getElementById('stat-total').innerText = filteredData.length.toLocaleString();
+        document.getElementById('stat-owners').innerText = new Set(filteredData.map(t => t.owner)).size;
+        const slaOk = filteredData.filter(v => v.status === 'In SLA').length;
+        document.getElementById('stat-sla').innerText = filteredData.length ? Math.round((slaOk/filteredData.length)*100) + '%' : '0%';
+
+        const tableStats = {}; const topicStats = {};
+        filteredData.forEach(t => {
+            const groupKey = (viewLevel === 'MAIN') ? t.mainTeam : t.subTeam;
+            if (viewLevel === 'MAIN' || t.mainTeam === currentSelection) {
+                tableStats[groupKey] = (tableStats[groupKey] || 0) + 1;
+            }
+            topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
         });
 
-        function initData() {
-            onSnapshot(collection(db, "tickets"), (snapshot) => {
-                rawTickets = snapshot.docs.map(doc => {
-                    const d = doc.data();
-                    const ts = d.timestamp?.toDate() || new Date();
-                    const keys = Object.keys(d);
-                    const getVal = (targets) => {
-                        const k = keys.find(key => targets.includes(key.trim().toLowerCase()));
-                        return k ? d[k] : null;
-                    };
+        updateChart(topicStats);
+        updateTable(tableStats);
+    }
 
-                    return {
-                        id: doc.id,
-                        mainTeam: getVal(["sender team", "team", "sender_team", "main team"]) || "ไม่ระบุทีมหลัก",
-                        subTeam: getVal(["sender subteam", "subteam", "sender_subteam", "sub team"]) || "ไม่ระบุทีมย่อย",
-                        owner: getVal(["owner", "name"]) || "Unknown",
-                        topic: getVal(["topic", "subject"]) || "Other",
-                        status: d.sla_status || "Pending",
-                        dateStr: ts.toISOString().split('T')[0],
-                        q: 'Q' + Math.ceil((ts.getMonth() + 1) / 3),
-                        y: ts.getFullYear()
-                    };
-                });
-                applyFilters();
-            });
-        }
-
-        // --- 3. Business Logic (Original) ---
-        window.toggleFilterUI = () => {
-            const mode = document.getElementById('filter-mode').value;
-            document.getElementById('ui-daily').classList.toggle('hidden', mode !== 'daily');
-            document.getElementById('ui-quarter').classList.toggle('hidden', mode !== 'quarter');
-        };
-
-        window.applyFilters = () => {
-            const mode = document.getElementById('filter-mode').value;
-            const d = document.getElementById('val-date').value;
-            const q = document.getElementById('val-q').value;
-            const y = parseInt(document.getElementById('val-y').value);
-
-            filteredData = rawTickets.filter(t => {
-                if (mode === 'daily') return t.dateStr === d;
-                if (mode === 'quarter') return t.y === y && t.q === q;
-                return true;
-            });
-            render();
-        };
-
-        function render() {
-            document.getElementById('stat-total').innerText = filteredData.length.toLocaleString();
-            document.getElementById('stat-owners').innerText = new Set(filteredData.map(t => t.owner)).size;
-            const slaOk = filteredData.filter(v => v.status === 'In SLA').length;
-            document.getElementById('stat-sla').innerText = filteredData.length ? Math.round((slaOk/filteredData.length)*100) + '%' : '0%';
-
-            const tableStats = {}; const topicStats = {};
-            filteredData.forEach(t => {
-                const groupKey = (viewLevel === 'MAIN') ? t.mainTeam : t.subTeam;
-                if (viewLevel === 'MAIN' || t.mainTeam === currentSelection) {
-                    tableStats[groupKey] = (tableStats[groupKey] || 0) + 1;
-                }
-                topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
-            });
-
-            updateChart(topicStats);
-            updateTable(tableStats);
-        }
-
-        function updateChart(data) {
-            const ctx = document.getElementById('mainChart');
-            if (chart) chart.destroy();
-            chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{ 
-                        data: Object.values(data), 
-                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'], 
-                        borderWidth: 0 
-                    }]
+    function updateChart(data) {
+        const ctx = document.getElementById('mainChart');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{ 
+                    data: Object.values(data), 
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'], 
+                    borderWidth: 0 
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: { color: '#fff', font: { weight: 'bold', size: 10 } } 
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { color: '#fff', font: { weight: 'bold', size: 10 } } 
-                    },
-                    cutout: '75%'
-                }
-            });
-        }
+                cutout: '75%'
+            }
+        });
+    }
 
-        function updateTable(stats) {
-            const total = Object.values(stats).reduce((a,b) => a+b, 0);
-            document.getElementById('table-body').innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([n, c]) => `
-                <tr class="row-hover group" onclick="handleRowClick('${n}')">
-                    <td class="p-4 font-bold text-slate-700">${n}</td>
-                    <td class="p-4 text-center font-bold text-indigo-600">${c}</td>
-                    <td class="p-4 text-right font-medium text-slate-400">${((c/total)*100).toFixed(1)}%</td>
-                </tr>`).join('');
-        }
+    function updateTable(stats) {
+        const total = Object.values(stats).reduce((a,b) => a+b, 0);
+        // ปรับขอบตารางให้ชัด (border-slate-300)
+        document.getElementById('table-body').innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([n, c]) => `
+            <tr class="border-b border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer" onclick="handleRowClick('${n}')">
+                <td class="p-4 font-bold text-slate-700">${n}</td>
+                <td class="p-4 text-center font-bold text-indigo-600">${c}</td>
+                <td class="p-4 text-right font-medium text-slate-400">${total ? ((c/total)*100).toFixed(1) : 0}%</td>
+            </tr>`).join('');
+    }
 
-        window.handleRowClick = (name) => {
-            if (viewLevel === 'MAIN') {
-                viewLevel = 'SUB'; currentSelection = name;
-                document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
-                document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
-                render();
-            } else { openDetailModal(name); }
-        };
-
-        function openDetailModal(subName) {
-            const subset = filteredData.filter(t => t.mainTeam === currentSelection && t.subTeam === subName);
-            document.getElementById('modal-head').innerText = subName;
-            const ts = {}; const os = {};
-            subset.forEach(x => {
-                ts[x.topic] = (ts[x.topic] || 0) + 1;
-                os[x.owner] = (os[x.owner] || 0) + 1;
-            });
-            document.getElementById('modal-topics').innerHTML = Object.entries(ts).map(([n,c]) => `<div class="flex justify-between p-3 bg-white rounded-xl text-xs font-bold border border-slate-100"><span>${n}</span><span class="text-indigo-600">${c}</span></div>`).join('');
-            document.getElementById('modal-owners').innerHTML = Object.entries(os).map(([n,c]) => `<div class="flex justify-between p-3 bg-white rounded-xl text-xs font-bold border border-slate-100"><span>${n}</span><span class="text-emerald-600">${c} เคส</span></div>`).join('');
-            document.getElementById('detail-modal').classList.remove('hidden');
-        }
-
-        window.resetView = () => {
-            viewLevel = 'MAIN'; currentSelection = '';
-            document.getElementById('nav-path').innerText = 'Dashboard / Main Team';
-            document.getElementById('table-title').innerText = 'สรุปตามรายทีม (Sender team)';
+    window.handleRowClick = (name) => {
+        if (viewLevel === 'MAIN') {
+            viewLevel = 'SUB'; currentSelection = name;
+            document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
+            document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
             render();
-        };
+        } else { openDetailModal(name); }
+    };
 
-        window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
+    function openDetailModal(subName) {
+        const subset = filteredData.filter(t => t.mainTeam === currentSelection && t.subTeam === subName);
+        document.getElementById('modal-head').innerText = subName;
+        const ts = {}; const os = {};
+        subset.forEach(x => {
+            ts[x.topic] = (ts[x.topic] || 0) + 1;
+            os[x.owner] = (os[x.owner] || 0) + 1;
+        });
+        // ปรับขอบใน Modal ให้ชัดเจน (border-slate-300)
+        document.getElementById('modal-topics').innerHTML = Object.entries(ts).map(([n,c]) => `
+            <div class="flex justify-between p-3 bg-white rounded-xl text-xs font-bold border-2 border-slate-300">
+                <span>${n}</span><span class="text-indigo-600">${c}</span>
+            </div>`).join('');
+        document.getElementById('modal-owners').innerHTML = Object.entries(os).map(([n,c]) => `
+            <div class="flex justify-between p-3 bg-white rounded-xl text-xs font-bold border-2 border-slate-300">
+                <span>${n}</span><span class="text-emerald-600">${c} เคส</span>
+            </div>`).join('');
+        document.getElementById('detail-modal').classList.remove('hidden');
+    }
 
-        // --- 4. System Modals ---
-        window.openLogoutModal = () => {
-            const modal = document.getElementById('logout-modal');
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-active');
-            setTimeout(() => {
-                document.getElementById('logout-backdrop').classList.add('opacity-100');
-                document.getElementById('logout-content').classList.remove('scale-90', 'opacity-0');
-            }, 10);
-        };
+    window.resetView = () => {
+        viewLevel = 'MAIN'; currentSelection = '';
+        document.getElementById('nav-path').innerText = 'Dashboard / Main Team';
+        document.getElementById('table-title').innerText = 'สรุปตามรายทีม (Sender team)';
+        render();
+    };
 
-        window.closeLogoutModal = () => {
-            document.getElementById('logout-backdrop').classList.remove('opacity-100');
-            document.getElementById('logout-content').classList.add('scale-90', 'opacity-0');
-            setTimeout(() => {
-                document.getElementById('logout-modal').classList.add('hidden');
-                document.body.classList.remove('modal-active');
-            }, 300);
-        };
+    window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-        document.getElementById('confirm-logout').onclick = async () => {
-            await signOut(auth);
-            window.location.replace("login.html");
-        };
-    </script>
+    // --- 4. System Modals (คงเดิม) ---
+    window.openLogoutModal = () => { document.getElementById('logout-modal').classList.remove('hidden'); };
+    window.closeLogoutModal = () => { document.getElementById('logout-modal').classList.add('hidden'); };
+    document.getElementById('confirm-logout').onclick = async () => {
+        await signOut(auth);
+        window.location.replace("login.html");
+    };
+</script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
     <script type="module" src="firebase.js"></script>
