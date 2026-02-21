@@ -218,47 +218,58 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     // --- บันทึกข้อมูล (Append Mode) ---
     window.saveAdminAction = async () => {
-        const noteInput = document.getElementById('admin-note-input');
-        const btn = document.getElementById('save-btn');
-        const newText = noteInput.value.trim();
+    const noteInput = document.getElementById('admin-note-input');
+    const btn = document.getElementById('save-btn');
+    const newText = noteInput.value.trim();
 
-        if (!newText) return alert("กรุณาระบุรายละเอียดการอัปเดต");
+    if (!newText) return alert("กรุณาระบุรายละเอียดการอัปเดต");
 
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...`;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...`;
 
-        // สร้าง Timestamp แบบ [วว/ดด/ปป HH:mm]
-        const now = new Date();
-        const d = now.getDate().toString().padStart(2, '0');
-        const mo = (now.getMonth() + 1).toString().padStart(2, '0');
-        const y = (now.getFullYear() + 543).toString().slice(-2);
-        const h = now.getHours().toString().padStart(2, '0');
-        const mi = now.getMinutes().toString().padStart(2, '0');
-        const timeHeader = `[${d}/${mo}/${y} ${h}:${mi}]`;
-        
-        // ต่อท้ายโน้ตเดิม (ใช้ \n เพื่อให้ฟังก์ชัน split ทำงานง่ายขึ้น)
-        const updatedNote = window.oldAdminNote 
-            ? `${window.oldAdminNote}\n${timeHeader} ${newText}` 
-            : `${timeHeader} ${newText}`;
-
-        try {
-            const ticketRef = doc(db, "tickets", window.currentId);
-            await updateDoc(ticketRef, {
-                status: window.selectedStatus,
-                adminNote: updatedNote,
-                updatedAt: serverTimestamp(),
-                ...( ['Success', 'Reject'].includes(window.selectedStatus) ? { closedAt: serverTimestamp() } : {} )
-            });
-            
-            btn.classList.replace('bg-[#5c56f1]', 'bg-green-500');
-            btn.innerHTML = `สำเร็จ!`;
-            setTimeout(() => { window.closeAdminModal(); }, 800);
-        } catch (error) {
-            alert("Error: " + error.message);
-            btn.disabled = false;
-            btn.innerHTML = "บันทึกข้อมูล";
+    // 1. ดึงข้อมูลชื่อ Admin จากคอลเลกชัน admin (โดยใช้ UID ของผู้ที่ Login อยู่)
+    let currentAdminName = "Unknown Admin";
+    try {
+        const adminDoc = await getDoc(doc(db, "admin", auth.currentUser.uid));
+        if (adminDoc.exists()) {
+            currentAdminName = adminDoc.data().name || "Admin";
         }
-    };
+    } catch (e) { console.error("Error fetching admin name:", e); }
+
+    // สร้าง Timestamp Header
+    const now = new Date();
+    const d = now.getDate().toString().padStart(2, '0');
+    const mo = (now.getMonth() + 1).toString().padStart(2, '0');
+    const y = (now.getFullYear() + 543).toString().slice(-2);
+    const h = now.getHours().toString().padStart(2, '0');
+    const mi = now.getMinutes().toString().padStart(2, '0');
+    const timeHeader = `[${d}/${mo}/${y} ${h}:${mi}]`;
+    
+    const updatedNote = window.oldAdminNote 
+        ? `${window.oldAdminNote}\n${timeHeader} ${newText}` 
+        : `${timeHeader} ${newText}`;
+
+    try {
+        const ticketRef = doc(db, "tickets", window.currentId);
+        
+        // 2. เพิ่มฟิลด์ adminName ลงใน object ที่จะ update
+        await updateDoc(ticketRef, {
+            status: window.selectedStatus,
+            adminNote: updatedNote,
+            adminName: currentAdminName, // 🔥 บันทึกชื่อผู้ดูแลลงไปที่นี่
+            updatedAt: serverTimestamp(),
+            ...( ['Success', 'Reject'].includes(window.selectedStatus) ? { closedAt: serverTimestamp() } : {} )
+        });
+        
+        btn.classList.replace('bg-[#5c56f1]', 'bg-green-500');
+        btn.innerHTML = `สำเร็จ!`;
+        setTimeout(() => { window.closeAdminModal(); }, 800);
+    } catch (error) {
+        alert("Error: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = "บันทึกข้อมูล";
+    }
+};
 
     onAuthStateChanged(auth, (user) => {
         if (user) { initTicketsListener(); } 
