@@ -306,8 +306,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         const mainTeamLabel = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
         const subTeamVal = document.getElementById('prof-sub').value || "-";
 
-        // ✅ ท่าแก้เผ็ด (Non-Object Syntax): 
-        // ส่ง Field และ Value เรียงต่อกันไปเลย ท่านี้จะมองข้ามปัญหาเรื่องจุดในชื่อฟิลด์ครับ
+        // ✅ ท่าแก้เผ็ด (Non-Object Syntax) คงเดิมตามที่นายต้องการ
         await updateDoc(adminRef, 
             "name", nameVal,
             "Team", mainTeamLabel,
@@ -315,28 +314,32 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             new FieldPath("Phone No."), phoneVal 
         );
 
-        // --- ส่วน Animation ความสำเร็จ (CSS เดิมของนาย) ---
+        // --- ✨ ส่วน Animation ความสำเร็จที่เพิ่ม/ปรับปรุงใหม่ ---
         const overlay = document.getElementById('success-overlay');
         const content = document.getElementById('success-content');
         
         if (overlay && content) {
+            // 1. แสดงพื้นหลัง Overlay
+            overlay.classList.remove('hidden'); 
             overlay.style.display = 'flex';
+
+            // 2. ใช้ setTimeout เพื่อให้ Browser ทันได้วาด (Render) ก่อนเริ่มขยับ Animation
             setTimeout(() => {
+                // เปลี่ยนจากตัวเล็ก (scale-90) เป็นตัวใหญ่ (scale-100) และจาง (opacity-0) เป็นชัด (opacity-100)
                 content.classList.replace('scale-90', 'scale-100');
+                content.classList.remove('opacity-0');
                 content.classList.add('opacity-100');
             }, 50);
 
-            // หน่วงเวลา 2 วินาทีเพื่อให้ Animation ทำงานจบ
+            // 3. หน่วงเวลา 2 วินาทีเพื่อให้ User ดูความสำเร็จ (ตามที่นายตั้งค่าไว้)
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
+        // รีโหลดหน้าจอเพื่อแสดงข้อมูลใหม่
         location.reload();
 
     } catch (error) {
         console.error("Final Error Check:", error);
-        
-        // ถ้ายังขึ้น Error เดิมอีก แสดงว่า Firebase ปฏิเสธชื่อนี้จริงๆ 
-        // ผมทำระบบสำรองไว้ให้ (เปลี่ยนไปบันทึกในชื่อ phone แทนถ้าพัง)
         alert("เกิดข้อผิดพลาด: " + error.message);
         
         btn.disabled = false;
