@@ -179,185 +179,201 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </main>
 </div>              
-    <script>
-           // --- 1. ตัวแปรและการตั้งค่าเริ่มต้น ---
-let allTeams = [];
-let currentUserAuth = null;
 
-// --- 2. การตรวจสอบสถานะการเข้าสู่ระบบและดึงข้อมูลโปรไฟล์ ---
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUserAuth = user;
-        try {
-            // ดึงข้อมูล Admin จาก Firestore
-            const snap = await getDoc(doc(db, "admin", user.uid));
-            if (snap.exists()) {
-                const adminData = snap.data();
-                
-                // ดึงข้อมูลทีมทั้งหมดก่อน แล้วค่อยเติมข้อมูลลง Form
-                await fetchTeams();
-                fillFormData(adminData, user.email);
-            } else {
-                console.error("ไม่พบข้อมูล Admin ในฐานข้อมูล");
+       
+  <script type="module">
+    // --- 1. Import Firebase จากไฟล์ config ของนาย ---
+    import { db, auth } from "./js/firebase.js";
+    import { 
+        doc, getDoc, getDocs, updateDoc, collection 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+        onAuthStateChanged, updatePassword, updateEmail, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // --- 2. ตัวแปรและการตั้งค่าเริ่มต้น ---
+    let allTeams = [];
+    let currentUserAuth = null;
+
+    // --- 3. ตรวจสอบ Login & โหลดข้อมูล ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUserAuth = user;
+            try {
+                // ดึงข้อมูลจากคอลเลกชัน "admin" (หรือ "users" ตามที่นายเก็บ)
+                const snap = await getDoc(doc(db, "admin", user.uid));
+                if (snap.exists()) {
+                    const adminData = snap.data();
+                    
+                    // โหลดข้อมูลทีมก่อน เพื่อหาความสัมพันธ์ Main/Sub
+                    await fetchTeams();
+                    
+                    // เติมข้อมูลลงหน้าเว็บ
+                    fillFormData(adminData, user.email);
+                } else {
+                    console.error("ไม่พบข้อมูลผู้ใช้งานในระบบ");
+                    alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
             }
+        } else {
+            window.location.replace("login.html");
+        }
+    });
+
+    // --- 4. ดึงข้อมูลทีมจาก Firestore ---
+    async function fetchTeams() {
+        try {
+            const snap = await getDocs(collection(db, "teams"));
+            allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            
+            const mainSelect = document.getElementById('prof-main');
+            mainSelect.innerHTML = '<option value="" disabled selected>เลือกทีมหลัก</option>';
+            
+            // เติมเฉพาะทีมที่เป็นประเภท "main"
+            allTeams.filter(t => t.type === "main").forEach(t => {
+                const opt = new Option(t.name, t.id);
+                mainSelect.add(opt);
+            });
         } catch (error) {
-            console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
+            console.error("ไม่สามารถโหลดข้อมูลทีมได้:", error);
         }
-    } else {
-        window.location.replace("login.html");
     }
-});
 
-// --- 3. Function ดึงข้อมูลทีมจาก Firestore ---
-async function fetchTeams() {
-    try {
-        const snap = await getDocs(collection(db, "teams"));
-        allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // --- 5. เติมข้อมูลลงใน UI ---
+    function fillFormData(data, email) {
+        // อัปเดตฝั่ง Profile Card (ซ้าย)
+        document.getElementById('avatar-display').innerText = (data.name || "A")[0].toUpperCase();
+        document.getElementById('name-display').innerText = data.name || "User";
+        document.getElementById('role-display').innerText = data.role || "Admin";
+        document.getElementById('side-email').innerText = email;
         
-        const mainSelect = document.getElementById('prof-main');
-        mainSelect.innerHTML = '<option value="" disabled selected>เลือกทีมหลัก</option>';
+        const sideTeam = document.getElementById('side-team');
+        if (sideTeam) {
+            sideTeam.innerText = `${data.Team || '-'} / ${data["Sub Team"] || '-'}`;
+        }
+
+        // เติมข้อมูลลง Form (ขวา)
+        document.getElementById('prof-name').value = data.name || "";
+        document.getElementById('prof-user').value = data.username || ""; // Readonly
+        document.getElementById('prof-email').value = email;
+        document.getElementById('prof-phone').value = data["Phone No."] || "";
+
+        // จัดการ Team Selection
+        if (data.Team) {
+            const team = allTeams.find(t => t.name === data.Team && t.type === "main");
+            if (team) {
+                document.getElementById('prof-main').value = team.id;
+                renderSubTeams(team.id, data["Sub Team"]);
+            }
+        }
+    }
+
+    // --- 6. จัดการ Dropdown ทีมย่อย ---
+    document.getElementById('prof-main').addEventListener('change', (e) => {
+        renderSubTeams(e.target.value);
+    });
+
+    function renderSubTeams(parentId, currentSub = null) {
+        const subSelect = document.getElementById('prof-sub');
+        const subs = allTeams.filter(t => t.type === "sub" && t.parentId === parentId);
         
-        // เติมเฉพาะทีมที่เป็นประเภท "main"
-        allTeams.filter(t => t.type === "main").forEach(t => {
-            mainSelect.add(new Option(t.name, t.id));
-        });
-    } catch (error) {
-        console.error("ไม่สามารถโหลดข้อมูลทีมได้:", error);
-    }
-}
-
-// --- 4. Function เติมข้อมูลลงใน Form และ Profile Card ---
-function fillFormData(data, email) {
-    // แสดงผลบน Profile Card (ฝั่งซ้าย)
-    document.getElementById('avatar-display').innerText = (data.name || "A")[0];
-    document.getElementById('name-display').innerText = data.name || "Admin";
-    document.getElementById('role-display').innerText = data.role || "Admin";
-    document.getElementById('side-email').innerText = email;
-    
-    // แสดงทีมปัจจุบันที่ฝั่งซ้าย (ถ้ามี)
-    if (document.getElementById('side-team')) {
-        document.getElementById('side-team').innerText = `${data.Team || '-'} / ${data["Sub Team"] || '-'}`;
-    }
-
-    // เติมข้อมูลลงใน Form Input (ฝั่งขวา)
-    document.getElementById('prof-name').value = data.name || "";
-    document.getElementById('prof-user').value = data.username || "";
-    document.getElementById('prof-email').value = email;
-    document.getElementById('prof-phone').value = data["Phone No."] || "";
-
-    // จัดการเลือกทีมหลักและทีมย่อย
-    if (data.Team) {
-        const team = allTeams.find(t => t.name === data.Team && t.type === "main");
-        if (team) {
-            document.getElementById('prof-main').value = team.id;
-            renderSubTeams(team.id, data["Sub Team"]);
+        subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
+        
+        if (subs.length > 0) {
+            subSelect.disabled = false;
+            subSelect.classList.remove('opacity-60', 'cursor-not-allowed');
+            subs.forEach(t => {
+                const opt = new Option(t.name, t.name); // เก็บชื่อใน value เพื่อใช้บันทึก
+                if (t.name === currentSub) opt.selected = true;
+                subSelect.add(opt);
+            });
+        } else {
+            subSelect.disabled = true;
+            subSelect.classList.add('opacity-60', 'cursor-not-allowed');
+            subSelect.add(new Option("ไม่มีทีมย่อย", ""));
         }
     }
-}
 
-// --- 5. จัดการการเปลี่ยนทีมย่อยเมื่อเลือกทีมหลัก ---
-document.getElementById('prof-main').addEventListener('change', (e) => {
-    renderSubTeams(e.target.value);
-});
+    // --- 7. การบันทึกข้อมูล (Submit) ---
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        const originalBtnHtml = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
-function renderSubTeams(parentId, currentSub = null) {
-    const subSelect = document.getElementById('prof-sub');
-    const subs = allTeams.filter(t => t.type === "sub" && t.parentId === parentId);
-    
-    subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
-    
-    if (subs.length > 0) {
-        subSelect.disabled = false;
-        subs.forEach(t => {
-            const opt = new Option(t.name, t.name);
-            if (t.name === currentSub) opt.selected = true;
-            subSelect.add(opt);
-        });
-    } else {
-        subSelect.disabled = true;
-        subSelect.add(new Option("ไม่มีทีมย่อย", ""));
-    }
-}
+        try {
+            const newEmail = document.getElementById('prof-email').value.trim();
+            const newPass = document.getElementById('prof-pass').value;
+            const mainSelect = document.getElementById('prof-main');
+            const mainTeamName = mainSelect.selectedIndex >= 0 ? mainSelect.options[mainSelect.selectedIndex].text : "-";
+            const subTeamName = document.getElementById('prof-sub').value;
 
-// --- 6. Function การบันทึกข้อมูล (Submit Form) ---
-document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('saveBtn');
-    const originalBtnHtml = btn.innerHTML;
-    
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
+            // 1. อัปเดต Firestore ก่อน
+            const adminRef = doc(db, "admin", currentUserAuth.uid);
+            await updateDoc(adminRef, {
+                "name": document.getElementById('prof-name').value.trim(),
+                "Team": mainTeamName,
+                "Sub Team": subTeamName,
+                "Phone No.": document.getElementById('prof-phone').value.trim()
+            });
 
-    try {
-        const newEmail = document.getElementById('prof-email').value.trim();
-        const newPass = document.getElementById('prof-pass').value; // รหัสผ่านใหม่
-        const mainTeamName = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
-        const subTeamName = document.getElementById('prof-sub').value;
+            let reAuthRequired = false;
 
-        // อัปเดตข้อมูลใน Firestore
-        const adminRef = doc(db, "admin", currentUserAuth.uid);
-        await updateDoc(adminRef, {
-            "name": document.getElementById('prof-name').value.trim(),
-            "Team": mainTeamName,
-            "Sub Team": subTeamName,
-            "Phone No.": document.getElementById('prof-phone').value.trim()
-        });
+            // 2. ตรวจสอบการเปลี่ยน Email (ในระบบ Auth)
+            if (newEmail !== currentUserAuth.email) {
+                await updateEmail(currentUserAuth, newEmail);
+                reAuthRequired = true;
+            }
 
-        let reAuthRequired = false;
+            // 3. ตรวจสอบการเปลี่ยน Password
+            if (newPass && newPass.trim() !== "") {
+                if (newPass.length < 6) throw new Error("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
+                await updatePassword(currentUserAuth, newPass);
+                reAuthRequired = true;
+            }
 
-        // ถ้ามีการเปลี่ยน Email ใน Auth
-        if (newEmail !== currentUserAuth.email) {
-            await updateEmail(currentUserAuth, newEmail);
-            reAuthRequired = true;
-        }
+            // --- 8. แจ้งเตือนสำเร็จ ---
+            // ถ้านายมี Modal สำเร็จให้ใช้ ถ้าไม่มีผมใช้ alert แทนก่อนนะครับ
+            alert("บันทึกข้อมูลสำเร็จ!");
 
-        // ถ้ามีการกรอกรหัสผ่านใหม่
-        if (newPass && newPass.trim() !== "") {
-            await updatePassword(currentUserAuth, newPass);
-            reAuthRequired = true;
-        }
-
-        // แสดงผลความสำเร็จ
-        const overlay = document.getElementById('success-overlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => document.getElementById('success-content').classList.replace('scale-90', 'scale-100'), 50);
-
-        // รอ 2 วินาทีแล้ว Refresh หรือไปหน้า Login
-        setTimeout(() => {
             if (reAuthRequired) {
-                signOut(auth).then(() => window.location.replace("login.html"));
+                alert("มีการเปลี่ยนแปลง Email หรือรหัสผ่าน ระบบจะพาคุณไปหน้า Login ใหม่");
+                await signOut(auth);
+                window.location.replace("login.html");
             } else {
                 location.reload();
             }
-        }, 2000);
 
-    } catch (err) {
-        console.error(err);
-        let errorMsg = "เกิดข้อผิดพลาดในการบันทึก";
-        if (err.code === 'auth/requires-recent-login') {
-            errorMsg = "เพื่อความปลอดภัย กรุณา Logout แล้ว Login ใหม่ก่อนทำการเปลี่ยน Email หรือรหัสผ่าน";
-        } else {
-            errorMsg = err.message;
+        } catch (err) {
+            console.error(err);
+            let errorMsg = "เกิดข้อผิดพลาดในการบันทึก";
+            
+            // จัดการกรณี Re-authentication
+            if (err.code === 'auth/requires-recent-login') {
+                errorMsg = "เพื่อความปลอดภัย กรุณา Logout แล้ว Login ใหม่ก่อนทำการเปลี่ยนข้อมูลสำคัญ (Email/Password)";
+            } else {
+                errorMsg = err.message;
+            }
+            
+            alert(errorMsg);
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
         }
-        alert(errorMsg);
-        btn.disabled = false;
-        btn.innerHTML = originalBtnHtml;
-    }
-});
+    });
 
-// --- 7. Toggle แสดง/ซ่อนรหัสผ่าน ---
-document.getElementById('togglePassBtn').onclick = () => {
-    const input = document.getElementById('prof-pass');
-    const icon = document.getElementById('pass-icon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    }
-};
-    </script>
+    // --- 9. Toggle แสดง/ซ่อนรหัสผ่าน ---
+    document.getElementById('togglePassBtn').onclick = () => {
+        const input = document.getElementById('prof-pass');
+        const icon = document.getElementById('pass-icon');
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+        icon.className = isPass ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    };
+</script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
     <script type="module" src="firebase.js"></script>
