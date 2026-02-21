@@ -86,17 +86,18 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             </div>
         </div>
     </div>
-<script>
-       // 1. นำเข้า Services (เช็ค Path ให้ชัวร์ว่ามี / หรือไม่มี / ตามโครงสร้างจริง)
+    <script type="module">
+    // 1. นำเข้า Services และ Function ที่จำเป็น
     import { db, auth } from "./js/firebase.js";
-    
     import { 
-        collection, query, orderBy, onSnapshot 
+        collection, query, orderBy, onSnapshot, getDoc, doc, updateDoc, serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ฟังก์ชันคำนวณ Due Date (ข้าม ส-อา)
+    let currentTickets = [];
+    let unsubscribe = null;
+
+    // --- ฟังก์ชันคำนวณ SLA (อ้างอิงความต้องการเรื่องวันทำการ) ---
     function getBusinessDueDate(startDate, hoursToAdd) {
         let date = new Date(startDate);
         let addedHours = 0;
@@ -109,7 +110,6 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         return date;
     }
 
-    // ฟังก์ชันคำนวณเวลาที่เหลือ
     function calcRemainingSLA(createdAt, slaH) {
         if (!createdAt) return { text: "-", class: "", urgent: false };
         const start = createdAt.toDate();
@@ -126,74 +126,112 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         };
     }
 
-    // ฟังก์ชันแสดงผลรายการ (Ticket Logic)
+    // --- การจัดการข้อมูลหลัก ---
     function initTicketsListener() {
-        console.log("Database initialized, fetching tickets..."); // เช็คใน Console ว่าบรรทัดนี้ขึ้นไหม
-        
+        if (unsubscribe) unsubscribe();
+
+        const list = document.getElementById('admin-ticket-list'); // ID ตารางในหน้า Admin
+        const noData = document.getElementById('no-data-msg');
+
+        // เรียงตามเวลาล่าสุดเป็นหลัก
         const q = query(collection(db, "tickets"), orderBy("createdAt", "asc"));
-        
-        onSnapshot(q, (snapshot) => {
-            const list = document.getElementById('admin-ticket-list');
-            const noData = document.getElementById('no-data-msg');
-            
-            // กรองสถานะที่ต้องการ
-            const filtered = snapshot.docs.filter(d => 
-                ["Pending", "Open", "On Progress"].includes(d.data().status)
-            );
 
-            if (filtered.length === 0) {
-                list.innerHTML = "";
-                if(noData) noData.classList.remove('hidden');
-                return;
-            }
-
-            if(noData) noData.classList.add('hidden');
-            
-            list.innerHTML = filtered.map(docSnap => {
-                const t = docSnap.data();
-                const start = t.createdAt ? t.createdAt.toDate() : new Date();
-                const due = getBusinessDueDate(start, t.sla_hours || 0);
-                const sla = calcRemainingSLA(t.createdAt, t.sla_hours || 0);
-                
-                let statusColor = t.status === 'On Progress' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600';
-                if(t.status === 'Pending') statusColor = 'bg-blue-100 text-blue-600 animate-pulse';
-
-                return `
-                    <tr class="${sla.urgent ? 'sla-urgent' : 'hover:bg-slate-50/50'} transition-all border-b border-slate-50 last:border-0">
-                        <td class="p-6 font-bold text-slate-800">${t.owner || '-'}</td>
-                        <td class="p-6 font-bold text-slate-600">${t.internetNo || t.id_number || '-'}</td>
-                        <td class="p-6">
-                            <p class="font-bold text-slate-700">${t.topic || 'No Topic'}</p>
-                            <p class="text-[10px] text-indigo-400 font-black uppercase">SLA ${t.sla_hours || 0}H (เหลือ ${sla.text})</p>
-                        </td>
-                        <td class="p-6 text-center">
-                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusColor}">${t.status}</span>
-                        </td>
-                        <td class="p-6">
-                            <p class="text-[13px] font-bold text-slate-600">${due.toLocaleString('th-TH')}</p>
-                            <p class="text-[9px] text-slate-400">คำนวณตามวันทำการ</p>
-                        </td>
-                        <td class="p-6 text-right">
-                            <button onclick="openManageModal('${docSnap.id}', '${t.status}', '${t.adminNote || ''}')" 
-                                class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">
-                                จัดการ
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+        unsubscribe = onSnapshot(q, (snapshot) => {
+            currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderAdminTickets(currentTickets);
+        }, (error) => {
+            console.error("Firestore Error:", error);
+            if (list) list.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-red-400">Error loading data.</td></tr>`;
         });
     }
 
-    // 💡 หัวใจสำคัญ: เรียกใช้ listener เมื่อตรวจสอบสิทธิ์เสร็จแล้ว
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            initTicketsListener();
-        } else {
-            console.log("No user logged in, redirecting...");
-            // window.location.replace("login.html"); // เปิดทิ้งไว้ถ้าต้องการให้เด้งไปหน้า login
+    function renderAdminTickets(tickets) {
+        const list = document.getElementById('admin-ticket-list');
+        if (!list) return;
+
+        const searchTerm = document.getElementById('adminSearchInput')?.value.toLowerCase() || "";
+        
+        // กรองเฉพาะสถานะงานที่ยังไม่จบ และค้นหาได้
+        const filtered = tickets.filter(t => 
+            ["Pending", "Open", "On Progress"].includes(t.status) &&
+            ((t.owner?.toLowerCase().includes(searchTerm)) || 
+             (t.internetNo?.toLowerCase().includes(searchTerm)) ||
+             (t.id_number?.toLowerCase().includes(searchTerm)))
+        );
+
+        const noData = document.getElementById('no-data-msg');
+        if (filtered.length === 0) {
+            list.innerHTML = "";
+            noData?.classList.remove('hidden');
+            return;
         }
+        noData?.classList.add('hidden');
+
+        list.innerHTML = filtered.map(t => {
+            const start = t.createdAt ? t.createdAt.toDate() : new Date();
+            const due = getBusinessDueDate(start, t.sla_hours || 0);
+            const sla = calcRemainingSLA(t.createdAt, t.sla_hours || 0);
+            
+            let statusColor = t.status === 'On Progress' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600';
+            if(t.status === 'Pending') statusColor = 'bg-blue-100 text-blue-600 animate-pulse';
+
+            return `
+                <tr class="${sla.urgent ? 'sla-urgent' : 'hover:bg-slate-50/50'} transition-all border-b border-slate-50 last:border-0 group">
+                    <td class="p-6 font-bold text-slate-800">${t.owner || '-'}</td>
+                    <td class="p-6 font-bold text-slate-600">${t.internetNo || t.id_number || '-'}</td>
+                    <td class="p-6">
+                        <p class="font-bold text-slate-700">${t.topic || 'No Topic'}</p>
+                        <p class="text-[10px] text-indigo-400 font-black uppercase">SLA ${t.sla_hours || 0}H (เหลือ ${sla.text})</p>
+                    </td>
+                    <td class="p-6 text-center">
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusColor}">
+                            ${t.status}
+                        </span>
+                    </td>
+                    <td class="p-6">
+                        <p class="text-[13px] font-bold text-slate-600">${due.toLocaleString('th-TH')}</p>
+                        <p class="text-[9px] text-slate-400 uppercase font-black tracking-tighter">Business Hours Only</p>
+                    </td>
+                    <td class="p-6 text-right">
+                        <button onclick="openManageModal('${t.id}', '${t.status}', '${t.adminNote || ''}')" 
+                            class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">
+                            จัดการ
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // --- ระบบตรวจสอบสิทธิ์เข้าหน้า Admin ---
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.replace("login.html");
+            return;
+        }
+        // เริ่มฟังข้อมูลทันทีที่ยืนยันตัวตนแล้ว
+        initTicketsListener();
     });
+
+    // --- ผูกฟังก์ชันเข้ากับ Window เพื่อให้ HTML เรียกใช้ได้ ---
+    window.openManageModal = (id, status, note) => {
+        const modal = document.getElementById('adminActionModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.getElementById('admin-note-input').value = note;
+            window.currentId = id;
+            window.updateSelectedStatus(status === 'Pending' ? 'On Progress' : status);
+        }
+    };
+
+    window.updateSelectedStatus = (st) => {
+        window.selectedStatus = st;
+        document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-status-${st}`)?.classList.add('active');
+    };
+
+    // ผูก Event ค้นหา
+    document.getElementById('adminSearchInput')?.addEventListener('input', () => renderAdminTickets(currentTickets));
     </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
