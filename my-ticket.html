@@ -183,48 +183,57 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     };
 
     window.viewDetail = async (id) => {
-        try {
-            const docSnap = await getDoc(doc(db, "tickets", id));
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-                
-                document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
-                document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
-                document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
-                document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
-                    ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
-                
-                const status = t.status || 'Pending';
-                const badge = document.getElementById('det-status-badge');
-                badge.innerText = status;
-                badge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1";
-                const statusColors = {
-                    'Open': 'bg-blue-100 text-blue-700',
-                    'On Progress': 'bg-orange-100 text-orange-700',
-                    'Success': 'bg-emerald-100 text-emerald-700',
-                    'Reject': 'bg-red-100 text-red-700',
-                    'Pending': 'bg-slate-100 text-slate-600'
-                };
-                badge.classList.add(...(statusColors[status] || statusColors['Pending']).split(' '));
-
-                // แสดง Timeline หมายเหตุ
-                const remarkBox = document.getElementById('det-admin-remark');
-                if (remarkBox) {
-                    remarkBox.innerHTML = formatUserTimeline(t.adminNote);
-                }
-                
-                document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
-                    ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
-                
-                document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
-                document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+    try {
+        const docSnap = await getDoc(doc(db, "tickets", id));
+        if (docSnap.exists()) {
+            const t = docSnap.data();
+            
+            // --- ข้อมูลพื้นฐาน ---
+            document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
+            document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
+            document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
+            
+            // แสดงชื่อผู้ดูแล (Admin) โดยดึงจากฟิลด์ adminName
+            // ถ้าไม่มี adminName ให้ลองดึง handledBy หรือแสดง 'รอมอบหมาย'
+            const adminElement = document.getElementById('det-admin-name');
+            if (adminElement) {
+                adminElement.innerText = t.adminName || t.handledBy || 'รอมอบหมาย';
             }
-        } catch (e) {
-            console.error(e);
-            alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+
+            // --- ส่วนอื่นๆ (วันที่, Status, Timeline) ---
+            document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
+                ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
+            
+            const status = t.status || 'Pending';
+            const badge = document.getElementById('det-status-badge');
+            badge.innerText = status;
+            badge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1";
+            const statusColors = {
+                'Open': 'bg-blue-100 text-blue-700',
+                'On Progress': 'bg-orange-100 text-orange-700',
+                'Success': 'bg-emerald-100 text-emerald-700',
+                'Reject': 'bg-red-100 text-red-700',
+                'Pending': 'bg-slate-100 text-slate-600'
+            };
+            badge.classList.add(...(statusColors[status] || statusColors['Pending']).split(' '));
+
+            const remarkBox = document.getElementById('det-admin-remark');
+            if (remarkBox) {
+                remarkBox.innerHTML = formatAdminTimeline(t.adminNote);
+            }
+            
+            document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
+                ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
+            
+            document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
-    };
+    } catch (e) {
+        console.error(e);
+        alert("ไม่สามารถโหลดข้อมูลได้");
+    }
+};
 
     onAuthStateChanged(auth, (user) => {
         if (!user) return window.location.replace("login.html");
