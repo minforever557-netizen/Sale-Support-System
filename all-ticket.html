@@ -165,39 +165,58 @@
 
     // แก้ไขหน้า View Detail ให้รองรับฟิลด์ในรูปภาพ (image_50493a.png)
     window.viewDetail = async (id) => {
-        try {
-            const docSnap = await getDoc(doc(db, "tickets", id));
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-                
-                // เช็คว่ามี Element ก่อนค่อยใส่ค่า เพื่อกัน Error "innerText is null"
-                const elMap = {
-                    'det-topic': t.topic,
-                    'det-user': t.owner, // ดึงจาก owner (ณัฐวุฒิ)
-                    'det-id-number': t.id_number || t.internetNo,
-                    'det-detail': t.detail,
-                    'det-admin-name': t.adminName || 'รอมอบหมาย',
-                    'det-created-at': formatDateTime(t.createdAt),
-                    'det-closed-at': formatDateTime(t.closedAt || t.updatedAt)
+    try {
+        const docSnap = await getDoc(doc(db, "tickets", id));
+        if (docSnap.exists()) {
+            const t = docSnap.data();
+            
+            // 1. ข้อมูลผู้ใช้ และ Internet No.
+            document.getElementById('det-user').innerText = t.owner || '-'; // ดึงจากฟิลด์ owner
+            document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
+            
+            // 2. หัวข้อและรายละเอียดปัญา
+            document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
+            document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
+            
+            // 3. วันเวลาที่เปิด (จัด Format ใหม่)
+            document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
+                ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
+
+            // 4. สถานะ (Badge)
+            const status = t.status || 'Pending';
+            const badge = document.getElementById('det-status-badge');
+            if (badge) {
+                badge.innerText = status;
+                badge.className = "px-4 py-1.5 rounded-full text-[11px] font-black uppercase inline-block";
+                const statusColors = {
+                    'Open': 'bg-blue-100 text-blue-700',
+                    'On Progress': 'bg-orange-100 text-orange-700',
+                    'Success': 'bg-emerald-100 text-emerald-700',
+                    'Reject': 'bg-red-100 text-red-700',
+                    'Pending': 'bg-slate-100 text-slate-600'
                 };
-
-                Object.keys(elMap).forEach(idKey => {
-                    const el = document.getElementById(idKey);
-                    if (el) el.innerText = elMap[idKey] || '-';
-                });
-
-                const badge = document.getElementById('det-status-badge');
-                if (badge) {
-                    const status = t.status || 'Pending';
-                    badge.innerText = status;
-                    badge.className = `px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1 ${status === 'Success' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`;
-                }
-
-                document.getElementById('detail-modal')?.classList.remove('hidden');
+                badge.classList.add(...(statusColors[status] || statusColors['Pending']).split(' '));
             }
-        } catch (e) { console.error("Error Detail:", e); }
-    };
 
+            // 5. Timeline หมายเหตุ Admin
+            const remarkBox = document.getElementById('det-admin-remark');
+            if (remarkBox) {
+                remarkBox.innerHTML = formatAdminTimeline(t.adminNote);
+            }
+
+            // 6. ข้อมูล Admin และเวลาปิดงาน
+            document.getElementById('det-admin-name').innerText = t.adminName || 'รอมอบหมาย';
+            document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
+                ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
+            
+            document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    } catch (e) {
+        console.error("View Detail Error:", e);
+    }
+};
     function renderTickets(tickets) {
         const list = document.getElementById('ticket-list');
         if (!list) return;
