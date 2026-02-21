@@ -7,100 +7,67 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { 
-            font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        }
-        
-        /* Animation สำหรับตอนโหลดหน้า */
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .input-group:focus-within label {
-            color: #f97316; /* orange-500 */
-            transform: scale(1.05);
-        }
-    </style>
-</head>
+    </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full max-w-sm border-b-[10px] border-green-600 fade-in-up relative overflow-hidden">
+    <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl w-full max-w-[420px] border-b-[12px] border-green-600 fade-in-up relative overflow-hidden">
         
         <div class="absolute -top-10 -right-10 w-32 h-32 bg-green-50 rounded-full"></div>
         
         <div class="text-center mb-10 relative">
-            <div class="inline-block p-4 rounded-2xl bg-green-50 mb-4">
-                <i class="fas fa-chart-line text-4xl text-green-600"></i>
+            <div class="inline-flex p-4 rounded-3xl bg-green-50 text-green-600 mb-4 shadow-inner">
+                <i class="fas fa-chart-pie text-4xl"></i>
             </div>
-            <h1 class="text-4xl font-black text-green-600 tracking-tight">SALE</h1>
-            <p class="text-orange-500 font-bold tracking-[0.2em] uppercase text-xs mt-1">Support System</p>
+            <h1 class="text-4xl font-black text-green-600 tracking-tighter">SALE SYSTEM</h1>
+            <p class="text-orange-500 font-bold tracking-[0.2em] uppercase text-[10px] mt-1">Management & Support</p>
         </div>
 
         <form id="loginForm" class="space-y-6 relative">
+            
             <div class="input-group">
                 <label class="block text-gray-400 text-xs font-bold ml-1 mb-2 uppercase transition-all">Username</label>
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-user"></i>
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                        <i class="fas fa-user-tag"></i>
                     </span>
                     <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" 
-                        class="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
+                        class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
                 </div>
             </div>
 
             <div class="input-group">
                 <label class="block text-gray-400 text-xs font-bold ml-1 mb-2 uppercase transition-all">Password</label>
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-lock"></i>
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                        <i class="fas fa-lock-open"></i>
                     </span>
                     <input type="password" id="password" placeholder="••••••••" 
-                        class="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
+                        class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-400 focus:bg-white outline-none transition-all duration-300" required>
                 </div>
             </div>
             
             <button type="submit" id="loginBtn" 
-                class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-95 transform transition-all duration-200 flex justify-center items-center space-x-2">
-                <span id="btnText">LOG IN</span>
+                class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-100 hover:bg-orange-600 active:scale-95 transform transition-all duration-200 flex justify-center items-center space-x-2">
+                <span id="btnText">LOG IN SYSTEM</span>
                 <div id="btnLoader" class="spinner hidden"></div>
             </button>
 
-            <div class="flex justify-between items-center text-xs pt-4">
-                <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500 transition-colors">ลืมรหัสผ่าน?</a>
-                <div class="h-1 w-1 bg-gray-300 rounded-full"></div>
-                <a href="register.html" class="text-green-600 font-bold hover:text-green-700 hover:underline transition-all">สร้างบัญชีใหม่</a>
+            <div class="flex flex-col items-center space-y-4 pt-4">
+                <a href="register.html" class="text-green-600 font-bold hover:text-green-700 transition-all text-sm underline underline-offset-4">
+                    สร้างบัญชีผู้ใช้งานใหม่
+                </a>
+                <a href="forgot-password.html" class="text-gray-400 hover:text-orange-500 transition-colors text-xs">ลืมรหัสผ่าน?</a>
             </div>
         </form>
     </div>
 
-    <script type="module">
+    <script type="module" src="js/login.js"></script>
+
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ... (firebaseConfig เหมือนเดิมของคุณ) ...
         const firebaseConfig = {
             apiKey: "AIzaSyAa2uSD_tjNqYE2eXnZcn75h_jAVscDG-c",
             authDomain: "salesupportsystemapp.firebaseapp.com",
@@ -124,7 +91,7 @@
             const userVal = document.getElementById('username').value.trim();
             const passVal = document.getElementById('password').value;
 
-            // Start Animation
+            // --- [1] Start Animation ---
             loginBtn.disabled = true;
             btnText.innerText = "กำลังตรวจสอบ";
             btnLoader.classList.remove('hidden');
@@ -143,27 +110,38 @@
                 let emailFound = "";
                 querySnapshot.forEach((doc) => { emailFound = doc.data().email; });
 
-                const userCredential =
-    await signInWithEmailAndPassword(auth, emailFound, passVal);
+                await signInWithEmailAndPassword(auth, emailFound, passVal);
 
-// ✅ บันทึก session ให้ layout + authGuard ใช้
-const userData = {
-    email: emailFound,
-    username: userVal,
-    role: "Admin" // หรือดึงจาก firestore ถ้ามี
-};
+                // บันทึก session
+                const userData = {
+                    email: emailFound,
+                    username: userVal,
+                    role: "Admin"
+                };
+                localStorage.setItem("user", JSON.stringify(userData));
 
-localStorage.setItem("user", JSON.stringify(userData));
-
-                
-                // Success Animation
+                // --- [2] Success Animation: ขั้นแรก (ปุ่มสำเร็จ) ---
                 btnText.innerText = "สำเร็จแล้ว!";
                 btnLoader.classList.add('hidden');
-                loginBtn.classList.replace('bg-orange-500', 'bg-green-500');
+                // เปลี่ยนสีปุ่มเป็นเขียวตาม Theme นาย
+                loginBtn.classList.replace('bg-orange-500', 'bg-green-600'); 
+                
+                // --- [3] Success Animation: ขั้นสอง (Card หายไป) ---
+                // ค้นหาตัว Card หลักที่มี class fade-in-up
+                const card = document.querySelector('.fade-in-up');
                 
                 setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 800);
+                    if (card) {
+                        // สั่งให้ Card ลอยขึ้นและจางหายไป (Fade Out)
+                        card.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+                        card.style.opacity = "0";
+                        card.style.transform = "translateY(-40px)";
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 600); // รอ Animation จบค่อยเปลี่ยนหน้า
+                }, 400); // ให้ค้างหน้าสำเร็จไว้แป๊บเดียวพอให้ User รู้สึกตัว
 
             } catch (error) {
                 console.error("Login Error:", error);
@@ -173,7 +151,6 @@ localStorage.setItem("user", JSON.stringify(userData));
         });
 
         function showError(msg) {
-            // คุณสามารถเปลี่ยนเป็น SweetAlert2 ได้หากต้องการความสวยงามเพิ่ม
             alert(msg);
         }
 
@@ -182,6 +159,8 @@ localStorage.setItem("user", JSON.stringify(userData));
             btnText.innerText = "LOG IN";
             btnLoader.classList.add('hidden');
             loginBtn.classList.remove('opacity-90', 'cursor-not-allowed');
+            // คืนค่าสีปุ่มถ้าเกิดเคยเปลี่ยนเป็นเขียว
+            loginBtn.classList.replace('bg-green-600', 'bg-orange-500');
         }
     </script>
 </body>
