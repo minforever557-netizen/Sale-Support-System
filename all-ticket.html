@@ -134,89 +134,80 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 </main>
 </div>
 <script type="module">
-    import { db } from "./js/firebase.js"; // ตรวจสอบ path ไฟล์ firebase.js ของนายด้วยนะครับ
+    // เปลี่ยน Path ตรงนี้ให้มั่นใจว่าไฟล์ firebase.js อยู่ในโฟลเดอร์ js จริงๆ
+    import { db } from "./js/firebase.js"; 
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- 1. ฟังก์ชันจัดฟอร์แมตวันที่แบบ "วดป เวลา" (21/02/69 10:42) ---
+    // --- 1. ฟังก์ชันจัดฟอร์แมตวันที่แบบ "วดป เวลา" (เช่น 21/02/69 10:42) ---
     const formatDateFull = (ts) => {
         if (!ts) return '-';
-        // รองรับทั้ง Firestore Timestamp และ Date object
         const d = ts.toDate ? ts.toDate() : new Date(ts);
         return d.toLocaleDateString('th-TH', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
+            day: '2-digit', month: '2-digit', year: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
         }).replace(',', '');
     };
 
     // --- 2. ฟังก์ชันปิด Modal ---
     window.closeModal = () => {
         const modal = document.getElementById('detail-modal');
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto'; // คืนค่า scroll หน้าหลัก
+        if(modal) modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
     };
 
-    // --- 3. ฟังก์ชันเปิดและดึงข้อมูลมาแสดง (ตัวแก้ไข) ---
+    // --- 3. ฟังก์ชันดึงรายละเอียด (แก้ให้ตรงกับ HTML ของนาย) ---
     window.viewDetail = async (id) => {
         try {
-            console.log("Fetching Ticket ID:", id);
-            const docRef = doc(db, "tickets", id);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const t = docSnap.data();
-
-                // แมปข้อมูลลง ID ให้ตรงกับ HTML ของนาย
-                document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
-                document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
-                
-                // ดึงชื่อผู้เปิด (User)
-                document.getElementById('det-user').innerText = t.owner || t.ownerEmail || '-';
-                
-                // Internet No.
-                document.getElementById('det-id-number').innerText = t.id_number || '-';
-
-                // วันเวลาที่เปิด (ใช้ format 2 หลัก)
-                document.getElementById('det-created-at').innerText = formatDateFull(t.createdAt);
-
-                // สถานะและสี Badge
-                const statusBadge = document.getElementById('det-status-badge');
-                const status = t.status || 'PENDING';
-                statusBadge.innerText = status;
-                
-                // ปรับสีตามสถานะ
-                if (status.toUpperCase() === 'SUCCESS') {
-                    statusBadge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1 bg-emerald-100 text-emerald-700";
-                } else {
-                    statusBadge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1 bg-slate-100 text-slate-600";
-                }
-
-                // รายละเอียดปัญหา
-                document.getElementById('det-detail').innerText = t.detail || '-';
-
-                // หมายเหตุจาก Admin
-                document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึก';
-
-                // วันเวลาที่ปิด/อัปเดต
-                document.getElementById('det-closed-at').innerText = formatDateFull(t.closedAt || t.updatedAt);
-
-                // ผู้ดูแล (Admin)
-                document.getElementById('det-admin-name').innerText = t.adminName || 'รอมอบหมาย';
-
-                // แสดง Modal และล็อค scroll หน้าหลัง
-                document.getElementById('detail-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-
-            } else {
-                console.error("No such document!");
-                alert("ไม่พบข้อมูลใบงานนี้");
+            const docSnap = await getDoc(doc(db, "tickets", id));
+            if (!docSnap.exists()) {
+                alert("ไม่พบข้อมูลใบงาน");
+                return;
             }
-        } catch (error) {
-            console.error("Error getting document:", error);
-            alert("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + error.message);
+            const t = docSnap.data();
+
+            // แมปข้อมูลลง ID ตาม HTML ที่นายส่งมาเป๊ะๆ
+            
+            // หัวข้อและ ID
+            document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
+            document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
+            
+            // 1. ผู้เปิดใบงาน (User)
+            document.getElementById('det-user').innerText = t.owner || t.ownerEmail || '-';
+            
+            // 3. Internet No.
+            document.getElementById('det-id-number').innerText = t.id_number || '-';
+
+            // 5. วันเวลาที่เปิด
+            document.getElementById('det-created-at').innerText = formatDateFull(t.createdAt);
+
+            // 6. สถานะ (Status)
+            const badge = document.getElementById('det-status-badge');
+            const status = t.status || 'PENDING';
+            badge.innerText = status;
+            badge.className = `px-3 py-1 rounded-full text-[10px] font-black uppercase inline-block mt-1 ${
+                status.toUpperCase() === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+            }`;
+
+            // 4. รายละเอียดปัญหา
+            document.getElementById('det-detail').innerText = t.detail || '-';
+
+            // 7. หมายเหตุจาก Admin
+            document.getElementById('det-admin-remark').innerText = t.adminNote || 'ไม่มีบันทึก';
+
+            // 8. วันเวลาที่ปิด/อัปเดต
+            document.getElementById('det-closed-at').innerText = formatDateFull(t.closedAt || t.updatedAt);
+
+            // 9. ผู้ดูแล (Admin)
+            document.getElementById('det-admin-name').innerText = t.adminName || 'รอมอบหมาย';
+
+            // แสดง Modal
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+        } catch (e) {
+            console.error("ViewDetail Error:", e);
+            // แก้ปัญหา "innerText" of null โดยการแจ้งเตือนเมื่อหา ID ใน HTML ไม่เจอ
+            alert("เกิดข้อผิดพลาด: โปรดตรวจสอบว่าชื่อ ID ใน HTML ตรงกับใน Script หรือไม่");
         }
     };
 </script>
