@@ -193,7 +193,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                 // 🔥 [FIX 2&3] แสดงชื่อผู้เปิด (owner) และชื่อผู้ดูแล (adminName) ใน Modal
                 const userElement = document.getElementById('det-owner-name'); // ID สมมติที่ใช้แสดงข้อ 1. ผู้เปิดใบงาน
                 if (userElement) {
-                    userElement.innerText = t.owner || '-';
+                    userElement.innerText = t.owner || t.ownerEmail ||;
                 }
                 
                 const adminElement = document.getElementById('det-admin-name'); // ID สำหรับข้อ 9. ผู้ดูแล
