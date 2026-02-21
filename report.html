@@ -34,80 +34,50 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             <div class="max-w-7xl mx-auto w-full space-y-8">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Analytics Report</h2>
-                        <nav class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mt-1" id="nav-path">Dashboard / Main Team</nav>
-                    </div>
-                    <button onclick="resetView()" class="px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-2xl font-bold text-xs hover:bg-indigo-100 transition border border-indigo-100">
-                        <i class="fa-solid fa-sync mr-1"></i> เริ่มต้นใหม่
-                    </button>
-                </div>
+                        <p id="nav-path" class="text-slate-500 mt-1">Dashboard / Main Team</p>
+            </div>
+            <div class="flex items-center gap-3 bg-white p-2 rounded-3xl shadow-sm border border-slate-100">
+                <select id="filter-mode" onchange="window.applyFilters()" class="bg-transparent font-bold text-slate-600 px-4 outline-none">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="daily">รายวัน</option>
+                </select>
+                <input type="date" id="val-date" onchange="window.applyFilters()" class="border-l pl-3 outline-none text-slate-500">
+            </div>
+        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">ประเภทการกรอง</label>
-                        <select id="filter-mode" class="filter-input w-full" onchange="toggleFilterUI()">
-                            <option value="all">ทั้งหมด</option>
-                            <option value="daily">รายวัน</option>
-                            <option value="quarter">รายไตรมาส</option>
-                        </select>
-                    </div>
-                    <div id="ui-daily" class="hidden">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">เลือกวันที่</label>
-                        <input type="date" id="val-date" class="filter-input w-full">
-                    </div>
-                    <div id="ui-quarter" class="hidden">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">ไตรมาส/ปี</label>
-                        <div class="flex gap-2">
-                            <select id="val-q" class="filter-input w-1/2">
-                                <option value="Q1">Q1</option><option value="Q2">Q2</option>
-                                <option value="Q3">Q3</option><option value="Q4">Q4</option>
-                            </select>
-                            <input type="number" id="val-y" class="filter-input w-1/2" value="2026">
-                        </div>
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="applyFilters()" class="w-full py-2.5 bg-[#5c56f1] text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 active:scale-95">ประมวลผล</button>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 id="table-title" class="text-xl font-bold text-slate-800">สรุปตามรายทีม (Sender team)</h3>
+                    <button onclick="window.resetView()" class="text-indigo-500 font-bold text-sm hover:underline">ย้อนกลับ</button>
+                </div>
+                <div class="overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                <th class="pb-4">ชื่อทีม</th>
+                                <th class="pb-4 text-center">จำนวนงาน</th>
+                                <th class="pb-4 text-right">สัดส่วน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 border-l-4 border-indigo-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Total Tickets</p>
-                    <h3 id="stat-total" class="text-3xl font-bold text-slate-800">0</h3>
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col items-center">
+                <h3 class="text-xl font-bold text-slate-800 mb-8 self-start">สัดส่วนหัวข้อ (Topics)</h3>
+                <div class="relative w-full aspect-square max-w-[250px]">
+                    <canvas id="mainChart"></canvas>
                 </div>
-                <div class="glass-card p-6 border-l-4 border-emerald-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">In SLA Rate</p>
-                    <h3 id="stat-sla" class="text-3xl font-bold text-slate-800">0%</h3>
-                </div>
-                <div class="glass-card p-6 border-l-4 border-orange-400">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Active Owners</p>
-                    <h3 id="stat-owners" class="text-3xl font-bold text-slate-800">0</h3>
-                </div>
+                <div id="chart-legend" class="mt-8 w-full space-y-3"></div>
             </div>
+        </div>
+    </div>
+</main>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="glass-card p-8 lg:col-span-1">
-                    <h4 class="font-bold text-slate-700 mb-6">Topic Breakdown</h4>
-                    <div class="h-64"><canvas id="mainChart"></canvas></div>
-                </div>
-                <div class="glass-card p-8 lg:col-span-2">
-                    <h4 class="font-bold text-slate-700 mb-6" id="table-title">สรุปตามรายทีม (Sender team)</h4>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="border-b border-slate-100">
-                                    <th class="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Name</th>
-                                    <th class="pb-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Tickets</th>
-                                    <th class="pb-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Ratio %</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body" class="divide-y divide-slate-50 text-sm"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </div>
 
     <div id="detail-modal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -130,162 +100,134 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     </div>
 
 <script type="module">
+    // 1. นำเข้า Firebase ตามแบบฉบับที่นายใช้ในหน้า User/Team
     import { db, auth } from "./js/firebase.js";
-    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { 
-        collection, query, orderBy, onSnapshot, doc, getDoc 
+        collection, query, orderBy, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // --- State ตัวแปรกลาง ---
-    let rawTickets = [];
-    let filteredData = [];
-    let chart = null;
-    let viewLevel = 'MAIN';
-    let currentSelection = '';
+    let rawData = [];
+    let myChart = null;
+    let viewLevel = 'MAIN'; // 'MAIN' or 'SUB'
+    let selectedMainTeam = '';
 
-    // --- 1. ตรวจสอบสิทธิ์และการโหลด Layout (ใช้ Logic เดียวกับหน้าทีม) ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // ดึงข้อมูล Admin มาแสดงชื่อที่ Topbar (ถ้ามี)
-            const adminDoc = await getDoc(doc(db, "admin", user.uid));
-            const userData = adminDoc.exists() ? adminDoc.data() : { name: "Admin" };
-            
-            // อัปเดต UI เบื้องต้น
-            setTimeout(() => {
-                const nameEl = document.querySelector('#topbar-user-name');
-                if (nameEl) nameEl.innerText = userData.name || "Admin";
-            }, 1000);
-
-            listenTickets(); // เริ่มดึงข้อมูล Real-time
-        } else { 
-            window.location.replace("login.html"); 
-        }
-    });
-
-    // --- 2. ดึงข้อมูล Ticket แบบ Real-time (เหมือน listenTeams) ---
-    function listenTickets() {
+    // --- 2. ฟังก์ชันหลัก (Listen Data) ---
+    function listenToTickets() {
         const q = query(collection(db, "tickets"), orderBy("timestamp", "desc"));
         
         onSnapshot(q, (snapshot) => {
-            rawTickets = snapshot.docs.map(doc => {
-                const d = doc.data();
-                const ts = d.timestamp?.toDate() || new Date();
-                
-                // Map ข้อมูลให้เรียกใช้ง่าย (รองรับชื่อ Field ที่อาจสะกดต่างกัน)
-                return {
-                    id: doc.id,
-                    mainTeam: d["Sender Team"] || d["team"] || "ไม่ระบุทีม",
-                    subTeam: d["Sender Subteam"] || d["subteam"] || "ไม่ระบุทีมย่อย",
-                    topic: d["Topic"] || "Other",
-                    status: d["sla_status"] || "Pending",
-                    dateStr: ts.toISOString().split('T')[0],
-                    q: 'Q' + Math.ceil((ts.getMonth() + 1) / 3),
-                    y: ts.getFullYear()
-                };
-            });
-            window.applyFilters(); // โหลดเสร็จแล้วสั่ง Filter ทันที
+            rawData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                // แปลงวันที่ให้เป็น String สำหรับ Filter
+                dateStr: doc.data().timestamp?.toDate().toISOString().split('T')[0] || ''
+            }));
+            window.applyFilters();
         });
     }
 
-    // --- 3. Window Globals (เพื่อให้ HTML เรียกใช้ได้แบบหน้าโครงสร้างทีม) ---
+    // --- 3. ฟังก์ชันคำนวณและ Filter (ผูกกับ Window) ---
     window.applyFilters = () => {
-        const mode = document.getElementById('filter-mode')?.value || 'all';
-        const d = document.getElementById('val-date')?.value;
-        const q = document.getElementById('val-q')?.value;
-        const y = parseInt(document.getElementById('val-y')?.value || "2026");
+        const mode = document.getElementById('filter-mode').value;
+        const targetDate = document.getElementById('val-date').value;
 
-        filteredData = rawTickets.filter(t => {
-            if (mode === 'daily') return t.dateStr === d;
-            if (mode === 'quarter') return t.y === y && t.q === q;
-            return true;
-        });
-        renderDashboard();
-    };
-
-    window.handleRowClick = (name) => {
-        if (viewLevel === 'MAIN') {
-            viewLevel = 'SUB'; 
-            currentSelection = name;
-            document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
-            document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
-            renderDashboard();
+        let filtered = rawData;
+        if (mode === 'daily' && targetDate) {
+            filtered = rawData.filter(d => d.dateStr === targetDate);
         }
+
+        renderDisplay(filtered);
     };
 
     window.resetView = () => {
-        viewLevel = 'MAIN'; 
-        currentSelection = '';
+        viewLevel = 'MAIN';
+        selectedMainTeam = '';
         document.getElementById('nav-path').innerText = 'Dashboard / Main Team';
         document.getElementById('table-title').innerText = 'สรุปตามรายทีม (Sender team)';
-        renderDashboard();
+        window.applyFilters();
     };
 
-    // --- 4. การแสดงผล (Render) ---
-    function renderDashboard() {
-        // อัปเดตตัวเลข Stats
-        const total = filteredData.length;
-        if(document.getElementById('stat-total')) document.getElementById('stat-total').innerText = total.toLocaleString();
+    window.drillDown = (teamName) => {
+        if (viewLevel === 'MAIN') {
+            viewLevel = 'SUB';
+            selectedMainTeam = teamName;
+            document.getElementById('nav-path').innerText = `Dashboard / ${teamName}`;
+            document.getElementById('table-title').innerText = `ทีมย่อยภายใต้ ${teamName}`;
+            window.applyFilters();
+        }
+    };
 
-        const tableStats = {}; 
+    // --- 4. Render UI ---
+    function renderDisplay(data) {
+        const tableStats = {};
         const topicStats = {};
 
-        filteredData.forEach(t => {
-            // สถิติสำหรับตาราง (สลับระหว่างทีมหลัก/ทีมย่อย)
-            const groupKey = (viewLevel === 'MAIN') ? t.mainTeam : t.subTeam;
-            if (viewLevel === 'MAIN' || t.mainTeam === currentSelection) {
-                tableStats[groupKey] = (tableStats[groupKey] || 0) + 1;
+        data.forEach(item => {
+            // จัดกลุ่มตาม Level (Main หรือ Sub)
+            const teamKey = (viewLevel === 'MAIN') ? item["Sender Team"] : item["Sender Subteam"];
+            
+            if (viewLevel === 'MAIN' || item["Sender Team"] === selectedMainTeam) {
+                if (teamKey) tableStats[teamKey] = (tableStats[teamKey] || 0) + 1;
             }
-            // สถิติสำหรับกราฟ (แยกตามหัวข้อ)
-            topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
+            // เก็บข้อมูลกราฟ (Topic)
+            if (item.Topic) topicStats[item.Topic] = (topicStats[item.Topic] || 0) + 1;
         });
 
-        updateChart(topicStats);
         updateTable(tableStats);
+        updateChart(topicStats);
     }
 
     function updateTable(stats) {
         const tbody = document.getElementById('table-body');
-        if (!tbody) return;
+        const total = Object.values(stats).reduce((a, b) => a + b, 0);
 
-        const total = Object.values(stats).reduce((a,b) => a+b, 0);
-        // ใช้ border-slate-300 ตาม CSS ของนาย [cite: 2026-02-20]
-        tbody.innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([name, count]) => `
-            <tr class="border-b-2 border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer" onclick="handleRowClick('${name}')">
-                <td class="p-4 font-bold text-slate-700">${name}</td>
-                <td class="p-4 text-center font-bold text-indigo-600">${count}</td>
-                <td class="p-4 text-right font-medium text-slate-400">${total ? ((count/total)*100).toFixed(1) : 0}%</td>
-            </tr>`).join('');
+        tbody.innerHTML = Object.entries(stats)
+            .sort((a, b) => b[1] - a[1]) // เรียงจากมากไปน้อย
+            .map(([name, count]) => {
+                const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                return `
+                <tr class="group hover:bg-slate-50 transition-all cursor-pointer" onclick="window.drillDown('${name}')">
+                    <td class="py-5 font-bold text-slate-700">${name}</td>
+                    <td class="py-5 text-center font-black text-indigo-600">${count.toLocaleString()}</td>
+                    <td class="py-5 text-right text-slate-400 font-medium">${percent}%</td>
+                </tr>`;
+            }).join('');
     }
 
-    function updateChart(data) {
-        const ctx = document.getElementById('mainChart');
-        if (!ctx || typeof Chart === 'undefined') return;
+    function updateChart(topicData) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const labels = Object.keys(topicData);
+        const values = Object.values(topicData);
 
-        if (chart) chart.destroy();
-        chart = new Chart(ctx, {
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(data),
-                datasets: [{ 
-                    data: Object.values(data), 
-                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
-                    borderWidth: 0 
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 10
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                cutout: '75%'
+                cutout: '80%'
             }
         });
     }
 
-    // ผูก Event สำหรับปุ่ม Logout ให้เหมือนหน้าทีม
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('#logout-btn') || e.target.closest('.logout-link')) {
-            e.preventDefault();
-            if(window.handleLogout) window.handleLogout();
+    // --- 5. Auth Check & Start ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            listenToTickets();
+        } else {
+            window.location.replace("login.html");
         }
     });
 </script>
