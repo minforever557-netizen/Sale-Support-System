@@ -232,6 +232,86 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     // ผูก Event ค้นหา
     document.getElementById('adminSearchInput')?.addEventListener('input', () => renderAdminTickets(currentTickets));
+        // --- 1. ฟังก์ชันจัดการ Modal (เปิด/ปิด) ---
+    window.openManageModal = (id, status, note) => {
+        const modal = document.getElementById('adminActionModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.getElementById('admin-note-input').value = note || "";
+            window.currentId = id; // เก็บ ID ไว้ใช้ตอนบันทึก
+            
+            // ปรับสถานะเริ่มต้นใน Modal (ถ้า Pending ให้เลือก On Progress อัตโนมัติ)
+            const initialStatus = (status === 'Pending' || status === 'Open') ? 'On Progress' : status;
+            window.updateSelectedStatus(initialStatus);
+        }
+    };
+
+    window.closeAdminModal = () => {
+        document.getElementById('adminActionModal').classList.add('hidden');
+    };
+
+    // --- 2. ฟังก์ชันเลือกสถานะ (คลิกที่ปุ่ม Complete, In Progress, Reject) ---
+    window.updateSelectedStatus = (st) => {
+        window.selectedStatus = st; // เก็บค่าสถานะที่เลือกลงตัวแปร Global
+        
+        // ล้าง Class active ออกจากทุกปุ่มก่อน
+        document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.classList.remove('ring-4', 'ring-indigo-200', 'border-indigo-500', 'bg-indigo-50');
+            btn.classList.add('border-slate-100');
+        });
+
+        // ใส่ Class active ให้ปุ่มที่ถูกเลือก (อ้างอิงตาม ID ของปุ่มใน HTML)
+        const activeBtn = document.getElementById(`btn-status-${st}`);
+        if (activeBtn) {
+            activeBtn.classList.add('ring-4', 'ring-indigo-200', 'border-indigo-500', 'bg-indigo-50');
+            activeBtn.classList.remove('border-slate-100');
+        }
+    };
+
+    // --- 3. ฟังก์ชันบันทึกข้อมูลลง Firebase ---
+    window.saveAdminAction = async () => {
+        const note = document.getElementById('admin-note-input').value;
+        const btn = document.getElementById('save-btn');
+
+        if (!note) {
+            alert("กรุณาระบุรายละเอียดการดำเนินงาน");
+            return;
+        }
+
+        if (!window.currentId) return;
+
+        // เปลี่ยนสถานะปุ่มขณะกำลังบันทึก
+        btn.disabled = true;
+        btn.innerText = "กำลังบันทึก...";
+
+        try {
+            const ticketRef = doc(db, "tickets", window.currentId);
+            
+            // เตรียมข้อมูลสำหรับอัปเดต
+            const updateData = {
+                status: window.selectedStatus,
+                adminNote: note,
+                updatedAt: serverTimestamp()
+            };
+
+            // ถ้าสถานะเป็น Success หรือ Reject ให้บันทึกเวลาปิดงาน
+            if (window.selectedStatus === 'Success' || window.selectedStatus === 'Reject') {
+                updateData.closedAt = serverTimestamp();
+            }
+
+            await updateDoc(ticketRef, updateData);
+            
+            alert("บันทึกข้อมูลสำเร็จ!");
+            window.closeAdminModal();
+            
+        } catch (error) {
+            console.error("Save Error:", error);
+            alert("เกิดข้อผิดพลาด: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "บันทึกข้อมูล";
+        }
+    };
     </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
