@@ -169,167 +169,183 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
     <script>
-               let allTeams = [];
+           // --- 1. ตัวแปรและการตั้งค่าเริ่มต้น ---
+let allTeams = [];
+let currentUserAuth = null;
 
-        // 1. ตรวจสอบสถานะและดึงข้อมูล
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserAuth = user;
-                const snap = await getDoc(doc(db, "admin", user.uid));
-                if (snap.exists()) {
-                    const adminData = snap.data();
-                    await fetchTeams();
-                    fillFormData(adminData, user.email);
-                }
+// --- 2. การตรวจสอบสถานะการเข้าสู่ระบบและดึงข้อมูลโปรไฟล์ ---
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUserAuth = user;
+        try {
+            // ดึงข้อมูล Admin จาก Firestore
+            const snap = await getDoc(doc(db, "admin", user.uid));
+            if (snap.exists()) {
+                const adminData = snap.data();
+                
+                // ดึงข้อมูลทีมทั้งหมดก่อน แล้วค่อยเติมข้อมูลลง Form
+                await fetchTeams();
+                fillFormData(adminData, user.email);
             } else {
-                window.location.replace("login.html");
+                console.error("ไม่พบข้อมูล Admin ในฐานข้อมูล");
             }
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
+        }
+    } else {
+        window.location.replace("login.html");
+    }
+});
+
+// --- 3. Function ดึงข้อมูลทีมจาก Firestore ---
+async function fetchTeams() {
+    try {
+        const snap = await getDocs(collection(db, "teams"));
+        allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const mainSelect = document.getElementById('prof-main');
+        mainSelect.innerHTML = '<option value="" disabled selected>เลือกทีมหลัก</option>';
+        
+        // เติมเฉพาะทีมที่เป็นประเภท "main"
+        allTeams.filter(t => t.type === "main").forEach(t => {
+            mainSelect.add(new Option(t.name, t.id));
+        });
+    } catch (error) {
+        console.error("ไม่สามารถโหลดข้อมูลทีมได้:", error);
+    }
+}
+
+// --- 4. Function เติมข้อมูลลงใน Form และ Profile Card ---
+function fillFormData(data, email) {
+    // แสดงผลบน Profile Card (ฝั่งซ้าย)
+    document.getElementById('avatar-display').innerText = (data.name || "A")[0];
+    document.getElementById('name-display').innerText = data.name || "Admin";
+    document.getElementById('role-display').innerText = data.role || "Admin";
+    document.getElementById('side-email').innerText = email;
+    
+    // แสดงทีมปัจจุบันที่ฝั่งซ้าย (ถ้ามี)
+    if (document.getElementById('side-team')) {
+        document.getElementById('side-team').innerText = `${data.Team || '-'} / ${data["Sub Team"] || '-'}`;
+    }
+
+    // เติมข้อมูลลงใน Form Input (ฝั่งขวา)
+    document.getElementById('prof-name').value = data.name || "";
+    document.getElementById('prof-user').value = data.username || "";
+    document.getElementById('prof-email').value = email;
+    document.getElementById('prof-phone').value = data["Phone No."] || "";
+
+    // จัดการเลือกทีมหลักและทีมย่อย
+    if (data.Team) {
+        const team = allTeams.find(t => t.name === data.Team && t.type === "main");
+        if (team) {
+            document.getElementById('prof-main').value = team.id;
+            renderSubTeams(team.id, data["Sub Team"]);
+        }
+    }
+}
+
+// --- 5. จัดการการเปลี่ยนทีมย่อยเมื่อเลือกทีมหลัก ---
+document.getElementById('prof-main').addEventListener('change', (e) => {
+    renderSubTeams(e.target.value);
+});
+
+function renderSubTeams(parentId, currentSub = null) {
+    const subSelect = document.getElementById('prof-sub');
+    const subs = allTeams.filter(t => t.type === "sub" && t.parentId === parentId);
+    
+    subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
+    
+    if (subs.length > 0) {
+        subSelect.disabled = false;
+        subs.forEach(t => {
+            const opt = new Option(t.name, t.name);
+            if (t.name === currentSub) opt.selected = true;
+            subSelect.add(opt);
+        });
+    } else {
+        subSelect.disabled = true;
+        subSelect.add(new Option("ไม่มีทีมย่อย", ""));
+    }
+}
+
+// --- 6. Function การบันทึกข้อมูล (Submit Form) ---
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    const originalBtnHtml = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
+
+    try {
+        const newEmail = document.getElementById('prof-email').value.trim();
+        const newPass = document.getElementById('prof-pass').value; // รหัสผ่านใหม่
+        const mainTeamName = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
+        const subTeamName = document.getElementById('prof-sub').value;
+
+        // อัปเดตข้อมูลใน Firestore
+        const adminRef = doc(db, "admin", currentUserAuth.uid);
+        await updateDoc(adminRef, {
+            "name": document.getElementById('prof-name').value.trim(),
+            "Team": mainTeamName,
+            "Sub Team": subTeamName,
+            "Phone No.": document.getElementById('prof-phone').value.trim()
         });
 
-        async function fetchTeams() {
-            const snap = await getDocs(collection(db, "teams"));
-            allTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            const mainSelect = document.getElementById('prof-main');
-            mainSelect.innerHTML = '<option value="" disabled selected>เลือกทีมหลัก</option>';
-            allTeams.filter(t => t.type === "main").forEach(t => {
-                mainSelect.add(new Option(t.name, t.id));
-            });
+        let reAuthRequired = false;
+
+        // ถ้ามีการเปลี่ยน Email ใน Auth
+        if (newEmail !== currentUserAuth.email) {
+            await updateEmail(currentUserAuth, newEmail);
+            reAuthRequired = true;
         }
 
-        function fillFormData(data, email) {
-            document.getElementById('avatar-display').innerText = (data.name || "A")[0];
-            document.getElementById('name-display').innerText = data.name || "Admin";
-            document.getElementById('role-display').innerText = data.role || "Admin";
-            document.getElementById('side-email').innerText = email;
-            document.getElementById('side-team').innerText = `${data.Team || '-'} / ${data["Sub Team"] || '-'}`;
-            document.getElementById('prof-name').value = data.name || "";
-            document.getElementById('prof-user').value = data.username || "";
-            document.getElementById('prof-email').value = email;
-            document.getElementById('prof-phone').value = data["Phone No."] || "";
-
-            if (data.Team) {
-                const team = allTeams.find(t => t.name === data.Team && t.type === "main");
-                if (team) {
-                    document.getElementById('prof-main').value = team.id;
-                    renderSubTeams(team.id, data["Sub Team"]);
-                }
-            }
+        // ถ้ามีการกรอกรหัสผ่านใหม่
+        if (newPass && newPass.trim() !== "") {
+            await updatePassword(currentUserAuth, newPass);
+            reAuthRequired = true;
         }
 
-        document.getElementById('prof-main').addEventListener('change', (e) => renderSubTeams(e.target.value));
+        // แสดงผลความสำเร็จ
+        const overlay = document.getElementById('success-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => document.getElementById('success-content').classList.replace('scale-90', 'scale-100'), 50);
 
-        function renderSubTeams(parentId, currentSub = null) {
-            const subSelect = document.getElementById('prof-sub');
-            const subs = allTeams.filter(t => t.type === "sub" && t.parentId === parentId);
-            subSelect.innerHTML = '<option value="" disabled selected>เลือกทีมย่อย</option>';
-            if (subs.length > 0) {
-                subSelect.disabled = false;
-                subs.forEach(t => {
-                    const opt = new Option(t.name, t.name);
-                    if (t.name === currentSub) opt.selected = true;
-                    subSelect.add(opt);
-                });
+        // รอ 2 วินาทีแล้ว Refresh หรือไปหน้า Login
+        setTimeout(() => {
+            if (reAuthRequired) {
+                signOut(auth).then(() => window.location.replace("login.html"));
             } else {
-                subSelect.disabled = true;
-                subSelect.add(new Option("ไม่มีทีมย่อย", ""));
+                location.reload();
             }
+        }, 2000);
+
+    } catch (err) {
+        console.error(err);
+        let errorMsg = "เกิดข้อผิดพลาดในการบันทึก";
+        if (err.code === 'auth/requires-recent-login') {
+            errorMsg = "เพื่อความปลอดภัย กรุณา Logout แล้ว Login ใหม่ก่อนทำการเปลี่ยน Email หรือรหัสผ่าน";
+        } else {
+            errorMsg = err.message;
         }
+        alert(errorMsg);
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+    }
+});
 
-        // --- เพิ่มส่วนจัดการ Logout (Fix) ---
-
-        window.handleLogout = () => {
-            const modal = document.getElementById('logout-modal');
-            const backdrop = document.getElementById('logout-backdrop');
-            const content = document.getElementById('logout-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                backdrop.classList.add('backdrop-active');
-                content.classList.add('modal-active');
-            }, 10);
-        };
-
-        const closeLogoutModal = () => {
-            const backdrop = document.getElementById('logout-backdrop');
-            const content = document.getElementById('logout-content');
-            backdrop.classList.remove('backdrop-active');
-            content.classList.remove('modal-active');
-            setTimeout(() => document.getElementById('logout-modal').classList.add('hidden'), 300);
-        };
-
-        document.getElementById('close-logout').onclick = closeLogoutModal;
-        document.getElementById('confirm-logout').onclick = async () => {
-            await signOut(auth);
-            window.location.replace("login.html");
-        };
-
-        // ดักฟัง Click จาก Sidebar
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#logout-btn') || e.target.closest('.logout-link') || e.target.closest('[onclick="logout()"]')) {
-                e.preventDefault();
-                window.handleLogout();
-            }
-        });
-
-        // ------------------------------------
-
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('saveBtn');
-            const originalBtnHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
-
-            try {
-                const newEmail = document.getElementById('prof-email').value.trim();
-                const newPass = document.getElementById('prof-pass').value;
-                const mainTeamName = document.getElementById('prof-main').options[document.getElementById('prof-main').selectedIndex].text;
-                const subTeamName = document.getElementById('prof-sub').value;
-
-                const adminRef = doc(db, "admin", currentUserAuth.uid);
-                await updateDoc(adminRef, {
-                    "name": document.getElementById('prof-name').value.trim(),
-                    "Team": mainTeamName,
-                    "Sub Team": subTeamName,
-                    "Phone No.": document.getElementById('prof-phone').value.trim()
-                });
-
-                let reAuthRequired = false;
-                if (newEmail !== currentUserAuth.email) {
-                    await updateEmail(currentUserAuth, newEmail);
-                    reAuthRequired = true;
-                }
-                if (newPass) {
-                    await updatePassword(currentUserAuth, newPass);
-                    reAuthRequired = true;
-                }
-
-                document.getElementById('success-overlay').style.display = 'flex';
-                setTimeout(() => document.getElementById('success-content').classList.replace('scale-90', 'scale-100'), 50);
-
-                setTimeout(() => {
-                    if (reAuthRequired) signOut(auth).then(() => window.location.replace("login.html"));
-                    else location.reload();
-                }, 2000);
-
-            } catch (err) {
-                console.error(err);
-                alert("เกิดข้อผิดพลาด: " + err.message);
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-            }
-        });
-
-        document.getElementById('togglePassBtn').onclick = () => {
-            const input = document.getElementById('prof-pass');
-            const icon = document.getElementById('pass-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            }
-        };
+// --- 7. Toggle แสดง/ซ่อนรหัสผ่าน ---
+document.getElementById('togglePassBtn').onclick = () => {
+    const input = document.getElementById('prof-pass');
+    const icon = document.getElementById('pass-icon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    }
+};
     </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
