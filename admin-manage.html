@@ -135,6 +135,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         const list = document.getElementById('admin-ticket-list');
         if (!list) return;
         const searchTerm = document.getElementById('adminSearchInput')?.value.toLowerCase() || "";
+        
         const filtered = tickets.filter(t => 
             ["Pending", "Open", "On Progress"].includes(t.status) &&
             ((t.owner?.toLowerCase().includes(searchTerm)) || 
@@ -152,84 +153,42 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         list.innerHTML = filtered.map(t => {
             const start = t.createdAt ? t.createdAt.toDate() : new Date();
             const due = getBusinessDueDate(start, t.sla_hours || 0);
-            const progressNote = t.adminNote || 'ยังไม่มีโน้ต';
+            
+            // ✨ ป้องกัน Error: ล้างตัวอักษรพิเศษและการขึ้นบรรทัดใหม่ก่อนใส่ใน onclick
+            const safeNote = (t.adminNote || "").replace(/['"\n\r]/g, " "); 
+            
             let statusColor = t.status === 'On Progress' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600';
             if(t.status === 'Pending') statusColor = 'bg-blue-100 text-blue-600 animate-pulse';
 
-            // แก้ไข SyntaxError ตรงปุ่มจัดการ โดยเขียนให้อยู่ในบรรทัดเดียวกัน
             return `
                 <tr class="hover:bg-slate-50/50 transition-all border-b border-slate-50 last:border-0">
                     <td class="p-6 font-bold text-slate-800">${t.owner || '-'}</td>
                     <td class="p-6 font-bold text-slate-600">${t.internetNo || t.id_number || '-'}</td>
                     <td class="p-6">
                         <p class="font-bold text-slate-700">${t.topic || 'No Topic'}</p>
-                        <p class="text-[10px] text-indigo-500 mt-1 italic line-clamp-1">${progressNote}</p>
+                        <p class="text-[10px] text-indigo-500 mt-1 italic line-clamp-1">${t.adminNote || 'ยังไม่มีโน้ต'}</p>
                     </td>
                     <td class="p-6 text-center">
                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusColor}">${t.status}</span>
                     </td>
                     <td class="p-6 text-[13px] font-bold text-slate-600">${due.toLocaleString('th-TH')}</td>
                     <td class="p-6 text-right">
-                        <button onclick="openManageModal('${t.id}', '${t.status}', '${(t.adminNote || "").replace(/'/g, "\\'")}')" class="manage-btn bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">จัดการ</button>
+                        <button onclick="openManageModal('${t.id}', '${t.status}', '${safeNote}')" class="bg-[#5c56f1] text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">จัดการ</button>
                     </td>
                 </tr>
             `;
         }).join('');
     }
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) return window.location.replace("login.html");
-        initTicketsListener();
-    });
-
-    window.openManageModal = (id, status, note) => {
-        const modal = document.getElementById('adminActionModal');
-        const modalBox = modal?.querySelector('div');
-        if (modal) {
-            modal.classList.remove('hidden');
-            if (modalBox) {
-                modalBox.style.opacity = "1";
-                modalBox.style.transform = "scale(1)";
-                modalBox.className = modalBox.className.replace(/opacity-0|scale-95|scale-105/g, "").trim();
-            }
-            document.getElementById('admin-note-input').value = note || "";
-            window.currentId = id;
-            const btn = document.getElementById('save-btn');
-            if(btn) {
-                btn.disabled = false;
-                btn.className = "flex-1 bg-[#5c56f1] text-white py-4 rounded-2xl font-black text-sm shadow-xl transition-all";
-                btn.innerHTML = "บันทึกข้อมูล";
-            }
-            const initialStatus = (status === 'Pending' || status === 'Open') ? 'On Progress' : status;
-            window.updateSelectedStatus(initialStatus);
-        }
-    };
-
-    window.closeAdminModal = () => {
-        const modal = document.getElementById('adminActionModal');
-        const modalBox = modal?.querySelector('div');
-        if (modalBox) modalBox.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => { if(modal) modal.classList.add('hidden'); }, 200);
-    };
-
-    window.updateSelectedStatus = (st) => {
-        window.selectedStatus = st;
-        document.querySelectorAll('.status-btn').forEach(btn => {
-            btn.classList.remove('ring-4', 'ring-indigo-200', 'border-indigo-500', 'bg-indigo-50');
-        });
-        const activeBtn = document.getElementById(`btn-status-${st}`);
-        if (activeBtn) activeBtn.classList.add('ring-4', 'ring-indigo-200', 'border-indigo-500', 'bg-indigo-50');
-    };
-
     window.saveAdminAction = async () => {
         const noteInput = document.getElementById('admin-note-input');
         const btn = document.getElementById('save-btn');
-        const modalBox = document.querySelector('#adminActionModal > div');
         if (!noteInput.value.trim()) return alert("กรุณาระบุรายละเอียด");
 
         btn.disabled = true;
         btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...`;
 
+        // ✨ Stamp วันที่ + เวลา [21/02/69 10:45]
         const now = new Date();
         const d = now.getDate().toString().padStart(2, '0');
         const mo = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -237,25 +196,22 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         const h = now.getHours().toString().padStart(2, '0');
         const mi = now.getMinutes().toString().padStart(2, '0');
         const timeStamp = `[${d}/${mo}/${y} ${h}:${mi}] `;
-        const noteWithTime = timeStamp + noteInput.value.trim();
+        
+        const finalNote = timeStamp + noteInput.value.trim();
 
         try {
             const ticketRef = doc(db, "tickets", window.currentId);
-            const updateData = {
+            await updateDoc(ticketRef, {
                 status: window.selectedStatus,
-                adminNote: noteWithTime,
-                updatedAt: serverTimestamp()
-            };
-            if (['Success', 'Reject'].includes(window.selectedStatus)) updateData.closedAt = serverTimestamp();
-            await updateDoc(ticketRef, updateData);
-            if (modalBox) {
-                modalBox.classList.add('scale-105');
-                btn.classList.replace('bg-[#5c56f1]', 'bg-green-500');
-                btn.innerHTML = `<i class="fas fa-check-circle mr-2"></i> สำเร็จ!`;
-            }
+                adminNote: finalNote,
+                updatedAt: serverTimestamp(),
+                ...( ['Success', 'Reject'].includes(window.selectedStatus) ? { closedAt: serverTimestamp() } : {} )
+            });
+            
+            btn.classList.replace('bg-[#5c56f1]', 'bg-green-500');
+            btn.innerHTML = `สำเร็จ!`;
             setTimeout(() => { window.closeAdminModal(); }, 800);
         } catch (error) {
-            console.error(error);
             alert("Error: " + error.message);
             btn.disabled = false;
             btn.innerHTML = "บันทึกข้อมูล";
