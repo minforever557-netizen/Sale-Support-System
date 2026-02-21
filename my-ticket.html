@@ -171,24 +171,33 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     };
 
     // --- [แก้ไขส่วนที่ 1] ดึงชื่อเจ้าของ และ ชื่อแอดมิน ---
-    window.viewDetail = async (id) => {
+   window.viewDetail = async (id) => {
         try {
             const docSnap = await getDoc(doc(db, "tickets", id));
             if (docSnap.exists()) {
                 const t = docSnap.data();
                 
-                // 1. ผู้เปิดใบงาน (ดึงจาก owner ตาม DB)
-                document.getElementById('det-user').innerText = t.owner || '-';
+                // 🔥 แก้ไข: ดึงชื่อผู้เปิดจากฟิลด์ 'owner' (อิงตามรูป DB ที่ส่งมา)
+                const userElement = document.getElementById('det-user');
+                if (userElement) {
+                    userElement.innerText = t.owner || t.userName || '-'; 
+                }
                 
-                // 9. ผู้ดูแล (ดึงจาก adminName ตาม DB)
-                document.getElementById('det-admin-name').innerText = t.adminName || 'รอมอบหมาย';
+                // 🔥 แก้ไข: ดึงชื่อผู้ดูแลจากฟิลด์ 'adminName' 
+                const adminElement = document.getElementById('det-admin-name');
+                if (adminElement) {
+                    adminElement.innerText = t.adminName || 'รอมอบหมาย';
+                }
 
-                // ข้อมูลอื่นๆ
+                // ข้อมูลพื้นฐานอื่นๆ
                 document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
                 document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
                 document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
-                document.getElementById('det-created-at').innerText = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
                 
+                document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
+                    ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
+                
+                // การจัดการ Status Badge (คงเดิม)
                 const status = t.status || 'Pending';
                 const badge = document.getElementById('det-status-badge');
                 if (badge) {
@@ -204,10 +213,15 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                     badge.classList.add(...(statusColors[status] || statusColors['Pending']).split(' '));
                 }
 
+                // บันทึก Admin (คงเดิม)
                 const remarkBox = document.getElementById('det-admin-remark');
-                if (remarkBox) remarkBox.innerHTML = formatAdminTimeline(t.adminNote);
+                if (remarkBox) {
+                    remarkBox.innerHTML = formatAdminTimeline(t.adminNote);
+                }
                 
-                document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
+                document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
+                    ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
+                
                 document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
                 document.getElementById('detail-modal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
