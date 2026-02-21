@@ -100,95 +100,126 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
 
-    <script>
+    <script type="module">
+    import { db } from "./js/firebase.js";
+    import { 
+        collection, query, orderBy, onSnapshot, getDoc, doc, setDoc, deleteDoc, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let editId = null;
+    let editId = null;
 
-        // --- Topic Core Logic ---
-        function listenTopics() {
-            const q = query(collection(db, "topics"), orderBy("updatedAt", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const list = document.getElementById('topic-list');
-                if (snapshot.empty) {
-                    list.innerHTML = '<tr><td colspan="4" class="p-16 text-center text-slate-400 italic font-light">ไม่พบข้อมูลหัวข้อในระบบ</td></tr>';
-                    return;
-                }
-                list.innerHTML = snapshot.docs.map(docSnap => {
-                    const d = docSnap.data();
-                    return `
-                        <tr class="hover:bg-slate-50/80 transition-colors group">
-                            <td class="p-6">
-                                <span class="font-bold text-slate-700 block">${d.name}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">ID: ${docSnap.id}</span>
-                            </td>
-                            <td class="p-6 text-center">
-                                <span class="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full font-black text-xs">${d.sla} ชม.</span>
-                            </td>
-                            <td class="p-6">
-                                <p class="text-sm text-slate-500 max-w-xs truncate">${d.checklist || '<span class="italic text-slate-300">ไม่มี Checklist</span>'}</p>
-                            </td>
-                            <td class="p-6 text-right">
-                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="openTopicModal('${docSnap.id}')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition">แก้ไข</button>
-                                    <button onclick="deleteTopic('${docSnap.id}')" class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-xl text-xs font-bold hover:text-red-500 hover:border-red-100 transition">ลบ</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            });
+    // --- 1. ฟังการอัปเดตข้อมูล Real-time (Logic เดิม) ---
+    function listenTopics() {
+        const q = query(collection(db, "topics"), orderBy("updatedAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('topic-list');
+            if (!list) return;
+
+            if (snapshot.empty) {
+                list.innerHTML = '<tr><td colspan="4" class="p-16 text-center text-slate-400 italic">ไม่พบข้อมูลหัวข้อในระบบ</td></tr>';
+                return;
+            }
+
+            list.innerHTML = snapshot.docs.map(docSnap => {
+                const d = docSnap.data();
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-all border-b border-slate-50 last:border-0 group">
+                        <td class="p-6">
+                            <span class="font-bold text-slate-800 block">${d.name}</span>
+                            <span class="text-[10px] text-slate-400 font-medium tracking-wider">ID: ${docSnap.id}</span>
+                        </td>
+                        <td class="p-6 text-center">
+                            <span class="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full font-black text-xs">${d.sla} ชม.</span>
+                        </td>
+                        <td class="p-6">
+                            <p class="text-sm text-slate-500 max-w-xs truncate">${d.checklist || '<span class="italic text-slate-300">ไม่มี Checklist</span>'}</p>
+                        </td>
+                        <td class="p-6 text-right">
+                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openTopicModal('${docSnap.id}')" class="bg-[#5d58f0] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition">แก้ไข</button>
+                                <button onclick="deleteTopic('${docSnap.id}')" class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-xl text-xs font-bold hover:text-red-500 transition">ลบ</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        });
+    }
+
+    // --- 2. ฟังก์ชัน Modal (เรียกใช้ window. เพื่อให้ HTML มองเห็น) ---
+    window.openTopicModal = async (id = null) => {
+        editId = id;
+        const modal = document.getElementById('topicModal');
+        document.getElementById('modal-title').innerText = id ? "แก้ไขหัวข้อ" : "เพิ่มหัวข้อใหม่";
+        
+        if (id) {
+            const d = await getDoc(doc(db, "topics", id));
+            if (d.exists()) {
+                const data = d.data();
+                document.getElementById('topic-name').value = data.name || "";
+                document.getElementById('topic-sla').value = data.sla || "";
+                document.getElementById('topic-checklist').value = data.checklist || "";
+            }
+        } else {
+            document.getElementById('topic-name').value = "";
+            document.getElementById('topic-sla').value = "";
+            document.getElementById('topic-checklist').value = "";
         }
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden'); // ใช้ class แทน style โดยตรงถ้ามีใน CSS
+    };
 
-        // --- Window Globals ---
-        window.openTopicModal = async (id = null) => {
-            editId = id;
-            document.getElementById('modal-title').innerText = id ? "แก้ไขหัวข้อ" : "เพิ่มหัวข้อใหม่";
-            document.getElementById('topicModal').classList.remove('hidden');
-            
-            if (id) {
-                const d = await getDoc(doc(db, "topics", id));
-                if (d.exists()) {
-                    document.getElementById('topic-name').value = d.data().name;
-                    document.getElementById('topic-sla').value = d.data().sla;
-                    document.getElementById('topic-checklist').value = d.data().checklist || "";
-                }
-            } else {
-                document.getElementById('topic-name').value = "";
-                document.getElementById('topic-sla').value = "";
-                document.getElementById('topic-checklist').value = "";
-            }
-        };
+    window.closeTopicModal = () => {
+        document.getElementById('topicModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    };
 
-        window.closeTopicModal = () => document.getElementById('topicModal').classList.add('hidden');
+    // --- 3. บันทึกข้อมูล (Logic เดิม) ---
+    window.saveTopic = async () => {
+        const name = document.getElementById('topic-name').value.trim();
+        const sla = document.getElementById('topic-sla').value;
+        const checklist = document.getElementById('topic-checklist').value.trim();
 
-        window.saveTopic = async () => {
-            const name = document.getElementById('topic-name').value.trim();
-            const sla = document.getElementById('topic-sla').value;
-            const checklist = document.getElementById('topic-checklist').value.trim();
+        if (!name || !sla) return Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูลให้ครบ' });
 
-            if (!name || !sla) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+        const btn = document.getElementById('save-btn');
+        const topicId = editId || name.toLowerCase().replace(/\s+/g, '-');
+        
+        btn.disabled = true;
+        btn.innerHTML = "กำลังบันทึก...";
 
-            const btn = document.getElementById('save-btn');
-            const topicId = editId || name.toLowerCase().replace(/\s+/g, '-');
-            
-            try {
-                btn.disabled = true;
-                btn.innerText = "กำลังบันทึก...";
-                await setDoc(doc(db, "topics", topicId), {
-                    name, sla: parseInt(sla), checklist, updatedAt: serverTimestamp()
-                }, { merge: true });
-                closeTopicModal();
-            } catch(e) { alert("Error: " + e.message); }
-            finally { 
-                btn.disabled = false; 
-                btn.innerText = "บันทึกข้อมูล";
-            }
-        };
+        try {
+            await setDoc(doc(db, "topics", topicId), {
+                name, sla: parseInt(sla), checklist, updatedAt: serverTimestamp()
+            }, { merge: true });
+            window.closeTopicModal();
+            Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500 });
+        } catch(e) { 
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: e.message }); 
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "บันทึกข้อมูล";
+        }
+    };
 
-        window.deleteTopic = async (id) => {
-            if (confirm("ยืนยันการลบหัวข้อนี้ออกจากระบบ?")) await deleteDoc(doc(db, "topics", id));
-        };
-    </script>
+    // --- 4. ลบข้อมูล ---
+    window.deleteTopic = async (id) => {
+        const res = await Swal.fire({
+            title: 'ยืนยันการลบ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'ลบ',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        if (res.isConfirmed) {
+            await deleteDoc(doc(db, "topics", id));
+        }
+    };
+
+    listenTopics();
+</script>
          <script src="./js/layout.js"></script>
     <script type="module" src="./js/sidebar-role.js"></script>
      <script type="module" src="firebase.js"></script>
