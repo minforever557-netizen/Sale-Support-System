@@ -133,7 +133,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     </div>
 </main>
 </div>
-        <script type="module">
+ <script type="module">
     import { db, auth } from "./js/firebase.js";
     import { 
         collection, query, where, orderBy, onSnapshot, getDoc, doc 
@@ -142,6 +142,19 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     let currentTickets = [];
     let unsubscribe = null;
+
+    // --- ฟังก์ชันจัด Format วันที่ (วดป เวลา) ---
+    const formatFullDate = (timestamp) => {
+        if (!timestamp || !timestamp.toDate) return '-';
+        return timestamp.toDate().toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    };
 
     // --- ฟังก์ชันแปลง Note เป็น Timeline ---
     function formatAdminTimeline(note) {
@@ -157,7 +170,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         return entries.reverse().map(item => `
             <div class="relative pl-8 pb-6 border-l-2 border-indigo-100 last:border-0 last:pb-0 ml-2">
                 <div class="absolute -left-[11px] top-0 w-5 h-5 bg-white border-4 border-indigo-500 rounded-full shadow-sm"></div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-colors">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                     <span class="inline-block px-3 py-1 rounded-lg bg-indigo-50 text-[10px] font-black text-indigo-600 mb-2">${item.timestamp}</span>
                     <p class="text-[13px] text-slate-700 leading-relaxed font-medium">${item.content}</p>
                 </div>
@@ -171,30 +184,27 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         document.body.style.overflow = 'auto';
     };
 
+    // --- ฟังก์ชันดูรายละเอียด (View Detail) ---
     window.viewDetail = async (id) => {
         try {
             const docSnap = await getDoc(doc(db, "tickets", id));
             if (docSnap.exists()) {
                 const t = docSnap.data();
                 
-                // --- ข้อมูลพื้นฐาน ---
+                // แสดงข้อมูลใน Modal
                 document.getElementById('det-topic').innerText = t.topic || 'ไม่มีหัวข้อ';
                 document.getElementById('det-id-number').innerText = t.id_number || t.internetNo || '-';
                 document.getElementById('det-detail').innerText = t.detail || 'ไม่มีรายละเอียดเพิ่มเติม';
                 
-                // 🔥 [FIX ข้อ 2] หน้าตรวจสอบใบแจ้ง (รูป 3) ให้ผู้เปิดใช้ข้อมูล owner (รูป 2)
-                // เช็ค ID ใน HTML ของนายด้วยว่าชื่อ det-owner หรือเปล่า ถ้าไม่ใช่ให้แก้ให้ตรงกัน
-                const ownerTarget = document.getElementById('det-owner') || document.querySelector('[id*="owner"]');
-                if (ownerTarget) ownerTarget.innerText = t.owner || '-';
+                // ข้อมูล User และ Admin (ใช้ field จาก Database ที่นายส่งมา)
+                document.getElementById('det-owner').innerText = t.owner || '-';
+                document.getElementById('det-admin-name').innerText = t.adminName || 'รอมอบหมาย';
 
-                // 🔥 [FIX ข้อ 3] หน้าตรวจสอบใบงาน (รูป 4) ข้อ 9 ผู้ดูแล ให้ใช้ field adminName (รูป 2)
-                const adminTarget = document.getElementById('det-admin-name') || document.querySelector('[id*="admin"]');
-                if (adminTarget) adminTarget.innerText = t.adminName || 'รอมอบหมาย';
-
-                // --- ส่วนอื่นๆ ---
-                document.getElementById('det-created-at').innerText = t.createdAt?.toDate 
-                    ? t.createdAt.toDate().toLocaleString('th-TH') : '-';
+                // วันที่ใน Modal (Format วดป เวลา)
+                document.getElementById('det-created-at').innerText = formatFullDate(t.createdAt);
+                document.getElementById('det-closed-at').innerText = formatFullDate(t.updatedAt || t.closedAt);
                 
+                // สถานะ
                 const status = t.status || 'Pending';
                 const badge = document.getElementById('det-status-badge');
                 if (badge) {
@@ -204,42 +214,19 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                     badge.classList.add(...(colors[status] || colors['Pending']).split(' '));
                 }
 
-                const remarkBox = document.getElementById('det-admin-remark');
-                if (remarkBox) remarkBox.innerHTML = formatAdminTimeline(t.adminNote);
-                
-                document.getElementById('det-closed-at').innerText = t.updatedAt?.toDate 
-                    ? t.updatedAt.toDate().toLocaleString('th-TH') : '-';
-                
+                document.getElementById('det-admin-remark').innerHTML = formatAdminTimeline(t.adminNote);
                 document.getElementById('det-modal-id').innerText = `Ticket ID: ${id}`;
-                const modal = document.getElementById('detail-modal');
-                if (modal) modal.classList.remove('hidden');
+                
+                document.getElementById('detail-modal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
         } catch (e) {
-            console.error("Error:", e);
+            console.error(e);
             alert("ไม่สามารถโหลดข้อมูลได้");
         }
     };
 
-    function initTicketListener() {
-        if (unsubscribe) unsubscribe();
-        const sortOrderEl = document.getElementById('sortOrder');
-        if (!sortOrderEl) return;
-        const [field, direction] = sortOrderEl.value.split('-');
-        try {
-            const q = query(collection(db, "tickets"), orderBy(field, direction));
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderTickets(currentTickets);
-            });
-        } catch (err) { console.error(err); }
-    }
-
-    onAuthStateChanged(auth, (user) => {
-        if (!user) return window.location.replace("login.html");
-        initTicketListener();
-    });
-
+    // --- ฟังก์ชันแสดงรายการในตาราง ---
     function renderTickets(tickets) {
         const list = document.getElementById('ticket-list');
         if (!list) return;
@@ -248,8 +235,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         const filtered = tickets.filter(t =>
             (t.id_number && String(t.id_number).toLowerCase().includes(searchTerm)) ||
             (t.topic && t.topic.toLowerCase().includes(searchTerm)) ||
-            (t.owner && t.owner.toLowerCase().includes(searchTerm)) ||
-            (t.adminName && t.adminName.toLowerCase().includes(searchTerm))
+            (t.owner && t.owner.toLowerCase().includes(searchTerm))
         );
 
         if (filtered.length === 0) {
@@ -258,32 +244,29 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         }
 
         list.innerHTML = filtered.map(t => {
-            const createDate = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString('th-TH', { dateStyle: 'medium' }) : '-';
             const status = t.status || 'Pending';
             const statusClasses = { 'Open': 'bg-blue-50 text-blue-600', 'On Progress': 'bg-orange-50 text-orange-600', 'Success': 'bg-emerald-50 text-emerald-600', 'Reject': 'bg-red-50 text-red-600', 'Pending': 'bg-slate-50 text-slate-500' };
-            const noteParts = t.adminNote ? t.adminNote.split(/\[\d{2}\/\d{2}\/\d{2}\s\d{2}:\d{2}\]/g).filter(x => x.trim()) : [];
-            const latestNote = noteParts.length > 0 ? noteParts[noteParts.length - 1].trim() : 'รอดำเนินการ...';
 
             return `
-                <tr class="hover:bg-slate-50/50 transition-all border-b border-slate-50 group">
+                <tr class="hover:bg-slate-50/50 transition-all border-b border-slate-50">
                     <td class="p-6 font-bold text-slate-700">${t.id_number || t.internetNo || '-'}</td>
-                    <td class="p-6 text-[11px] font-medium text-slate-500">${createDate}</td>
+                    <td class="p-6 text-[11px] font-medium text-slate-500">${formatFullDate(t.createdAt)}</td>
                     <td class="p-6">
                         <div class="text-slate-700 font-bold text-sm">${t.topic || 'ไม่มีหัวข้อ'}</div>
                         <p class="text-[10px] text-indigo-500 italic mt-1 line-clamp-1">
-                            <span class="font-black">Update:</span> ${latestNote}
+                            <span class="font-black">Update:</span> ${t.adminNote ? 'มีข้อมูลอัปเดต' : 'รอดำเนินการ...'}
                         </p>
                     </td>
                     <td class="p-6 text-center">
                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${statusClasses[status]}">${status}</span>
                     </td>
                     <td class="p-6 text-[11px] font-bold text-indigo-600">
-                        ${t.updatedAt?.toDate ? t.updatedAt.toDate().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) : '-'}
+                        ${formatFullDate(t.updatedAt || t.closedAt)}
                     </td>
                     <td class="p-6 text-sm font-bold text-slate-600">${t.owner || '-'}</td>
                     <td class="p-6 text-right">
                         <div class="text-[9px] text-slate-400 mb-1">Admin: ${t.adminName || 'รอมอบหมาย'}</div>
-                        <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-200 text-slate-600 hover:border-indigo-500 hover:text-indigo-600 px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95 shadow-sm">
+                        <button onclick="viewDetail('${t.id}')" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 px-4 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95">
                             รายละเอียด
                         </button>
                     </td>
@@ -291,6 +274,23 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             `;
         }).join('');
     }
+
+    // --- System Initializers ---
+    function initTicketListener() {
+        if (unsubscribe) unsubscribe();
+        const sortOrderEl = document.getElementById('sortOrder');
+        const [field, direction] = sortOrderEl.value.split('-');
+        const q = query(collection(db, "tickets"), orderBy(field, direction));
+        unsubscribe = onSnapshot(q, (snapshot) => {
+            currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderTickets(currentTickets);
+        });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) return window.location.replace("login.html");
+        initTicketListener();
+    });
 
     document.getElementById('searchInput')?.addEventListener('input', () => renderTickets(currentTickets));
     document.getElementById('sortOrder')?.addEventListener('change', () => initTicketListener());
