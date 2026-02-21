@@ -126,18 +126,18 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
 
-    <script type="module">
-    // 1. นำเข้า Firebase โดยใช้ Path ที่ถูกต้องตามหน้าก่อนๆ
+   <script type="module">
+    // 1. นำเข้า Firebase และฟังก์ชันที่จำเป็น
     import { auth, db, doc, getDoc, collection, onSnapshot, signOut, onAuthStateChanged } from "./js/firebase.js";
 
-    // --- คง Logic เดิมของนายไว้ทั้งหมด ---
+    // --- คง Logic เดิมของนายไว้ 100% ---
     let rawTickets = [];
     let filteredData = [];
     let chart = null;
     let viewLevel = 'MAIN';
     let currentSelection = '';
 
-    if (typeof Chart.register === 'function' && typeof ChartDataLabels !== 'undefined') {
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
     }
 
@@ -177,13 +177,13 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         }, 600);
     }
 
-    // --- 2. Auth & Data Init (เชื่อม Firebase เข้ากับ Logic เดิม) ---
+    // --- 2. Auth & Data Init (เชื่อม Firebase เข้ากับระบบ) ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const adminDoc = await getDoc(doc(db, "admin", user.uid));
             if (adminDoc.exists()) {
                 await loadLayout(adminDoc.data(), user.email);
-                initData(); // เรียกใช้ Logic เดิมของนาย
+                initData(); 
             }
         } else { window.location.replace("login.html"); }
     });
@@ -211,11 +211,11 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                     y: ts.getFullYear()
                 };
             });
-            window.applyFilters(); // เรียกใช้ Logic เดิม
+            window.applyFilters(); 
         });
     }
 
-    // --- 3. Business Logic (คงเดิม แต่ปรับ UI Class ให้ขอบชัด) ---
+    // --- 3. Business Logic (รักษา Logic เดิม + ปรับ CSS ขอบให้เข้ม) ---
     window.toggleFilterUI = () => {
         const mode = document.getElementById('filter-mode').value;
         document.getElementById('ui-daily').classList.toggle('hidden', mode !== 'daily');
@@ -257,6 +257,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     function updateChart(data) {
         const ctx = document.getElementById('mainChart');
+        if (!ctx) return;
         if (chart) chart.destroy();
         chart = new Chart(ctx, {
             type: 'doughnut',
@@ -281,9 +282,9 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     function updateTable(stats) {
         const total = Object.values(stats).reduce((a,b) => a+b, 0);
-        // ปรับขอบตารางให้ชัด (border-slate-300)
+        // ปรับขอบเส้นคั่นตารางให้เข้มชัดเจน (border-slate-300)
         document.getElementById('table-body').innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([n, c]) => `
-            <tr class="border-b border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer" onclick="handleRowClick('${n}')">
+            <tr class="border-b-2 border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer group" onclick="handleRowClick('${n}')">
                 <td class="p-4 font-bold text-slate-700">${n}</td>
                 <td class="p-4 text-center font-bold text-indigo-600">${c}</td>
                 <td class="p-4 text-right font-medium text-slate-400">${total ? ((c/total)*100).toFixed(1) : 0}%</td>
@@ -296,10 +297,10 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
             document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
             render();
-        } else { openDetailModal(name); }
+        } else { window.openDetailModal(name); }
     };
 
-    function openDetailModal(subName) {
+    window.openDetailModal = (subName) => {
         const subset = filteredData.filter(t => t.mainTeam === currentSelection && t.subTeam === subName);
         document.getElementById('modal-head').innerText = subName;
         const ts = {}; const os = {};
@@ -307,7 +308,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             ts[x.topic] = (ts[x.topic] || 0) + 1;
             os[x.owner] = (os[x.owner] || 0) + 1;
         });
-        // ปรับขอบใน Modal ให้ชัดเจน (border-slate-300)
+        // ปรับขอบกล่องรายการใน Modal (border-slate-300)
         document.getElementById('modal-topics').innerHTML = Object.entries(ts).map(([n,c]) => `
             <div class="flex justify-between p-3 bg-white rounded-xl text-xs font-bold border-2 border-slate-300">
                 <span>${n}</span><span class="text-indigo-600">${c}</span>
@@ -328,13 +329,17 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-    // --- 4. System Modals (คงเดิม) ---
+    // --- 4. System Modals ---
     window.openLogoutModal = () => { document.getElementById('logout-modal').classList.remove('hidden'); };
     window.closeLogoutModal = () => { document.getElementById('logout-modal').classList.add('hidden'); };
-    document.getElementById('confirm-logout').onclick = async () => {
-        await signOut(auth);
-        window.location.replace("login.html");
-    };
+    
+    const confirmLogout = document.getElementById('confirm-logout');
+    if (confirmLogout) {
+        confirmLogout.onclick = async () => {
+            await signOut(auth);
+            window.location.replace("login.html");
+        };
+    }
 </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
