@@ -22,11 +22,9 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
         <!-- TOPBAR -->
         <div id="topbar-container"></div>
-
-       <main class="h-screen overflow-y-auto w-full p-4 md:p-8 space-y-8 custom-scroll animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <main class="min-h-screen w-full p-4 md:p-8 custom-scroll animate-in fade-in slide-in-from-bottom-4 duration-700">
     
-    <div class="px-4">
-        <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight flex items-center gap-4">
+    <div class="px-4 mb-10"> <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight flex items-center gap-4">
             <span class="p-3 bg-indigo-600 text-white rounded-[1.5rem] shadow-xl shadow-indigo-200">
                 <i class="fa-solid fa-user-gear"></i>
             </span>
@@ -37,8 +35,8 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 px-2">
         
-        <div class="lg:col-span-4 space-y-6">
-            <div class="glass-card p-8 text-center bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 sticky top-0 border-0">
+        <div class="lg:col-span-4">
+            <div class="glass-card p-8 text-center bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 lg:sticky lg:top-8 border-0">
                 <div class="relative inline-block group">
                     <div id="avatar-display" class="w-32 h-32 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-[2.8rem] flex items-center justify-center text-5xl text-white font-black shadow-2xl shadow-indigo-300 uppercase transition-transform group-hover:scale-105 duration-500">?</div>
                     <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg">
@@ -50,14 +48,14 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                 <div id="role-display" class="inline-block px-5 py-2 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm">Loading</div>
                 
                 <div class="mt-10 pt-8 border-t border-slate-100 space-y-4">
-                    <div class="flex items-center gap-4 text-left p-4 rounded-[1.5rem] bg-slate-50/80 border border-slate-100 transition-hover">
+                    <div class="flex items-center gap-4 text-left p-4 rounded-[1.5rem] bg-slate-50/80 border border-slate-100">
                         <div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-500 text-lg"><i class="fa-regular fa-envelope"></i></div>
                         <div class="overflow-hidden">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Official Email</p>
                             <p id="side-email" class="text-sm font-bold text-slate-700 truncate">...</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 text-left p-4 rounded-[1.5rem] bg-slate-50/80 border border-slate-100 transition-hover">
+                    <div class="flex items-center gap-4 text-left p-4 rounded-[1.5rem] bg-slate-50/80 border border-slate-100">
                         <div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-500 text-lg"><i class="fa-solid fa-users-rays"></i></div>
                         <div class="overflow-hidden">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Team Assignment</p>
@@ -68,8 +66,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             </div>
         </div>
 
-        <div class="lg:col-span-8">
-            <form id="profile-form" class="glass-card bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 overflow-hidden border-0">
+        <div class="lg:col-span-8 pb-20"> <form id="profile-form" class="glass-card bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 overflow-hidden border-0">
                 
                 <div class="bg-slate-900 p-8 text-white relative overflow-hidden">
                     <div class="relative z-10">
@@ -90,19 +87,19 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="md:col-span-2 space-y-3">
                                 <label class="label-title flex items-center gap-2"><i class="fa-solid fa-signature text-indigo-400"></i> ชื่อ-นามสกุลจริง</label>
-                                <input type="text" id="prof-name" class="form-input py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" required>
+                                <input type="text" id="prof-name" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" required>
                             </div>
                             <div class="space-y-3">
                                 <label class="label-title flex items-center gap-2"><i class="fa-solid fa-at text-indigo-400"></i> Username</label>
-                                <input type="text" id="prof-user" class="form-input py-4 px-6 rounded-2xl bg-slate-100 font-black text-slate-500 cursor-not-allowed" readonly>
+                                <input type="text" id="prof-user" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-100 font-black text-slate-500 cursor-not-allowed" readonly>
                             </div>
                             <div class="space-y-3">
                                 <label class="label-title flex items-center gap-2"><i class="fa-solid fa-phone text-indigo-400"></i> เบอร์โทรศัพท์</label>
-                                <input type="text" id="prof-phone" class="form-input py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" placeholder="0XXXXXXXXX">
+                                <input type="text" id="prof-phone" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" placeholder="0XXXXXXXXX">
                             </div>
                             <div class="md:col-span-2 space-y-3">
                                 <label class="label-title flex items-center gap-2"><i class="fa-solid fa-envelope-circle-check text-indigo-400"></i> อีเมลใช้งานปัจจุบัน</label>
-                                <input type="email" id="prof-email" class="form-input py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" required>
+                                <input type="email" id="prof-email" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700" required>
                             </div>
                         </div>
                     </section>
@@ -117,13 +114,13 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-3">
                                 <label class="label-title">ทีมหลัก (Main Team)</label>
-                                <select id="prof-main" class="form-input py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700 cursor-pointer" required>
+                                <select id="prof-main" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700 cursor-pointer" required>
                                     <option value="" disabled selected>กำลังโหลด...</option>
                                 </select>
                             </div>
                             <div class="space-y-3">
                                 <label class="label-title">ทีมย่อย (Sub Team)</label>
-                                <select id="prof-sub" class="form-input py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700 cursor-pointer" required disabled>
+                                <select id="prof-sub" class="form-input w-full py-4 px-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-700 cursor-pointer" required disabled>
                                     <option value="" disabled selected>เลือกทีมหลักก่อน</option>
                                 </select>
                             </div>
@@ -140,14 +137,14 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
                         <div class="space-y-4">
                             <label class="label-title flex items-center gap-2"><i class="fa-solid fa-key text-rose-400"></i> เปลี่ยนรหัสผ่านใหม่</label>
                             <div class="relative">
-                                <input type="password" id="prof-pass" class="form-input py-4 pl-6 pr-14 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-rose-500 transition-all font-bold text-slate-700" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน">
+                                <input type="password" id="prof-pass" class="form-input w-full py-4 pl-6 pr-14 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-rose-500 transition-all font-bold text-slate-700" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน">
                                 <button type="button" id="togglePassBtn" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors">
                                     <i id="pass-icon" class="fa-solid fa-eye-slash text-lg"></i>
                                 </button>
                             </div>
                             <div class="flex items-start gap-3 p-4 bg-rose-50 rounded-2xl border border-rose-100">
                                 <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-1"></i>
-                                <p class="text-[11px] text-rose-600 font-bold leading-relaxed">หมายเหตุ: หากมีการเปลี่ยนอีเมลหรือรหัสผ่าน ระบบจะทำการ Logout อัตโนมัติเพื่อความปลอดภัย และนายต้องเข้าสู่ระบบใหม่อีกครั้ง</p>
+                                <p class="text-[11px] text-rose-600 font-bold leading-relaxed">หมายเหตุ: หากมีการเปลี่ยนอีเมลหรือรหัสผ่าน ระบบจะทำการ Logout อัตโนมัติเพื่อความปลอดภัย</p>
                             </div>
                         </div>
                     </section>
@@ -163,7 +160,7 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         </div>
     </div>
 </main>
-    </div>
+     </div>
 
     <div id="success-overlay">
         <div class="text-center scale-90 transition-transform duration-500" id="success-content">
