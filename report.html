@@ -130,109 +130,69 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     </div>
 
 <script type="module">
-    // 1. นำเข้า Firebase Direct จาก CDN เพื่อตัดปัญหา MIME type error
     import { db, auth } from "./js/firebase.js";
     import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { 
-        collection, onSnapshot, doc, getDoc, query, orderBy 
+        collection, query, orderBy, onSnapshot, doc, getDoc 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- State Management ---
+    // --- State ตัวแปรกลาง ---
     let rawTickets = [];
     let filteredData = [];
     let chart = null;
     let viewLevel = 'MAIN';
     let currentSelection = '';
 
-    // --- 1. Auth & Layout Engine ---
+    // --- 1. ตรวจสอบสิทธิ์และการโหลด Layout (ใช้ Logic เดียวกับหน้าทีม) ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            try {
-                // ดึงข้อมูล Admin (Ref จากระบบ User Management ที่นายทำสำเร็จแล้ว)
-                const adminDoc = await getDoc(doc(db, "admin", user.uid));
-                const userData = adminDoc.exists() ? adminDoc.data() : { name: "Admin" };
-                
-                await loadLayout(userData, user.email);
-                initTicketData(); // เริ่มดึงข้อมูล Tickets
-            } catch (err) {
-                console.error("Auth Error:", err);
-            }
+            // ดึงข้อมูล Admin มาแสดงชื่อที่ Topbar (ถ้ามี)
+            const adminDoc = await getDoc(doc(db, "admin", user.uid));
+            const userData = adminDoc.exists() ? adminDoc.data() : { name: "Admin" };
+            
+            // อัปเดต UI เบื้องต้น
+            setTimeout(() => {
+                const nameEl = document.querySelector('#topbar-user-name');
+                if (nameEl) nameEl.innerText = userData.name || "Admin";
+            }, 1000);
+
+            listenTickets(); // เริ่มดึงข้อมูล Real-time
         } else { 
             window.location.replace("login.html"); 
         }
     });
 
-    async function loadLayout(userData, email) {
-        const comps = [
-            { id: 'sidebar-placeholder', url: './components/sidebar.html' },
-            { id: 'topbar-placeholder', url: './components/topbar.html' }
-        ];
-        
-        for (const comp of comps) {
-            const el = document.getElementById(comp.id);
-            if (!el) continue; // ป้องกัน Error "el is null"
-
-            try {
-                const res = await fetch(comp.url);
-                if (res.ok) {
-                    el.innerHTML = await res.text();
-                    el.classList.remove('hidden');
-                }
-            } catch (err) { console.error(`Layout Load Error: ${comp.url}`, err); }
-        }
-
-        // อัปเดตข้อมูลผู้ใช้ใน Topbar
-        setTimeout(() => {
-            const nameEl = document.querySelector('#topbar-user-name');
-            const avatarEl = document.querySelector('#topbar-avatar-text');
-            if (nameEl) nameEl.innerText = userData.name || "Admin";
-            if (avatarEl && userData.name) avatarEl.innerText = userData.name.charAt(0).toUpperCase();
-
-            // ผูกฟังก์ชัน Logout
-            const logoutBtn = document.querySelector('#main-logout-btn') || document.querySelector('.logout-link');
-            if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); window.handleLogout(); };
-        }, 500);
-    }
-
-    // --- 2. Data Initialization (Real-time) ---
-    function initTicketData() {
-        // ใช้ onSnapshot ตรงๆ จาก Firestore เพื่อความ Real-time
+    // --- 2. ดึงข้อมูล Ticket แบบ Real-time (เหมือน listenTeams) ---
+    function listenTickets() {
         const q = query(collection(db, "tickets"), orderBy("timestamp", "desc"));
         
         onSnapshot(q, (snapshot) => {
             rawTickets = snapshot.docs.map(doc => {
                 const d = doc.data();
                 const ts = d.timestamp?.toDate() || new Date();
-                const keys = Object.keys(d);
                 
-                // Helper ฟังก์ชันดึงค่าแบบยืดหยุ่น (รองรับตัวเล็ก/ใหญ่ และเว้นวรรค)
-                const getVal = (targets) => {
-                    const found = keys.find(k => targets.includes(k.trim().toLowerCase()));
-                    return found ? d[found] : null;
-                };
-
+                // Map ข้อมูลให้เรียกใช้ง่าย (รองรับชื่อ Field ที่อาจสะกดต่างกัน)
                 return {
                     id: doc.id,
-                    mainTeam: getVal(["sender team", "team", "sender_team", "main team"]) || "ไม่ระบุทีมหลัก",
-                    subTeam: getVal(["sender subteam", "subteam", "sender_subteam", "sub team"]) || "ไม่ระบุทีมย่อย",
-                    owner: getVal(["owner", "name"]) || "Unknown",
-                    topic: getVal(["topic", "subject"]) || "Other",
-                    status: d.sla_status || "Pending",
+                    mainTeam: d["Sender Team"] || d["team"] || "ไม่ระบุทีม",
+                    subTeam: d["Sender Subteam"] || d["subteam"] || "ไม่ระบุทีมย่อย",
+                    topic: d["Topic"] || "Other",
+                    status: d["sla_status"] || "Pending",
                     dateStr: ts.toISOString().split('T')[0],
                     q: 'Q' + Math.ceil((ts.getMonth() + 1) / 3),
                     y: ts.getFullYear()
                 };
             });
-            window.applyFilters(); 
+            window.applyFilters(); // โหลดเสร็จแล้วสั่ง Filter ทันที
         });
     }
 
-    // --- 3. Business Logic (ตารางและกราฟ) ---
+    // --- 3. Window Globals (เพื่อให้ HTML เรียกใช้ได้แบบหน้าโครงสร้างทีม) ---
     window.applyFilters = () => {
         const mode = document.getElementById('filter-mode')?.value || 'all';
         const d = document.getElementById('val-date')?.value;
         const q = document.getElementById('val-q')?.value;
-        const y = parseInt(document.getElementById('val-y')?.value);
+        const y = parseInt(document.getElementById('val-y')?.value || "2026");
 
         filteredData = rawTickets.filter(t => {
             if (mode === 'daily') return t.dateStr === d;
@@ -242,18 +202,40 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         renderDashboard();
     };
 
-    function renderDashboard() {
-        // อัปเดตตัวเลข Stats บน Card
-        const total = filteredData.length;
-        const statTotal = document.getElementById('stat-total');
-        if (statTotal) statTotal.innerText = total.toLocaleString();
+    window.handleRowClick = (name) => {
+        if (viewLevel === 'MAIN') {
+            viewLevel = 'SUB'; 
+            currentSelection = name;
+            document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
+            document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
+            renderDashboard();
+        }
+    };
 
-        const tableStats = {}; const topicStats = {};
+    window.resetView = () => {
+        viewLevel = 'MAIN'; 
+        currentSelection = '';
+        document.getElementById('nav-path').innerText = 'Dashboard / Main Team';
+        document.getElementById('table-title').innerText = 'สรุปตามรายทีม (Sender team)';
+        renderDashboard();
+    };
+
+    // --- 4. การแสดงผล (Render) ---
+    function renderDashboard() {
+        // อัปเดตตัวเลข Stats
+        const total = filteredData.length;
+        if(document.getElementById('stat-total')) document.getElementById('stat-total').innerText = total.toLocaleString();
+
+        const tableStats = {}; 
+        const topicStats = {};
+
         filteredData.forEach(t => {
+            // สถิติสำหรับตาราง (สลับระหว่างทีมหลัก/ทีมย่อย)
             const groupKey = (viewLevel === 'MAIN') ? t.mainTeam : t.subTeam;
             if (viewLevel === 'MAIN' || t.mainTeam === currentSelection) {
                 tableStats[groupKey] = (tableStats[groupKey] || 0) + 1;
             }
+            // สถิติสำหรับกราฟ (แยกตามหัวข้อ)
             topicStats[t.topic] = (topicStats[t.topic] || 0) + 1;
         });
 
@@ -266,18 +248,18 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
         if (!tbody) return;
 
         const total = Object.values(stats).reduce((a,b) => a+b, 0);
-        // ปรับเส้นขอบตารางให้เข้ม (border-slate-300) ตาม CSS ของนาย
-        tbody.innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([n, c]) => `
-            <tr class="border-b-2 border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer" onclick="handleRowClick('${n}')">
-                <td class="p-4 font-bold text-slate-700">${n}</td>
-                <td class="p-4 text-center font-bold text-indigo-600">${c}</td>
-                <td class="p-4 text-right font-medium text-slate-400">${total ? ((c/total)*100).toFixed(1) : 0}%</td>
+        // ใช้ border-slate-300 ตาม CSS ของนาย [cite: 2026-02-20]
+        tbody.innerHTML = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([name, count]) => `
+            <tr class="border-b-2 border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer" onclick="handleRowClick('${name}')">
+                <td class="p-4 font-bold text-slate-700">${name}</td>
+                <td class="p-4 text-center font-bold text-indigo-600">${count}</td>
+                <td class="p-4 text-right font-medium text-slate-400">${total ? ((count/total)*100).toFixed(1) : 0}%</td>
             </tr>`).join('');
     }
 
     function updateChart(data) {
         const ctx = document.getElementById('mainChart');
-        if (!ctx || typeof Chart === 'undefined') return; // กัน Error Chart is not defined
+        if (!ctx || typeof Chart === 'undefined') return;
 
         if (chart) chart.destroy();
         chart = new Chart(ctx, {
@@ -293,40 +275,19 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false, 
-                plugins: { legend: { display: false } }, 
-                cutout: '75%' 
+                plugins: { legend: { display: false } },
+                cutout: '75%'
             }
         });
     }
 
-    // --- 4. Global Window Functions ---
-    window.handleRowClick = (name) => {
-        if (viewLevel === 'MAIN') {
-            viewLevel = 'SUB'; currentSelection = name;
-            document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
-            document.getElementById('table-title').innerText = `รายทีมย่อย (ของ ${name})`;
-            renderDashboard();
+    // ผูก Event สำหรับปุ่ม Logout ให้เหมือนหน้าทีม
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#logout-btn') || e.target.closest('.logout-link')) {
+            e.preventDefault();
+            if(window.handleLogout) window.handleLogout();
         }
-    };
-
-    window.resetView = () => {
-        viewLevel = 'MAIN'; currentSelection = '';
-        document.getElementById('nav-path').innerText = 'Dashboard / Main Team';
-        document.getElementById('table-title').innerText = 'สรุปตามรายทีม (Sender team)';
-        renderDashboard();
-    };
-
-    window.handleLogout = () => {
-        document.getElementById('logout-modal')?.classList.remove('hidden');
-    };
-
-    const confirmLogoutBtn = document.getElementById('confirm-logout');
-    if (confirmLogoutBtn) {
-        confirmLogoutBtn.onclick = async () => {
-            await signOut(auth);
-            window.location.replace("login.html");
-        };
-    }
+    });
 </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
