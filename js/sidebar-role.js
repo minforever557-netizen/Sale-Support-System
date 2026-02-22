@@ -69,6 +69,9 @@ document.addEventListener("layoutLoaded", () => {
 // ==========================================================
 // ส่วนที่เพิ่มใหม่: ระบบ Notification (ไม่กระทบ Script เดิม)
 // ==========================================================
+// ==========================================================
+// ส่วนที่เพิ่มใหม่: ระบบ Notification แบบละเอียด (Updated)
+// ==========================================================
 import { 
     onSnapshot, orderBy, limit 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -79,19 +82,15 @@ async function startNotificationSystem(role, email) {
     const notiBtn = document.getElementById('noti-btn');
     const notiDrop = document.getElementById('noti-dropdown');
 
-    if (!notiList) return; // ป้องกัน Error ถ้าหน้านั้นไม่มีปุ่มกระดิ่ง
+    if (!notiList) return;
 
-    // 1. ตั้งค่า Query ตาม Role
     let q;
     if (role === 'admin') {
-        // Admin: แจ้งเตือนเมื่อมีใบงานใหม่ (Pending)
         q = query(collection(db, "tickets"), where("status", "==", "Pending"), orderBy("createdAt", "desc"), limit(5));
     } else {
-        // User/Sale/Support: แจ้งเตือนเมื่อใบงานตัวเองมีการอัปเดต
         q = query(collection(db, "tickets"), where("ownerEmail", "==", email), orderBy("updatedAt", "desc"), limit(5));
     }
 
-    // 2. Listen แบบ Real-time
     onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
             notiList.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">ไม่มีการแจ้งเตือน</div>`;
@@ -104,21 +103,50 @@ async function startNotificationSystem(role, email) {
 
         snapshot.docChanges().forEach((change) => {
             const data = change.doc.data();
+            const internetNo = data.id_number || data.internetNo || "ไม่ระบุเลข";
+            const topic = data.topic || "ไม่มีหัวข้อ";
             
+            // --- 1. สำหรับ ADMIN ---
             if (role === 'admin' && change.type === "added") {
                 hasNewChange = true;
                 html += `
-                    <div class="p-4 border-b border-slate-50 hover:bg-emerald-50/50 transition cursor-pointer">
-                        <div class="font-bold text-emerald-600">🆕 ใบงานใหม่!</div>
-                        <div class="text-slate-600 text-[11px] mt-1 line-clamp-2">คุณ ${data.owner} เปิดใบงาน: ${data.topic}</div>
+                    <div onclick="window.location.href='admin-management.html'" 
+                         class="p-4 border-b border-slate-50 hover:bg-emerald-50 transition cursor-pointer group">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span class="font-black text-emerald-600 text-[10px] uppercase">ใบงานใหม่เข้ามา</span>
+                        </div>
+                        <div class="font-bold text-slate-700 text-xs leading-tight">Internet No: ${internetNo}</div>
+                        <div class="text-slate-500 text-[11px] mt-1 line-clamp-1">หัวข้อ: ${topic}</div>
+                        <div class="text-[9px] text-slate-400 mt-2 italic group-hover:text-emerald-500">คลิกเพื่อไปหน้าจัดการ ➔</div>
                     </div>`;
             } 
+            
+            // --- 2. สำหรับ USER (ตรวจสอบว่ามีการเปลี่ยน Status หรือ Update Comment) ---
             else if (role !== 'admin' && change.type === "modified") {
                 hasNewChange = true;
+                
+                // เช็คว่าเป็นการเปลี่ยน Status หรือแค่ Update Comment
+                // (ใช้ Logic: ถ้า status เป็น Success/In Progress จะบอกว่าตรวจสอบแล้ว นอกนั้นบอกว่า Update)
+                let messageTitle = "มีการอัปเดตใบงาน";
+                let messageDetail = "มีการเพิ่มรายละเอียดในใบงานของคุณ";
+                let themeColor = "blue";
+
+                if (data.status === "Success" || data.status === "In Progress") {
+                    messageTitle = "ใบงานได้รับการตรวจสอบแล้ว";
+                    messageDetail = `ใบงานหมายเลข ${internetNo} ได้รับการตรวจสอบและปรับปรุงสถานะเรียบร้อย`;
+                    themeColor = "emerald";
+                } else {
+                    messageTitle = "มีการ Update ใบงานแล้ว";
+                    messageDetail = `แอดมินได้เพิ่มข้อมูลหรือหมายเหตุในใบงาน ${internetNo}`;
+                }
+
                 html += `
-                    <div class="p-4 border-b border-slate-50 hover:bg-blue-50/50 transition cursor-pointer">
-                        <div class="font-bold text-blue-600">🔔 อัปเดตใบงาน!</div>
-                        <div class="text-slate-600 text-[11px] mt-1 line-clamp-2">${data.topic} ถูกเปลี่ยนเป็นสถานะ: ${data.status}</div>
+                    <div onclick="window.location.href='dashboard.html'" 
+                         class="p-4 border-b border-slate-50 hover:bg-${themeColor}-50 transition cursor-pointer group">
+                        <div class="font-bold text-${themeColor}-600 text-xs mb-1">🔔 ${messageTitle}</div>
+                        <div class="text-slate-700 font-medium text-[11px] leading-snug italic">"${topic}"</div>
+                        <div class="text-slate-500 text-[10px] mt-1 line-clamp-2">${messageDetail}</div>
                     </div>`;
             }
         });
@@ -129,31 +157,12 @@ async function startNotificationSystem(role, email) {
         }
     });
 
-    // 3. ระบบเปิด/ปิด Dropdown
     if (notiBtn && notiDrop) {
         notiBtn.onclick = (e) => {
             e.stopPropagation();
             notiDrop.classList.toggle('hidden');
             if (notiDot) notiDot.classList.add('hidden');
         };
-        // คลิกข้างนอกแล้วปิด
         window.addEventListener('click', () => notiDrop.classList.add('hidden'));
     }
 }
-
-// เชื่อมต่อระบบแจ้งเตือนเข้ากับ Auth ของ Script เดิม
-document.addEventListener("layoutLoaded", () => {
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return;
-        
-        // รอให้ Database อ่าน Role เสร็จก่อน (ใช้ Query เหมือน Script เดิมเป๊ะ)
-        const q = query(collection(db, "admin"), where("email", "==", user.email));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-            const userData = snap.docs[0].data();
-            const role = (userData.role || "").toLowerCase();
-            // เริ่มการแจ้งเตือน
-            startNotificationSystem(role, user.email);
-        }
-    });
-});
