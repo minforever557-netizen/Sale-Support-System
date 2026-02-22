@@ -105,21 +105,13 @@ async function startNotificationSystem(role, email) {
         snapshot.docChanges().forEach((change) => {
             const data = change.doc.data();
             
-            // --- 1. สำหรับ ADMIN ---
             if (role === 'admin' && change.type === "added") {
                 hasNewChange = true;
                 html += `
-                    <div onclick="window.location.href='admin-management.html'" 
-                         class="p-4 border-b border-slate-50 hover:bg-emerald-50 transition cursor-pointer group">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <span class="font-black text-emerald-600 text-[10px] uppercase tracking-wider">🆕 ใบงานใหม่เข้ามา</span>
-                        </div>
-                        <div class="font-bold text-slate-700 text-xs leading-tight">Internet No: ${internetNo}</div>
-                        <div class="text-slate-600 text-[11px] mt-1 line-clamp-2">คุณ ${data.owner} เปิดใบงาน: ${topic}</div>
-                        <div class="text-[9px] text-emerald-500 mt-2 font-bold opacity-0 group-hover:opacity-100 transition-opacity">คลิกเพื่อไปหน้าจัดการ ➔</div>
+                    <div class="p-4 border-b border-slate-50 hover:bg-emerald-50/50 transition cursor-pointer">
+                        <div class="font-bold text-emerald-600">🆕 ใบงานใหม่!</div>
+                        <div class="text-slate-600 text-[11px] mt-1 line-clamp-2">คุณ ${data.owner} เปิดใบงาน: ${data.topic}</div>
                     </div>`;
-            }
             } 
             else if (role !== 'admin' && change.type === "modified") {
                 hasNewChange = true;
