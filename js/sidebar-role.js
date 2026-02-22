@@ -140,7 +140,3 @@ async function startNotificationSystem(role, email) {
         window.addEventListener('click', () => notiDrop.classList.add('hidden'));
     }
 }
-
-
-    });
-
