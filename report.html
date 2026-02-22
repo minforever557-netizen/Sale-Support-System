@@ -431,6 +431,41 @@ currentLevel==="MAIN"
     updateChart();
 }
 
+    // ===== SHOW VALUE ON DOUGHNUT =====
+const doughnutLabelPlugin = {
+    id: 'doughnutLabelPlugin',
+   afterDraw(chart) {
+
+        const { ctx } = chart;
+        ctx.save();
+
+        const dataset = chart.data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+
+        const total = dataset.data.reduce((a,b)=>a+b,0);
+
+        meta.data.forEach((element, index) => {
+
+            const value = dataset.data[index];
+            const percent = Math.round(value / total * 100);
+
+            const pos = element.tooltipPosition();
+
+            ctx.fillStyle = "#334155";
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(
+                `${value} (${percent}%)`,
+                pos.x,
+                pos.y
+            );
+        });
+
+        ctx.restore();
+    }
+};
 
 // ================= MAIN CHART =================
 function updateChart(){
