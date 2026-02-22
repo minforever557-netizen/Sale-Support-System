@@ -629,6 +629,7 @@ window.closeModal=()=>{
 // ================= MODAL BACK =================
 window.modalBack = () => {
 
+    // กลับระดับ OWNER
     modalLevel = "OWNER";
 
     // ซ่อนปุ่ม Back
@@ -642,10 +643,12 @@ window.modalBack = () => {
 
     // ซ่อน topic detail
     const topicBox = document.getElementById("owner-topic-box");
-    if(topicBox) topicBox.classList.add("hidden");
+    if (topicBox) topicBox.classList.add("hidden");
 
-    // ✅ สำคัญ — render owner ใหม่
-    showDetail(selectedSub);
+    // ✅ แสดง owner list กลับ
+    document
+        .getElementById("modal-owners")
+        .classList.remove("hidden");
 };
 // ================= RESET =================
 window.resetView=()=>{
