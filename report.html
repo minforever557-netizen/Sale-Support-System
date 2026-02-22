@@ -227,7 +227,6 @@ onclick="if(event.target.id==='detail-modal') closeModal()">
     </div>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script type="module">
-
 // ================= IMPORT =================
 import { db, auth } from "/Sale-Support-System/js/firebase.js";
 import {
@@ -243,12 +242,14 @@ import {
 // ================= STATE =================
 let allTickets = [];
 let filteredTickets = [];
+
 let myChart = null;
+let detailChart = null;
 
 let currentLevel = "MAIN";
 let selectedMain = "";
 let selectedSub = "";
-let activeMonths = [];
+let activeMonth = "";
 
 
 // ================= REALTIME =================
@@ -263,14 +264,14 @@ function startListening(){
             ...doc.data()
         }));
 
-        // ✅ สร้างรายการเดือนอัตโนมัติ
         buildMonthFilter();
-
-        // ✅ render dashboard
+        applyMonthFilter();
         renderUI();
     });
 }
-    // ================= BUILD MONTH FILTER =================
+
+
+// ================= BUILD MONTH FILTER =================
 function buildMonthFilter(){
 
     const select = document.getElementById("month-filter");
@@ -279,18 +280,15 @@ function buildMonthFilter(){
     const months = new Set();
 
     allTickets.forEach(t=>{
-
-        if(!t.createdAt) return;
+        if(!t.createdAt?.toDate) return;
 
         const d = t.createdAt.toDate();
-
         const ym =
         `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 
         months.add(ym);
     });
 
-    // sort ใหม่ล่าสุดขึ้นก่อน
     const sorted = Array.from(months).sort().reverse();
 
     select.innerHTML =
@@ -298,36 +296,45 @@ function buildMonthFilter(){
         sorted.map(m=>`<option value="${m}">${m}</option>`).join("");
 }
 
+
 // ================= MONTH FILTER =================
 function applyMonthFilter(){
 
-    if(!activeMonths.length){
-        filteredTickets = allTickets;
+    if(!activeMonth){
+        filteredTickets=[...allTickets];
         return;
     }
 
     filteredTickets = allTickets.filter(t=>{
 
-        if(!t.createdAt) return false;
+        if(!t.createdAt?.toDate) return false;
 
-        const d = t.createdAt.toDate();
-        const ym =
+        const d=t.createdAt.toDate();
+        const ym=
         `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 
-        return activeMonths.includes(ym);
+        return ym===activeMonth;
     });
 }
-// ================= CHANGE MONTH =================
-window.changeMonthFilter = (value)=>{
 
-    if(!value){
-        activeMonths = [];
-    }else{
-        activeMonths = [value];
-    }
 
+// ✅ FIX: เลือกเดือนแล้ว APPLY จริง
+window.changeMonthFilter=(value)=>{
+
+    activeMonth=value;
+    resetDrill();
+    applyMonthFilter();
     renderUI();
 };
+
+
+// ================= RESET DRILL =================
+function resetDrill(){
+    currentLevel="MAIN";
+    selectedMain="";
+    selectedSub="";
+}
+
 
 // ================= KPI =================
 function updateKPI(){
@@ -351,33 +358,25 @@ function updateKPI(){
 // ================= MAIN RENDER =================
 function renderUI(){
 
-    applyMonthFilter();
     updateKPI();
 
     const stats={};
 
     filteredTickets.forEach(t=>{
 
-        const main = t.sender_team || "Unknown";
-        const sub  = t.sender_subteam || "Unknown";
+        const main=t.sender_team||"Unknown";
+        const sub=t.sender_subteam||"Unknown";
 
         let key=null;
 
-        if(currentLevel==="MAIN"){
-            key = main;
-        }
-        else if(currentLevel==="SUB" && main===selectedMain){
-            key = sub;
-        }
+        if(currentLevel==="MAIN") key=main;
+        else if(currentLevel==="SUB" && main===selectedMain)
+            key=sub;
 
         if(!key) return;
 
-        if(!stats[key]){
-            stats[key]={
-                total:0,
-                topics:{}
-            };
-        }
+        if(!stats[key])
+            stats[key]={total:0,topics:{}};
 
         stats[key].total++;
 
@@ -387,17 +386,17 @@ function renderUI(){
 
     const tableBody=document.getElementById("table-body");
 
-    tableBody.innerHTML =
+    tableBody.innerHTML=
     Object.entries(stats).map(([name,data])=>`
 
-        <tr class="hover:bg-slate-50 cursor-pointer"
+        <tr class="hover:bg-indigo-50 cursor-pointer"
             onclick="${
                 currentLevel==="MAIN"
                 ? `drillDown('${name}')`
                 : `showDetail('${name}')`
             }">
 
-            <td class="py-4 font-bold text-slate-700">
+            <td class="px-8 py-4 font-bold">
                 ${name}
                 <div class="text-xs text-slate-400 mt-1">
                     ${
@@ -411,7 +410,6 @@ function renderUI(){
             <td class="text-center font-black text-indigo-600">
                 ${data.total}
             </td>
-
         </tr>
     `).join("");
 
@@ -419,7 +417,7 @@ function renderUI(){
 }
 
 
-// ================= CHART =================
+// ================= MAIN CHART =================
 function updateChart(){
 
     const ctx=document.getElementById("mainChart").getContext("2d");
@@ -431,46 +429,21 @@ function updateChart(){
             topicStats[t.topic]=(topicStats[t.topic]||0)+1;
     });
 
-    const labels = Object.keys(topicStats);
-    const values = Object.values(topicStats);
-
-    const total = values.reduce((a,b)=>a+b,0);
-
     if(myChart) myChart.destroy();
 
     myChart=new Chart(ctx,{
         type:"doughnut",
         data:{
-            labels:labels,
-            datasets:[{
-                data:values,
-                backgroundColor:[
-                    "#3b82f6",
-                    "#ef4444",
-                    "#f59e0b",
-                    "#10b981",
-                    "#8b5cf6"
-                ]
-            }]
+            labels:Object.keys(topicStats),
+            datasets:[{data:Object.values(topicStats)}]
         },
         options:{
-            cutout:"65%",
-            plugins:{
-                legend:{ position:"bottom" },
-
-                datalabels:{
-                    color:"#111",
-                    font:{weight:"bold",size:13},
-                    formatter:(value)=>{
-                        const pct=Math.round(value/total*100);
-                        return `${value}\n(${pct}%)`;
-                    }
-                }
-            }
-        },
-        plugins:[ChartDataLabels]
+            plugins:{legend:{position:"bottom"}},
+            cutout:"65%"
+        }
     });
 }
+
 
 // ================= DRILL DOWN =================
 window.drillDown=(main)=>{
@@ -485,142 +458,72 @@ window.drillDown=(main)=>{
 };
 
 
-// ================= USER DETAIL =================
-// ================= SHOW DETAIL =================
-window.showDetail = (sub)=>{
+// ================= SHOW DETAIL (MODAL) =================
+window.showDetail=(sub)=>{
 
-    selectedSub = sub;
+    selectedSub=sub;
 
-    document.getElementById("modal-head").innerText =
-        `${selectedMain} / ${sub}`;
-
-    // ================= FILTER DATA =================
-    const related = filteredTickets.filter(t =>
-        t.sender_team === selectedMain &&
-        t.sender_subteam === sub
+    const related=filteredTickets.filter(t=>
+        t.sender_team===selectedMain &&
+        t.sender_subteam===sub
     );
 
-    const totalTickets = related.length;
-
-    // ================= GROUP DATA =================
-    const ownerMap = {};
-    const topicMap = {};
-
-    related.forEach(t=>{
-
-        const owner = t.owner || t.ownerEmail || "Unknown";
-
-        // owner
-        if(!ownerMap[owner]){
-            ownerMap[owner]={
-                total:0,
-                topics:{}
-            };
-        }
-
-        ownerMap[owner].total++;
-
-        // topic
-        if(t.topic){
-
-            ownerMap[owner].topics[t.topic] =
-                (ownerMap[owner].topics[t.topic]||0)+1;
-
-            topicMap[t.topic] =
-                (topicMap[t.topic]||0)+1;
-        }
-    });
-
-
-    // ================= RENDER OWNER =================
-    document.getElementById("modal-owners").innerHTML =
-        Object.entries(ownerMap).map(([owner,data])=>{
-
-            const percent =
-                Math.round((data.total/totalTickets)*100);
-
-            return `
-<div class="border rounded-xl p-4 bg-white shadow-sm">
-
-    <div class="flex justify-between font-bold text-slate-700">
-        ${owner}
-        <span class="text-indigo-600">
-            ${data.total} (${percent}%)
-        </span>
-    </div>
-
-    <div class="text-sm text-slate-500 mt-2 space-y-1">
-        ${
-            Object.entries(data.topics)
-            .map(([t,c])=>`
-                <div class="flex justify-between">
-                    <span>${t}</span>
-                    <span class="font-semibold">${c}</span>
-                </div>
-            `).join("")
-        }
-    </div>
-
-</div>`;
-        }).join("");
-
-
-    // ================= TOPIC CHART =================
-    const ctx =
-        document.getElementById("detailChart").getContext("2d");
-
-    // destroy chart เก่า
-    if(window.detailChart){
-        window.detailChart.destroy();
-    }
-
-    const labels = Object.keys(topicMap);
-    const values = Object.values(topicMap);
-
-    window.detailChart = new Chart(ctx,{
-        type:"doughnut",
-        data:{
-            labels: labels.map((t,i)=>{
-                const pct =
-                    Math.round(values[i]/totalTickets*100);
-                return `${t} (${values[i]} | ${pct}%)`;
-            }),
-            datasets:[{
-                data:values,
-                backgroundColor:[
-                    "#6366f1",
-                    "#10b981",
-                    "#f59e0b",
-                    "#ef4444",
-                    "#8b5cf6",
-                    "#06b6d4"
-                ]
-            }]
-        },
-        options:{
-            cutout:"65%",
-            plugins:{
-                legend:{
-                    position:"bottom",
-                    labels:{
-                        font:{size:13}
-                    }
-                }
-            }
-        }
-    });
-
-
-    // ================= OPEN MODAL =================
-    const modal = document.getElementById("detail-modal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+    renderModal(related);
 };
 
 
+// ================= MODAL RENDER =================
+function renderModal(data){
+
+    const modal=document.getElementById("detail-modal");
+
+    document.getElementById("modal-head").innerText =
+        `${selectedMain} / ${selectedSub}`;
+
+    const ownerMap={};
+    const topicMap={};
+
+    data.forEach(t=>{
+
+        const owner=t.owner||"Unknown";
+
+        ownerMap[owner]=(ownerMap[owner]||0)+1;
+
+        if(t.topic)
+            topicMap[t.topic]=(topicMap[t.topic]||0)+1;
+    });
+
+    // OWNER LIST
+    document.getElementById("modal-owners").innerHTML=
+        Object.entries(ownerMap).map(([o,c])=>`
+            <div class="flex justify-between bg-slate-50
+                rounded-xl px-4 py-3">
+                <span>${o}</span>
+                <span class="font-bold text-indigo-600">${c}</span>
+            </div>
+        `).join("");
+
+    // CHART
+    const ctx=document.getElementById("detailChart").getContext("2d");
+
+    if(detailChart) detailChart.destroy();
+
+    detailChart=new Chart(ctx,{
+        type:"pie",
+        data:{
+            labels:Object.keys(topicMap),
+            datasets:[{data:Object.values(topicMap)}]
+        }
+    });
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+
 // ================= CLOSE =================
-window.closeModal = () => {
-    const modal = document.getElementById("detail-modal");
+window.closeModal=()=>{
+    const modal=document.getElementById("detail-modal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
 };
@@ -629,11 +532,9 @@ window.closeModal = () => {
 // ================= RESET =================
 window.resetView=()=>{
 
-    currentLevel="MAIN";
-    selectedMain="";
-    selectedSub="";
+    resetDrill();
 
-    document.getElementById("nav-path").innerText =
+    document.getElementById("nav-path").innerText=
         "Dashboard / Overall";
 
     renderUI();
@@ -645,7 +546,6 @@ onAuthStateChanged(auth,(user)=>{
     if(user) startListening();
     else window.location.replace("login.html");
 });
-
 </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
