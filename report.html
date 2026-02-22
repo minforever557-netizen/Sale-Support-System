@@ -543,11 +543,11 @@ window.showDetail = (sub) => {
 
     selectedSub = sub;
 
-    // ✅ เพิ่มบรรทัดนี้เพื่อเปลี่ยนชื่อหัวข้อให้เป็น "Team หลัก / Sub Team"
-    const modalHead = document.getElementById("modal-head");
-    if (modalHead) {
-        modalHead.innerText = `${selectedMain} / ${sub}`;
-    }
+// ✅ แก้ไขจุดแรก: แสดงหัวข้อ "Team หลัก / Sub Team"
+const modalHead = document.getElementById("modal-head");
+if (modalHead) {
+    modalHead.innerText = `${selectedMain} / ${sub}`;
+}
 
     const related = filteredTickets.filter(t =>
         t.sender_team === selectedMain &&
@@ -678,41 +678,51 @@ window.detailChartInstance = new Chart(ctx, {
     modal.classList.remove("hidden");
     modal.classList.add("flex");
 };
+
 /* ===============================
    SHOW OWNER TOPIC DETAIL
+   แก้ไข: เพิ่มการอัปเดตกราฟตามรายบุคคล
 ================================*/
 window.showOwnerTopics = (ownerName) => {
 
-    // กรองข้อมูลเฉพาะ owner ที่กด
+    // 1. กรองข้อมูลเฉพาะ owner ที่กด
     const ownerTickets = filteredTickets.filter(t =>
-        t.sender_team === selectedMain &&
-        t.sender_subteam === selectedSub &&
+        (t.sender_team || "Unknown") === selectedMain &&
+        (t.sender_subteam || "Unknown") === selectedSub &&
         (t.owner || "Unknown") === ownerName
     );
 
-    // นับ Topic
+    // 2. นับ Topic ของ User นี้
     const topicMap = {};
-
-    ownerTickets.forEach(t=>{
-        if(!t.topic) return;
+    ownerTickets.forEach(t => {
+        if (!t.topic) return;
         topicMap[t.topic] = (topicMap[t.topic] || 0) + 1;
     });
 
-    // เรียงจากมาก → น้อย
-    const sorted = Object.entries(topicMap)
-        .sort((a,b)=> b[1]-a[1]);
+    // 3. เตรียมข้อมูลสำหรับอัปเดตกราฟ (Detail Chart)
+    const sorted = Object.entries(topicMap).sort((a, b) => b[1] - a[1]);
+    const labels = sorted.map(t => t[0]);
+    const values = sorted.map(t => t[1]);
 
-    // แสดงผลแทน owner list เดิม
+    // ✅ อัปเดตกราฟใน Modal ให้เปลี่ยนตาม User ที่เลือก
+    if (window.detailChartInstance) {
+        window.detailChartInstance.data.labels = labels;
+        window.detailChartInstance.data.datasets[0].data = values;
+        window.detailChartInstance.update(); 
+    }
+
+    // 4. แสดงผลลิสต์หัวข้อด้านขวาแทนรายชื่อพนักงาน
     document.getElementById("modal-owners").innerHTML =
         `
-        <div class="mb-4 font-black text-indigo-600">
-            ${ownerName} — Topic Detail
+        <div class="mb-4 flex justify-between items-center">
+            <div class="font-black text-indigo-600">${ownerName} — Topic Detail</div>
+            <button onclick="showDetail('${selectedSub}')" class="text-xs bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">ดูพนักงานทั้งหมด</button>
         </div>
         ` +
-        sorted.map(([topic,count])=>`
-            <div class="border rounded-xl p-3 mb-2 flex justify-between">
-                <span>${topic}</span>
-                <span class="font-bold text-indigo-600">${count}</span>
+        sorted.map(([topic, count]) => `
+            <div class="border rounded-xl p-3 mb-2 flex justify-between items-center hover:bg-slate-50 transition">
+                <span class="text-slate-700">${topic}</span>
+                <span class="font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">${count}</span>
             </div>
         `).join("");
 };
