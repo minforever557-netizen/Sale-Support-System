@@ -489,7 +489,6 @@ window.drillDown=(main)=>{
 // ================= MODAL DETAIL =================
 window.showDetail = (sub) => {
 
-    modalLevel = "OWNER";
     selectedSub = sub;
 
     const related = filteredTickets.filter(t =>
@@ -497,7 +496,7 @@ window.showDetail = (sub) => {
         t.sender_subteam === sub
     );
 
-    const total = related.length || 1;
+    const total = related.length || 1; // กันหาร 0
 
     const ownerMap = {};
     const topicMap = {};
@@ -511,10 +510,6 @@ window.showDetail = (sub) => {
             topicMap[t.topic] = (topicMap[t.topic] || 0) + 1;
     });
 
-    // ===== HEADER =====
-    document.getElementById("modal-head").innerText =
-        `${selectedMain} / ${sub}`;
-
     // ===== OWNER LIST =====
     document.getElementById("modal-owners").innerHTML =
         Object.entries(ownerMap).map(([o, c]) => {
@@ -524,7 +519,8 @@ window.showDetail = (sub) => {
             return `
 <div class="border rounded-xl p-4
             cursor-pointer
-            hover:bg-indigo-50 transition"
+            hover:bg-indigo-50
+            transition"
      onclick="showOwnerTopics('${o}')">
 
     <div class="flex justify-between font-bold">
@@ -532,20 +528,11 @@ window.showDetail = (sub) => {
         <span class="text-indigo-600">${c} (${pct}%)</span>
     </div>
 </div>`;
-        }).join("");
+}).join("");
 
     // ===== DETAIL CHART =====
-    const canvas = document.getElementById("detailChart");
-    const ctx = canvas.getContext("2d");
-
-    // (chart code อยู่ตรงนี้ต่อได้เลย)
-
-    // ===== OPEN MODAL =====
-    const modal = document.getElementById("detail-modal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-
-}; // ✅ ปิด function ตรงนี้ "บรรทัดสุดท้ายเท่านั้น"
+const canvas = document.getElementById("detailChart");
+const ctx = canvas.getContext("2d");
 
 /* =========================
    ✅ TOP 5 TOPIC ONLY
@@ -638,26 +625,6 @@ window.closeModal=()=>{
     const modal=document.getElementById("detail-modal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
-};
-
-
-// ================= MODAL BACK =================
-let modalLevel = "OWNER";
-
-window.modalBack = () => {
-
-    // ถ้าอยู่หน้า Topic → ย้อนกลับ Owner
-    if(modalLevel === "TOPIC"){
-
-        modalLevel = "OWNER";
-
-        // render owner list ใหม่
-        showDetail(selectedSub);
-
-        document
-            .getElementById("modal-back")
-            .classList.add("hidden");
-    }
 };
 
 
