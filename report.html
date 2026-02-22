@@ -530,9 +530,14 @@ window.showDetail = (sub) => {
 </div>`;
 }).join("");
     // ===== DETAIL CHART =====
+// ===== DETAIL CHART =====
 const canvas = document.getElementById("detailChart");
 const ctx = canvas.getContext("2d");
 
+// ✅ ลบกราฟเก่าก่อนสร้างใหม่
+if (window.detailChartInstance) {
+    window.detailChartInstance.destroy();
+}
 /* =========================
    ✅ TOP 5 TOPIC ONLY
 ========================= */
@@ -554,7 +559,7 @@ if (detailChart instanceof Chart) {
    ✅ CREATE CHART
 ========================= */
 
-detailChart = new Chart(ctx, {
+window.detailChartInstance = new Chart(ctx, {
     type: "doughnut",
     data: {
         labels: labels,
@@ -569,12 +574,11 @@ detailChart = new Chart(ctx, {
                 position:"bottom"
             },
 
-            // ✅ เปิด plugin แสดงตัวเลข
+            // ✅ plugin แสดงจำนวน + %
             doughnutLabel:{}
         }
     }
 });
-
     // ===== OPEN MODAL =====
     const modal = document.getElementById("detail-modal");
     modal.classList.remove("hidden");
