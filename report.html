@@ -1,527 +1,150 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report - Sale Support System</title>
- <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css">
+<title>Team Dashboard</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
 </head>
-<body class="flex h-screen overflow-hidden bg-slate-50">
 
-    <!-- SIDEBAR -->
-<aside id="sidebar-container"
-class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
-</aside>
+<body class="bg-slate-100">
 
-
-
-    <!-- RIGHT AREA -->
-    <div class="flex-1 flex flex-col min-w-0">
-
-        <!-- TOPBAR -->
-          <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-
-        <!-- TOPBAR -->
-        <div id="topbar-container"></div>
-
-        <!-- MAIN CONTENT -->
-       <main class="flex-1 overflow-y-auto custom-scroll p-6 md:p-10">
-            <div class="max-w-7xl mx-auto w-full space-y-8">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                <div>
-            <h1 class="text-3xl font-black text-slate-800">Report Dashboard</h1>
-            <p id="nav-path" class="text-slate-500 font-medium">
-                Dashboard / Overall
-            </p>
-        </div>
-
-        <button onclick="resetView()"
-            class="px-5 py-3 rounded-2xl bg-white border font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition">
-            Reset View
-        </button>
-    </div>
-              
-    <!-- filter Month/Year-->  
-                <div class="flex gap-3 mb-6">
-
-    <select id="filter-year"
-        class="border rounded-xl px-4 py-2">
-        <option value="">All Year</option>
-    </select>
-
-    <select id="filter-month"
-        class="border rounded-xl px-4 py-2">
-        <option value="">All Month</option>
-        <option value="01">Jan</option>
-        <option value="02">Feb</option>
-        <option value="03">Mar</option>
-        <option value="04">Apr</option>
-        <option value="05">May</option>
-        <option value="06">Jun</option>
-        <option value="07">Jul</option>
-        <option value="08">Aug</option>
-        <option value="09">Sep</option>
-        <option value="10">Oct</option>
-        <option value="11">Nov</option>
-        <option value="12">Dec</option>
-    </select>
-
+<!-- BUTTON DEMO -->
+<div class="p-10">
+    <button onclick="showDetail('Network')"
+        class="bg-indigo-600 text-white px-6 py-3 rounded-xl">
+        Open Detail
+    </button>
 </div>
-<div class="flex gap-3 items-center mb-6">
 
-    <select id="month-filter"
-        onchange="changeMonthFilter(this.value)"
-        class="px-4 py-2 rounded-xl border bg-white
-        font-semibold text-slate-600">
 
-    </select>
-
-</div>
-    <!-- KPI CARDS -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-
-        <div class="bg-white rounded-3xl p-6 shadow-sm border">
-            <p class="text-xs font-black text-slate-400 uppercase">Total Tickets</p>
-            <h3 id="kpi-total" class="text-4xl font-black text-slate-800 mt-2">--</h3>
-        </div>
-
-        <div class="bg-white rounded-3xl p-6 shadow-sm border">
-            <p class="text-xs font-black text-slate-400 uppercase">Active Teams</p>
-            <h3 id="kpi-team" class="text-4xl font-black text-indigo-600 mt-2">--</h3>
-        </div>
-
-        <div class="bg-white rounded-3xl p-6 shadow-sm border">
-            <p class="text-xs font-black text-slate-400 uppercase">Topics</p>
-            <h3 id="kpi-topic" class="text-4xl font-black text-emerald-600 mt-2">--</h3>
-        </div>
-
-    </div>
-
-    <!-- MAIN GRID -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-
-        <!-- TABLE -->
-        <div class="xl:col-span-7 bg-white rounded-3xl shadow-sm border overflow-hidden">
-
-            <div class="px-8 py-6 border-b flex justify-between items-center">
-                <h2 class="font-black text-lg text-slate-800">
-                    Team Performance
-                </h2>
-                <span class="text-xs font-bold text-slate-400">
-                    Click row to drill down
-                </span>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50 text-slate-500 text-sm">
-                        <tr>
-                            <th class="py-4 text-left px-8">Team</th>
-                            <th class="py-4 text-center">Tickets</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="table-body"
-                        class="divide-y text-sm">
-                        <!-- renderUI() inject -->
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-
-        <!-- CHART -->
-        <div class="xl:col-span-5 bg-white rounded-3xl shadow-sm border p-8">
-
-            <h2 class="font-black text-lg text-slate-800 mb-6">
-                Topic Distribution
-            </h2>
-
-            <div class="relative h-[420px]">
-                <canvas id="mainChart"></canvas>
-            </div>
-
-        </div>
-
-    </div>
-
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    </div>
 <!-- ================= MODAL ================= -->
 <div id="detail-modal"
-class="fixed inset-0 z-[150] hidden
-flex items-center justify-center
-bg-slate-900/40 backdrop-blur-sm p-6"
-onclick="if(event.target.id==='detail-modal') closeModal()">
+class="hidden fixed inset-0 bg-black/40
+items-center justify-center z-50">
 
-    <div class="bg-white w-full max-w-5xl rounded-[32px]
-    shadow-2xl overflow-hidden
-    animate-[fadeIn_.25s_ease] relative">
+<div class="bg-white w-[95%] max-w-6xl
+rounded-2xl shadow-xl">
 
-        <!-- HEADER -->
-        <div class="px-10 py-6 border-b
-        bg-gradient-to-r from-indigo-50 to-white">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center
+    border-b p-6">
 
-            <h3 id="modal-head"
-            class="text-2xl font-black text-slate-800"></h3>
+        <h2 id="modal-head"
+        class="text-xl font-bold">
+            Detail
+        </h2>
 
-            <p class="text-xs text-slate-400 mt-1">
-                Team activity breakdown
-            </p>
+        <button onclick="closeModal()"
+        class="text-red-500 font-bold">✕</button>
+    </div>
 
-        </div>
-<!-- CONTENT -->
-<div class="p-10
-flex flex-col lg:flex-row
-justify-center items-start gap-14
-max-h-[75vh] overflow-y-auto">
 
-    <!-- LEFT : TEAM GRAPH -->
-    <div class="w-full lg:w-1/2 flex justify-center">
+    <!-- CONTENT (50 / 50 CENTERED) -->
+    <div class="p-10
+    flex flex-col lg:flex-row
+    justify-center items-start gap-14
+    max-h-[75vh] overflow-y-auto">
 
-        <div class="w-full max-w-md">
-            <p class="text-xs font-black text-indigo-600
-            uppercase tracking-widest mb-5 text-center">
-                Topic Distribution
-            </p>
+        <!-- LEFT : GRAPH -->
+        <div class="w-full lg:w-1/2 flex justify-center">
 
-            <div class="bg-slate-50 rounded-2xl p-6">
-                <canvas id="detailChart"></canvas>
+            <div class="w-full max-w-md">
+                <p class="text-xs font-black text-indigo-600
+                uppercase tracking-widest mb-5 text-center">
+                    Topic Distribution
+                </p>
+
+                <div class="bg-slate-50 rounded-2xl p-6">
+                    <canvas id="detailChart"></canvas>
+                </div>
             </div>
-        </div>
-
-    </div>
-
-
-    <!-- CENTER : OWNER LIST -->
-    <div class="w-full lg:w-1/2">
-
-        <p class="text-xs font-black text-emerald-600
-        uppercase tracking-widest mb-5">
-            Team Members
-        </p>
-
-        <div id="modal-owners"
-        class="space-y-4 max-h-[420px] overflow-y-auto pr-2">
-        </div>
-
-    </div>
-
-</div>
-            <!-- TOPIC -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 px-10 py-8">
-
-    <!-- ================= TOPIC OVERVIEW (CHART) ================= -->
-    <div>
-
-        <p class="text-xs font-black text-indigo-600
-        uppercase tracking-widest mb-5">
-            Topic Overview
-        </p>
-
-        <div class="bg-slate-50 rounded-2xl p-6
-        flex items-center justify-center">
-
-            <!-- กราฟ -->
-            <canvas id="detailChart"
-            class="max-h-[320px]"></canvas>
 
         </div>
 
-    </div>
+        <!-- RIGHT : OWNER LIST -->
+        <div class="w-full lg:w-1/2">
 
+            <p class="text-xs font-black text-emerald-600
+            uppercase tracking-widest mb-5">
+                Team Members
+            </p>
 
-    <!-- ================= TEAM MEMBERS ================= -->
-    <div>
+            <div id="modal-owners"
+            class="space-y-4 max-h-[420px]
+            overflow-y-auto pr-2">
+            </div>
 
-        <p class="text-xs font-black text-emerald-600
-        uppercase tracking-widest mb-5">
-            Team Members
-        </p>
-
-        <!-- scroll ได้ถ้าข้อมูลเยอะ -->
-        <div id="modal-owners"
-        class="space-y-4 max-h-[420px] overflow-y-auto pr-2">
         </div>
 
     </div>
 
 </div>
-
-    </div>
 </div>
-    </div>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-<script type="module">
-
-// ================= IMPORT =================
-import { db, auth } from "/Sale-Support-System/js/firebase.js";
-import {
-    collection,
-    onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 
-// ================= STATE =================
-let allTickets = [];
-let filteredTickets = [];
+<script>
 
-let myChart = null;
-let detailChart = null;
+// ================= SAMPLE DATA =================
+const filteredTickets = [
+{sender_team:"IT",sender_subteam:"Network",owner:"Somchai",topic:"Firewall"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Somchai",topic:"Firewall"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Somchai",topic:"Switch"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Anan",topic:"Switch"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Anan",topic:"Wifi"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Nok",topic:"Wifi"},
+{sender_team:"IT",sender_subteam:"Network",owner:"Nok",topic:"Wifi"}
+];
 
-let currentLevel="MAIN";
-let selectedMain="";
+let selectedMain="IT";
 let selectedSub="";
-
-let selectedYear="";
-let selectedMonth="";
+let detailChart=null;
 
 
-// ================= REALTIME =================
-function startListening(){
+// ================= OPEN DETAIL =================
+function showDetail(sub){
 
-    const ticketRef = collection(db,"tickets");
-
-    onSnapshot(ticketRef,(snapshot)=>{
-
-        allTickets = snapshot.docs.map(doc=>({
-            id:doc.id,
-            ...doc.data()
-        }));
-
-        buildYearFilter();
-        renderUI();
-    });
-}
-
-
-// ================= BUILD YEAR =================
-function buildYearFilter(){
-
-    const yearSelect=document.getElementById("filter-year");
-    if(!yearSelect) return;
-
-    const years=new Set();
-
-    allTickets.forEach(t=>{
-        if(!t.createdAt) return;
-        years.add(t.createdAt.toDate().getFullYear());
-    });
-
-    const sorted=[...years].sort((a,b)=>b-a);
-
-    yearSelect.innerHTML=
-        `<option value="">All Year</option>`+
-        sorted.map(y=>`<option value="${y}">${y}</option>`).join("");
-}
-
-
-// ================= FILTER =================
-function applyFilters(){
-
-    filteredTickets = allTickets.filter(t=>{
-
-        if(!t.createdAt) return false;
-
-        const d=t.createdAt.toDate();
-
-        const y=d.getFullYear().toString();
-        const m=String(d.getMonth()+1).padStart(2,"0");
-
-        if(selectedYear && y!==selectedYear) return false;
-        if(selectedMonth && m!==selectedMonth) return false;
-
-        return true;
-    });
-}
-
-
-// YEAR CHANGE
-document.getElementById("filter-year")
-.addEventListener("change",(e)=>{
-    selectedYear=e.target.value;
-    renderUI();
-});
-
-// MONTH CHANGE
-document.getElementById("filter-month")
-.addEventListener("change",(e)=>{
-    selectedMonth=e.target.value;
-    renderUI();
-});
-
-
-// ================= KPI =================
-function updateKPI(){
-
-    document.getElementById("kpi-total").innerText =
-        filteredTickets.length;
-
-    const teams=new Set();
-    const topics=new Set();
-
-    filteredTickets.forEach(t=>{
-        if(t.sender_team) teams.add(t.sender_team);
-        if(t.topic) topics.add(t.topic);
-    });
-
-    document.getElementById("kpi-team").innerText=teams.size;
-    document.getElementById("kpi-topic").innerText=topics.size;
-}
-
-
-// ================= RENDER =================
-function renderUI(){
-
-    applyFilters();
-    updateKPI();
-
-    const stats={};
-
-    filteredTickets.forEach(t=>{
-
-        const main=t.sender_team||"Unknown";
-        const sub=t.sender_subteam||"Unknown";
-
-        let key=null;
-
-        if(currentLevel==="MAIN") key=main;
-        else if(currentLevel==="SUB" && main===selectedMain) key=sub;
-
-        if(!key) return;
-
-        stats[key]=(stats[key]||0)+1;
-    });
-
-    const tableBody=document.getElementById("table-body");
-
-    tableBody.innerHTML=
-    Object.entries(stats).map(([name,count])=>`
-
-<tr class="hover:bg-slate-50 cursor-pointer"
-onclick="${
-currentLevel==="MAIN"
-?`drillDown('${name}')`
-:`showDetail('${name}')`
-}">
-<td class="py-4 px-8 font-bold">${name}</td>
-<td class="text-center font-black text-indigo-600">${count}</td>
-</tr>
-
-`).join("");
-
-    updateChart();
-}
-
-
-// ================= MAIN CHART =================
-function updateChart(){
-
-    const ctx=document.getElementById("mainChart");
-
-    const topicMap={};
-
-    filteredTickets.forEach(t=>{
-        if(t.topic)
-            topicMap[t.topic]=(topicMap[t.topic]||0)+1;
-    });
-
-    const labels=Object.keys(topicMap);
-    const values=Object.values(topicMap);
-    const total=values.reduce((a,b)=>a+b,0);
-
-    if(myChart) myChart.destroy();
-
-    myChart=new Chart(ctx,{
-        type:"doughnut",
-        data:{
-            labels,
-            datasets:[{ data:values }]
-        },
-        options:{
-            cutout:"65%",
-            plugins:{
-                legend:{position:"bottom"},
-                tooltip:{
-                    callbacks:{
-                        label:(c)=>{
-                            const pct=Math.round(c.raw/total*100);
-                            return `${c.label}: ${c.raw} (${pct}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-
-// ================= DRILL =================
-window.drillDown=(main)=>{
-    currentLevel="SUB";
-    selectedMain=main;
-
-    document.getElementById("nav-path").innerText=
-        `Dashboard / ${main}`;
-
-    renderUI();
-};
-
-
-// ================= MODAL DETAIL =================
-window.showDetail = (sub)=>{
-
-    selectedSub = sub;
+    selectedSub=sub;
 
     document.getElementById("modal-head").innerText =
         `${selectedMain} / ${sub}`;
 
     const related = filteredTickets.filter(t =>
-        t.sender_team === selectedMain &&
-        t.sender_subteam === sub
+        t.sender_team===selectedMain &&
+        t.sender_subteam===sub
     );
 
-    const totalTickets = related.length;
+    const total = related.length;
 
-    const ownerMap = {};
-    const topicMap = {};
+    const ownerMap={};
+    const topicMap={};
 
     related.forEach(t=>{
 
-        const owner = t.owner || t.ownerEmail || "Unknown";
+        if(!ownerMap[t.owner])
+            ownerMap[t.owner]={total:0,topics:{}};
 
-        if(!ownerMap[owner]){
-            ownerMap[owner]={ total:0, topics:{} };
-        }
+        ownerMap[t.owner].total++;
 
-        ownerMap[owner].total++;
+        ownerMap[t.owner].topics[t.topic] =
+            (ownerMap[t.owner].topics[t.topic]||0)+1;
 
-        if(t.topic){
-            ownerMap[owner].topics[t.topic] =
-                (ownerMap[owner].topics[t.topic]||0)+1;
-
-            topicMap[t.topic] =
-                (topicMap[t.topic]||0)+1;
-        }
+        topicMap[t.topic]=(topicMap[t.topic]||0)+1;
     });
 
-    // ================= OWNER LIST =================
+    // OWNER LIST
     document.getElementById("modal-owners").innerHTML =
         Object.entries(ownerMap).map(([owner,data])=>{
 
-            const percent =
-                Math.round(data.total/totalTickets*100);
+            const pct=Math.round(data.total/total*100);
 
             return `
 <div onclick="showOwnerDetail('${owner}')"
@@ -531,47 +154,92 @@ hover:bg-indigo-50 transition">
 <div class="flex justify-between font-bold">
 ${owner}
 <span class="text-indigo-600">
-${data.total} (${percent}%)
+${data.total} (${pct}%)
 </span>
 </div>
 
 </div>`;
         }).join("");
 
-    drawDetailChart(topicMap,totalTickets);
+    drawChart(topicMap,total);
 
     openModal();
-};
-
-// ================= CLOSE =================
-window.closeModal=()=>{
-    const modal=document.getElementById("detail-modal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-};
+}
 
 
-// ================= RESET =================
-window.resetView=()=>{
-    currentLevel="MAIN";
-    selectedMain="";
-    selectedSub="";
+// ================= OWNER CLICK =================
+function showOwnerDetail(owner){
 
-    document.getElementById("nav-path").innerText=
-        "Dashboard / Overall";
+    const related = filteredTickets.filter(t =>
+        t.sender_team===selectedMain &&
+        t.sender_subteam===selectedSub &&
+        t.owner===owner
+    );
 
-    renderUI();
-};
+    const topicMap={};
+
+    related.forEach(t=>{
+        topicMap[t.topic]=(topicMap[t.topic]||0)+1;
+    });
+
+    drawChart(topicMap,related.length);
+}
 
 
-// ================= AUTH =================
-onAuthStateChanged(auth,(user)=>{
-    if(user) startListening();
-    else window.location.replace("login.html");
-});
+// ================= DRAW CHART =================
+function drawChart(topicMap,total){
+
+    const ctx=document.getElementById("detailChart");
+
+    if(detailChart) detailChart.destroy();
+
+    detailChart=new Chart(ctx,{
+        type:"doughnut",
+        data:{
+            labels:Object.keys(topicMap),
+            datasets:[{
+                data:Object.values(topicMap),
+                backgroundColor:[
+                    "#3b82f6",
+                    "#ef4444",
+                    "#f59e0b",
+                    "#10b981",
+                    "#8b5cf6",
+                    "#06b6d4"
+                ]
+            }]
+        },
+        options:{
+            cutout:"65%",
+            plugins:{
+                legend:{position:"bottom"},
+                datalabels:{
+                    color:"#111",
+                    font:{weight:"bold"},
+                    formatter:(value)=>{
+                        const pct=Math.round(value/total*100);
+                        return value+" ("+pct+"%)";
+                    }
+                }
+            }
+        },
+        plugins:[ChartDataLabels]
+    });
+}
+
+
+// ================= MODAL =================
+function openModal(){
+    document.getElementById("detail-modal")
+        .classList.replace("hidden","flex");
+}
+
+function closeModal(){
+    document.getElementById("detail-modal")
+        .classList.replace("flex","hidden");
+}
 
 </script>
-<script src="./js/layout.js"></script>
-<script type="module" src="./js/sidebar-role.js"></script>
+
 </body>
 </html>
