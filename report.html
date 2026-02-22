@@ -629,15 +629,24 @@ window.closeModal=()=>{
 // ================= MODAL BACK =================
 window.modalBack = () => {
 
-    // กลับไปหน้า OWNER LIST
     modalLevel = "OWNER";
 
     // ซ่อนปุ่ม Back
-    document.getElementById("modal-back")
+    document
+        .getElementById("modal-back")
         .classList.add("hidden");
 
-    // เปิด owner list อีกครั้ง
-    showDetail(selectedSub);
+    // เปลี่ยน header กลับ
+    document.getElementById("modal-head").innerText =
+        `${selectedMain} / ${selectedSub}`;
+
+    // ✅ แสดง owner list กลับ
+    document.getElementById("modal-owners")
+        .classList.remove("hidden");
+
+    // ✅ (ถ้ามี section topic detail ให้ซ่อน)
+    const topicBox = document.getElementById("owner-topic-box");
+    if(topicBox) topicBox.classList.add("hidden");
 };
 
 // ================= RESET =================
