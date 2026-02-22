@@ -529,13 +529,6 @@ window.showDetail = (sub) => {
     </div>
 </div>`;
 }).join("");
-
-    // ✅ ใส่ตรงนี้เลย
-modalLevel = "OWNER";
-
-const backBtn = document.getElementById("modal-back");
-backBtn.classList.add("hidden");
-
     // ===== DETAIL CHART =====
 const canvas = document.getElementById("detailChart");
 const ctx = canvas.getContext("2d");
@@ -638,11 +631,6 @@ window.modalBack = () => {
     // กลับระดับ OWNER
     modalLevel = "OWNER";
 
-    // ซ่อนปุ่ม Back
-    document
-        .getElementById("modal-back")
-        .classList.add("hidden");
-
     // เปลี่ยน header กลับ
     document.getElementById("modal-head").innerText =
         `${selectedMain} / ${selectedSub}`;
@@ -651,7 +639,7 @@ window.modalBack = () => {
     const topicBox = document.getElementById("owner-topic-box");
     if (topicBox) topicBox.classList.add("hidden");
 
-    // ✅ แสดง owner list กลับ
+    // แสดง owner list
     document
         .getElementById("modal-owners")
         .classList.remove("hidden");
