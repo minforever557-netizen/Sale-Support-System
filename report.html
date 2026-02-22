@@ -530,6 +530,12 @@ window.showDetail = (sub) => {
 </div>`;
 }).join("");
 
+    // ✅ ใส่ตรงนี้เลย
+modalLevel = "OWNER";
+
+const backBtn = document.getElementById("modal-back");
+backBtn.classList.add("hidden");
+
     // ===== DETAIL CHART =====
 const canvas = document.getElementById("detailChart");
 const ctx = canvas.getContext("2d");
