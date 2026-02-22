@@ -450,27 +450,32 @@ function updateChart(){
 
     if(myChart) myChart.destroy();
 
-    myChart=new Chart(ctx,{
-        type:"doughnut",
-        data:{
-            labels,
-            datasets:[{ data:values }]
-        },
-        options:{
-            cutout:"65%",
-            plugins:{
-                legend:{position:"bottom"},
-                tooltip:{
-                    callbacks:{
-                        label:(c)=>{
-                            const pct=Math.round(c.raw/total*100);
-                            return `${c.label}: ${c.raw} (${pct}%)`;
-                        }
+    myChart = new Chart(ctx,{
+    type:"doughnut",
+
+    data:{
+        labels,
+        datasets:[{ data:values }]
+    },
+
+    // ⭐⭐⭐ เพิ่มบรรทัดนี้
+    plugins:[doughnutLabelPlugin],
+
+    options:{
+        cutout:"65%",
+        plugins:{
+            legend:{position:"bottom"},
+            tooltip:{
+                callbacks:{
+                    label:(c)=>{
+                        const pct=Math.round(c.raw/total*100);
+                        return `${c.label}: ${c.raw} (${pct}%)`;
                     }
                 }
             }
         }
-    });
+    }
+});
 }
 
 
