@@ -139,96 +139,167 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
     </div>
 
 <script type="module">
-    // 2. Import ตามแบบหน้า User Management ที่นายส่งมา
-    // ตรวจสอบว่าไฟล์อยู่ที่ ./js/firebase.js หรือ ./firebase.js
-    import { db, auth } from "/Sale-Support-System/js/firebase.js";
-    import { 
-        collection, query, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    let allTickets = [];
-    let myChart = null;
-    let currentLevel = 'MAIN';
-    let selectedMain = '';
+import { db, auth } from "/Sale-Support-System/js/firebase.js";
+import {
+    collection,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ฟังก์ชันดึงข้อมูล Real-time
-    function startListening() {
-        const ticketRef = collection(db, "tickets");
-        onSnapshot(ticketRef, (snapshot) => {
-            allTickets = snapshot.docs.map(doc => doc.data());
-            renderUI();
-        });
-    }
 
-    // ฟังก์ชันจัดการ UI (Table & Chart)
-    function renderUI() {
-        const tableBody = document.getElementById('table-body');
-        const stats = {};
+let allTickets = [];
+let myChart = null;
+let currentLevel = 'MAIN';
+let selectedMain = '';
 
-        allTickets.forEach(t => {
-            const key = (currentLevel === 'MAIN') ? t["Sender Team"] : t["Sender Subteam"];
-            if (currentLevel === 'MAIN' || t["Sender Team"] === selectedMain) {
-                if (key) stats[key] = (stats[key] || 0) + 1;
-            }
-        });
 
-        // อัปเดตตาราง
-        tableBody.innerHTML = Object.entries(stats).map(([name, count]) => `
-            <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.drillDown('${name}')">
-                <td class="py-4 font-bold text-slate-700">${name}</td>
-                <td class="py-4 text-center font-black text-indigo-600">${count}</td>
-            </tr>
-        `).join('');
+// ================= REALTIME LISTENER =================
+function startListening() {
 
-        // อัปเดตกราฟ (Topic สรุปภาพรวม)
-        updateChart();
-    }
+    const ticketRef = collection(db, "tickets");
 
-    function updateChart() {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const topicStats = {};
-        allTickets.forEach(t => { if(t.Topic) topicStats[t.Topic] = (topicStats[t.Topic] || 0) + 1; });
+    onSnapshot(ticketRef, (snapshot) => {
 
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(topicStats),
-                datasets: [{
-                    data: Object.values(topicStats),
-                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444']
-                }]
-            },
-            options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
-        });
-    }
+        // ✅ IMPORTANT — include doc id
+        allTickets = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-    // ฟังก์ชันสำหรับเจาะลึกข้อมูล (Window Functions)
-    window.drillDown = (name) => {
-        if (currentLevel === 'MAIN') {
-            currentLevel = 'SUB';
-            selectedMain = name;
-            document.getElementById('nav-path').innerText = `Dashboard / ${name}`;
-            renderUI();
-        }
-    };
+        console.log("Tickets Loaded:", allTickets);
 
-    window.resetView = () => {
-        currentLevel = 'MAIN';
-        selectedMain = '';
-        document.getElementById('nav-path').innerText = 'Dashboard / Overall';
         renderUI();
-    };
+    });
+}
 
-    // ตรวจสอบการ Login ก่อนเริ่มทำงาน
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            startListening();
-        } else {
-            window.location.replace("login.html");
+
+// ================= RENDER UI =================
+function renderUI() {
+
+    const tableBody = document.getElementById('table-body');
+    if (!tableBody) return;
+
+    const stats = {};
+
+    allTickets.forEach(t => {
+
+        // ✅ FIX FIELD NAME (Firestore จริง)
+        const key =
+            (currentLevel === 'MAIN')
+                ? t.sender_team
+                : t.sender_subteam;
+
+        if (
+            currentLevel === 'MAIN' ||
+            t.sender_team === selectedMain
+        ) {
+            if (key) {
+                stats[key] = (stats[key] || 0) + 1;
+            }
         }
     });
+
+    // ===== TABLE =====
+    tableBody.innerHTML = Object.entries(stats)
+        .map(([name, count]) => `
+        <tr class="hover:bg-slate-50 cursor-pointer"
+            onclick="window.drillDown('${name}')">
+            <td class="py-4 font-bold text-slate-700">${name}</td>
+            <td class="py-4 text-center font-black text-indigo-600">${count}</td>
+        </tr>
+    `).join('');
+
+    updateChart();
+}
+
+
+// ================= CHART =================
+function updateChart() {
+
+    const canvas = document.getElementById('mainChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    const topicStats = {};
+
+    allTickets.forEach(t => {
+        // ✅ FIX FIELD NAME
+        if (t.topic) {
+            topicStats[t.topic] =
+                (topicStats[t.topic] || 0) + 1;
+        }
+    });
+
+    if (myChart) myChart.destroy();
+
+    myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(topicStats),
+            datasets: [{
+                data: Object.values(topicStats),
+                backgroundColor: [
+                    '#6366f1',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444'
+                ]
+            }]
+        },
+        options: {
+            cutout: '75%',
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+
+// ================= DRILL DOWN =================
+window.drillDown = (name) => {
+
+    if (currentLevel === 'MAIN') {
+
+        currentLevel = 'SUB';
+        selectedMain = name;
+
+        document.getElementById('nav-path').innerText =
+            `Dashboard / ${name}`;
+
+        renderUI();
+    }
+};
+
+
+// ================= RESET =================
+window.resetView = () => {
+
+    currentLevel = 'MAIN';
+    selectedMain = '';
+
+    document.getElementById('nav-path').innerText =
+        'Dashboard / Overall';
+
+    renderUI();
+};
+
+
+// ================= AUTH CHECK =================
+onAuthStateChanged(auth, (user) => {
+
+    if (user) {
+        startListening();
+    } else {
+        window.location.replace("login.html");
+    }
+
+});
+
 </script>
 <script src="./js/layout.js"></script>
 <script type="module" src="./js/sidebar-role.js"></script>
