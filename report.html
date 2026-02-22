@@ -558,7 +558,44 @@ detailChart = new Chart(ctx, {
     modal.classList.remove("hidden");
     modal.classList.add("flex");
 };
+/* ===============================
+   SHOW OWNER TOPIC DETAIL
+================================*/
+window.showOwnerTopics = (ownerName) => {
 
+    // กรองข้อมูลเฉพาะ owner ที่กด
+    const ownerTickets = filteredTickets.filter(t =>
+        t.sender_team === selectedMain &&
+        t.sender_subteam === selectedSub &&
+        (t.owner || "Unknown") === ownerName
+    );
+
+    // นับ Topic
+    const topicMap = {};
+
+    ownerTickets.forEach(t=>{
+        if(!t.topic) return;
+        topicMap[t.topic] = (topicMap[t.topic] || 0) + 1;
+    });
+
+    // เรียงจากมาก → น้อย
+    const sorted = Object.entries(topicMap)
+        .sort((a,b)=> b[1]-a[1]);
+
+    // แสดงผลแทน owner list เดิม
+    document.getElementById("modal-owners").innerHTML =
+        `
+        <div class="mb-4 font-black text-indigo-600">
+            ${ownerName} — Topic Detail
+        </div>
+        ` +
+        sorted.map(([topic,count])=>`
+            <div class="border rounded-xl p-3 mb-2 flex justify-between">
+                <span>${topic}</span>
+                <span class="font-bold text-indigo-600">${count}</span>
+            </div>
+        `).join("");
+};
 
 // ================= CLOSE =================
 window.closeModal=()=>{
