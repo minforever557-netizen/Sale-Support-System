@@ -19,7 +19,7 @@ function waitForElement(id, callback) {
   const el = document.getElementById(id);
 
   if (el) {
-    callback();
+    callback(el);
     return;
   }
 
@@ -27,7 +27,7 @@ function waitForElement(id, callback) {
     const el = document.getElementById(id);
     if (el) {
       observer.disconnect();
-      callback();
+      callback(el);
     }
   });
 
@@ -37,7 +37,7 @@ function waitForElement(id, callback) {
   });
 }
 
-document.addEventListener("layoutLoaded", () => {
+window.addEventListener("layoutLoaded", () => {
 
   onAuthStateChanged(auth, async (user) => {
 
@@ -63,24 +63,23 @@ document.addEventListener("layoutLoaded", () => {
 
       console.log("USER ROLE =", role);
 
-      const adminMenu =
-        document.getElementById("admin-menu-section");
+      waitForElement("admin-menu-section", () => {
 
-      // ✅ เช็คจาก FIELD role โดยตรง
-      if (role === "admin") {
+  const adminMenu =
+    document.getElementById("admin-menu-section");
 
-        console.log("ADMIN MENU SHOW");
+  if (role === "admin") {
 
-        if (adminMenu)
-          adminMenu.style.display = "block";
+    console.log("ADMIN MENU SHOW");
+    adminMenu.style.display = "block";
 
-      } else {
+  } else {
 
-        console.log("NORMAL USER");
+    console.log("NORMAL USER");
+    adminMenu.style.display = "none";
+  }
 
-        if (adminMenu)
-          adminMenu.style.display = "none";
-      }
+});
       
 
   // ================= START NOTIFICATION =================
@@ -118,7 +117,10 @@ async function startNotificationSystem(role, email) {
     const notiDrop = document.getElementById('noti-dropdown');
     const clearBtn = document.getElementById('clear-all-noti');
 
-    if (!notiList) return;
+    if (!notiList || !notiBtn || !notiDrop) {
+    console.warn("Notification elements not ready");
+    return;
+}
 
     // ✅ ป้องกัน listener ซ้อน (สำคัญมาก)
     if (window.notiUnsubscribe) {
@@ -230,5 +232,5 @@ async function startNotificationSystem(role, email) {
         };
     }
 }
-}
+
 
