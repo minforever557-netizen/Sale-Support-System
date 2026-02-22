@@ -626,7 +626,19 @@ window.closeModal=()=>{
     modal.classList.add("hidden");
     modal.classList.remove("flex");
 };
+// ================= MODAL BACK =================
+window.modalBack = () => {
 
+    // กลับไปหน้า OWNER LIST
+    modalLevel = "OWNER";
+
+    // ซ่อนปุ่ม Back
+    document.getElementById("modal-back")
+        .classList.add("hidden");
+
+    // เปิด owner list อีกครั้ง
+    showDetail(selectedSub);
+};
 
 // ================= RESET =================
 window.resetView=()=>{
