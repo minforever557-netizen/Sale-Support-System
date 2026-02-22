@@ -45,7 +45,43 @@ class="w-64 shrink-0 h-full bg-white border-r border-slate-200">
             Reset View
         </button>
     </div>
+              
+    <!-- filter Month/Year-->  
+                <div class="flex gap-3 mb-6">
 
+    <select id="filter-year"
+        class="border rounded-xl px-4 py-2">
+        <option value="">All Year</option>
+    </select>
+
+    <select id="filter-month"
+        class="border rounded-xl px-4 py-2">
+        <option value="">All Month</option>
+        <option value="01">Jan</option>
+        <option value="02">Feb</option>
+        <option value="03">Mar</option>
+        <option value="04">Apr</option>
+        <option value="05">May</option>
+        <option value="06">Jun</option>
+        <option value="07">Jul</option>
+        <option value="08">Aug</option>
+        <option value="09">Sep</option>
+        <option value="10">Oct</option>
+        <option value="11">Nov</option>
+        <option value="12">Dec</option>
+    </select>
+
+</div>
+<div class="flex gap-3 items-center mb-6">
+
+    <select id="month-filter"
+        onchange="changeMonthFilter(this.value)"
+        class="px-4 py-2 rounded-xl border bg-white
+        font-semibold text-slate-600">
+
+    </select>
+
+</div>
     <!-- KPI CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
@@ -147,32 +183,49 @@ onclick="if(event.target.id==='detail-modal') closeModal()">
         max-h-[75vh] overflow-y-auto">
 
             <!-- TOPIC -->
-            <div>
-                <p class="text-xs font-black text-indigo-600
-                uppercase tracking-widest mb-4">
-                    Topic Overview
-                </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 px-10 py-8">
 
-                <div id="modal-topics"
-                class="space-y-3"></div>
-            </div>
+    <!-- ================= TOPIC OVERVIEW (CHART) ================= -->
+    <div>
 
-            <!-- OWNER -->
-            <div>
-                <p class="text-xs font-black text-emerald-600
-                uppercase tracking-widest mb-4">
-                    Team Members
-                </p>
+        <p class="text-xs font-black text-indigo-600
+        uppercase tracking-widest mb-5">
+            Topic Overview
+        </p>
 
-                <div id="modal-owners"
-                class="space-y-4"></div>
-            </div>
+        <div class="bg-slate-50 rounded-2xl p-6
+        flex items-center justify-center">
+
+            <!-- กราฟ -->
+            <canvas id="detailChart"
+            class="max-h-[320px]"></canvas>
 
         </div>
 
     </div>
+
+
+    <!-- ================= TEAM MEMBERS ================= -->
+    <div>
+
+        <p class="text-xs font-black text-emerald-600
+        uppercase tracking-widest mb-5">
+            Team Members
+        </p>
+
+        <!-- scroll ได้ถ้าข้อมูลเยอะ -->
+        <div id="modal-owners"
+        class="space-y-4 max-h-[420px] overflow-y-auto pr-2">
+        </div>
+
+    </div>
+
+</div>
+
+    </div>
 </div>
     </div>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script type="module">
 
 // ================= IMPORT =================
@@ -210,10 +263,40 @@ function startListening(){
             ...doc.data()
         }));
 
+        // ✅ สร้างรายการเดือนอัตโนมัติ
+        buildMonthFilter();
+
+        // ✅ render dashboard
         renderUI();
     });
 }
+    // ================= BUILD MONTH FILTER =================
+function buildMonthFilter(){
 
+    const select = document.getElementById("month-filter");
+    if(!select) return;
+
+    const months = new Set();
+
+    allTickets.forEach(t=>{
+
+        if(!t.createdAt) return;
+
+        const d = t.createdAt.toDate();
+
+        const ym =
+        `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+        months.add(ym);
+    });
+
+    // sort ใหม่ล่าสุดขึ้นก่อน
+    const sorted = Array.from(months).sort().reverse();
+
+    select.innerHTML =
+        `<option value="">All Months</option>` +
+        sorted.map(m=>`<option value="${m}">${m}</option>`).join("");
+}
 
 // ================= MONTH FILTER =================
 function applyMonthFilter(){
@@ -234,7 +317,17 @@ function applyMonthFilter(){
         return activeMonths.includes(ym);
     });
 }
+// ================= CHANGE MONTH =================
+window.changeMonthFilter = (value)=>{
 
+    if(!value){
+        activeMonths = [];
+    }else{
+        activeMonths = [value];
+    }
+
+    renderUI();
+};
 
 // ================= KPI =================
 function updateKPI(){
@@ -338,22 +431,46 @@ function updateChart(){
             topicStats[t.topic]=(topicStats[t.topic]||0)+1;
     });
 
-    const sorted =
-        Object.entries(topicStats)
-        .sort((a,b)=>b[1]-a[1])
-        .slice(0,5);
+    const labels = Object.keys(topicStats);
+    const values = Object.values(topicStats);
+
+    const total = values.reduce((a,b)=>a+b,0);
 
     if(myChart) myChart.destroy();
 
     myChart=new Chart(ctx,{
         type:"doughnut",
         data:{
-            labels:sorted.map(([n,c])=>n),
-            datasets:[{ data:sorted.map(v=>v[1]) }]
-        }
+            labels:labels,
+            datasets:[{
+                data:values,
+                backgroundColor:[
+                    "#3b82f6",
+                    "#ef4444",
+                    "#f59e0b",
+                    "#10b981",
+                    "#8b5cf6"
+                ]
+            }]
+        },
+        options:{
+            cutout:"65%",
+            plugins:{
+                legend:{ position:"bottom" },
+
+                datalabels:{
+                    color:"#111",
+                    font:{weight:"bold",size:13},
+                    formatter:(value)=>{
+                        const pct=Math.round(value/total*100);
+                        return `${value}\n(${pct}%)`;
+                    }
+                }
+            }
+        },
+        plugins:[ChartDataLabels]
     });
 }
-
 
 // ================= DRILL DOWN =================
 window.drillDown=(main)=>{
@@ -369,10 +486,15 @@ window.drillDown=(main)=>{
 
 
 // ================= USER DETAIL =================
+// ================= SHOW DETAIL =================
 window.showDetail = (sub)=>{
 
     selectedSub = sub;
 
+    document.getElementById("modal-head").innerText =
+        `${selectedMain} / ${sub}`;
+
+    // ================= FILTER DATA =================
     const related = filteredTickets.filter(t =>
         t.sender_team === selectedMain &&
         t.sender_subteam === sub
@@ -380,12 +502,15 @@ window.showDetail = (sub)=>{
 
     const totalTickets = related.length;
 
+    // ================= GROUP DATA =================
     const ownerMap = {};
+    const topicMap = {};
 
     related.forEach(t=>{
 
         const owner = t.owner || t.ownerEmail || "Unknown";
 
+        // owner
         if(!ownerMap[owner]){
             ownerMap[owner]={
                 total:0,
@@ -395,12 +520,19 @@ window.showDetail = (sub)=>{
 
         ownerMap[owner].total++;
 
+        // topic
         if(t.topic){
+
             ownerMap[owner].topics[t.topic] =
                 (ownerMap[owner].topics[t.topic]||0)+1;
+
+            topicMap[t.topic] =
+                (topicMap[t.topic]||0)+1;
         }
     });
 
+
+    // ================= RENDER OWNER =================
     document.getElementById("modal-owners").innerHTML =
         Object.entries(ownerMap).map(([owner,data])=>{
 
@@ -408,30 +540,81 @@ window.showDetail = (sub)=>{
                 Math.round((data.total/totalTickets)*100);
 
             return `
-<div class="border rounded-xl p-4 mb-3 bg-white">
+<div class="border rounded-xl p-4 bg-white shadow-sm">
 
-<div class="flex justify-between font-bold">
-${owner}
-<span class="text-indigo-600">
-${data.total} (${percent}%)
-</span>
-</div>
+    <div class="flex justify-between font-bold text-slate-700">
+        ${owner}
+        <span class="text-indigo-600">
+            ${data.total} (${percent}%)
+        </span>
+    </div>
 
-<div class="text-sm text-slate-500 mt-2">
-${
-Object.entries(data.topics)
-.map(([t,c])=>`${t} : ${c}`)
-.join("<br>")
-}
-</div>
+    <div class="text-sm text-slate-500 mt-2 space-y-1">
+        ${
+            Object.entries(data.topics)
+            .map(([t,c])=>`
+                <div class="flex justify-between">
+                    <span>${t}</span>
+                    <span class="font-semibold">${c}</span>
+                </div>
+            `).join("")
+        }
+    </div>
 
 </div>`;
         }).join("");
 
-    document.getElementById("detail-modal")
-        const modal = document.getElementById("detail-modal");
-modal.classList.remove("hidden");
-modal.classList.add("flex");
+
+    // ================= TOPIC CHART =================
+    const ctx =
+        document.getElementById("detailChart").getContext("2d");
+
+    // destroy chart เก่า
+    if(window.detailChart){
+        window.detailChart.destroy();
+    }
+
+    const labels = Object.keys(topicMap);
+    const values = Object.values(topicMap);
+
+    window.detailChart = new Chart(ctx,{
+        type:"doughnut",
+        data:{
+            labels: labels.map((t,i)=>{
+                const pct =
+                    Math.round(values[i]/totalTickets*100);
+                return `${t} (${values[i]} | ${pct}%)`;
+            }),
+            datasets:[{
+                data:values,
+                backgroundColor:[
+                    "#6366f1",
+                    "#10b981",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#8b5cf6",
+                    "#06b6d4"
+                ]
+            }]
+        },
+        options:{
+            cutout:"65%",
+            plugins:{
+                legend:{
+                    position:"bottom",
+                    labels:{
+                        font:{size:13}
+                    }
+                }
+            }
+        }
+    });
+
+
+    // ================= OPEN MODAL =================
+    const modal = document.getElementById("detail-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
 };
 
 
