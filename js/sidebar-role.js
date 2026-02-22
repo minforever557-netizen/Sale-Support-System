@@ -57,7 +57,7 @@ document.addEventListener("layoutLoaded", () => {
         if (adminMenu)
           adminMenu.style.display = "none";
       }
-
+startNotificationSystem(role, user.email);
     } catch (err) {
       console.error("ROLE LOAD ERROR:", err);
     }
@@ -141,19 +141,6 @@ async function startNotificationSystem(role, email) {
     }
 }
 
-// เชื่อมต่อระบบแจ้งเตือนเข้ากับ Auth ของ Script เดิม
-document.addEventListener("layoutLoaded", () => {
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return;
-        
-        // รอให้ Database อ่าน Role เสร็จก่อน (ใช้ Query เหมือน Script เดิมเป๊ะ)
-        const q = query(collection(db, "admin"), where("email", "==", user.email));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-            const userData = snap.docs[0].data();
-            const role = (userData.role || "").toLowerCase();
-            // เริ่มการแจ้งเตือน
-            startNotificationSystem(role, user.email);
-        }
+
     });
 });
