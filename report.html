@@ -529,7 +529,42 @@ window.showDetail = (sub) => {
     </div>
 </div>`;
 }).join("");
-    // ===== DETAIL CHART =====
+
+    // ===== SHOW VALUE ON DOUGHNUT =====
+const doughnutLabelPlugin = {
+    id: "doughnutLabel",
+    afterDraw(chart) {
+
+        const { ctx } = chart;
+        const dataset = chart.data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+
+        const total = dataset.data.reduce((a,b)=>a+b,0);
+
+        meta.data.forEach((element, index) => {
+
+            const value = dataset.data[index];
+            const percent = Math.round((value / total) * 100);
+
+            const pos = element.tooltipPosition();
+
+            ctx.save();
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillStyle = "#334155";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(
+                `${value} (${percent}%)`,
+                pos.x,
+                pos.y
+            );
+
+            ctx.restore();
+        });
+    }
+};
+
 // ===== DETAIL CHART =====
 const canvas = document.getElementById("detailChart");
 const ctx = canvas.getContext("2d");
@@ -567,15 +602,16 @@ window.detailChartInstance = new Chart(ctx, {
             data: values
         }]
     },
+
+    // ⭐ ต้องใส่ตรงนี้
+    plugins: [doughnutLabelPlugin],
+
     options: {
         cutout: "65%",
         plugins: {
             legend:{
                 position:"bottom"
-            },
-
-            // ✅ plugin แสดงจำนวน + %
-            doughnutLabel:{}
+            }
         }
     }
 });
