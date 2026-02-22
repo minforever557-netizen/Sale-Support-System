@@ -67,10 +67,7 @@ document.addEventListener("layoutLoaded", () => {
 });
 
 // ==========================================================
-// ส่วนที่เพิ่มใหม่: ระบบ Notification (ไม่กระทบ Script เดิม)
-// ==========================================================
-// ==========================================================
-// ส่วนที่เพิ่มใหม่: ระบบ Notification แบบละเอียด (Updated)
+// ส่วนที่เพิ่มใหม่: ระบบ Notification แบบสมบูรณ์ (Persistent & Detailed)
 // ==========================================================
 import { 
     onSnapshot, orderBy, limit 
@@ -86,14 +83,16 @@ async function startNotificationSystem(role, email) {
 
     let q;
     if (role === 'admin') {
+        // Admin: ดึงรายการ Pending ล่าสุด
         q = query(collection(db, "tickets"), where("status", "==", "Pending"), orderBy("createdAt", "desc"), limit(5));
     } else {
+        // User: ดึงรายการที่อัปเดตล่าสุดของตัวเอง
         q = query(collection(db, "tickets"), where("ownerEmail", "==", email), orderBy("updatedAt", "desc"), limit(5));
     }
 
     onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
-            notiList.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">ไม่มีการแจ้งเตือน</div>`;
+            notiList.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs font-medium">ไม่มีการแจ้งเตือน</div>`;
             if (notiDot) notiDot.classList.add('hidden');
             return;
         }
@@ -101,68 +100,79 @@ async function startNotificationSystem(role, email) {
         let html = "";
         let hasNewChange = false;
 
+        // ✅ 1. ตรวจสอบการเปลี่ยนแปลงเพื่อแสดงจุดแดง (เฉพาะข้อมูลใหม่ที่ไม่ได้มาจาก Cache)
         snapshot.docChanges().forEach((change) => {
-            const data = change.doc.data();
+            if (!snapshot.metadata.fromCache && (change.type === "added" || change.type === "modified")) {
+                hasNewChange = true;
+            }
+        });
+
+        // ✅ 2. วนลูปสร้างรายการจาก Snapshot ทั้งหมด (ทำให้ข้อมูลไม่หายเมื่อ Refresh)
+        snapshot.docs.forEach((doc) => {
+            const data = doc.data();
             const internetNo = data.id_number || data.internetNo || "ไม่ระบุเลข";
             const topic = data.topic || "ไม่มีหัวข้อ";
-            
-            // --- 1. สำหรับ ADMIN ---
-            if (role === 'admin' && change.type === "added") {
-                hasNewChange = true;
+
+            if (role === 'admin') {
+                // --- Template สำหรับ ADMIN ---
                 html += `
                     <div onclick="window.location.href='admin-management.html'" 
                          class="p-4 border-b border-slate-50 hover:bg-emerald-50 transition cursor-pointer group">
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                            <span class="font-black text-emerald-600 text-[10px] uppercase">ใบงานใหม่เข้ามา</span>
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                            <span class="font-black text-emerald-600 text-[10px] uppercase tracking-wider">ใบงานใหม่รอจัดการ</span>
                         </div>
                         <div class="font-bold text-slate-700 text-xs leading-tight">Internet No: ${internetNo}</div>
                         <div class="text-slate-500 text-[11px] mt-1 line-clamp-1">หัวข้อ: ${topic}</div>
-                        <div class="text-[9px] text-slate-400 mt-2 italic group-hover:text-emerald-500">คลิกเพื่อไปหน้าจัดการ ➔</div>
+                        <div class="text-[9px] text-emerald-500 mt-2 font-bold opacity-0 group-hover:opacity-100 transition-opacity">➔ ไปหน้าจัดการงาน</div>
                     </div>`;
-            } 
-            
-            // --- 2. สำหรับ USER (ตรวจสอบว่ามีการเปลี่ยน Status หรือ Update Comment) ---
-            else if (role !== 'admin' && change.type === "modified") {
-                hasNewChange = true;
-                
-                // เช็คว่าเป็นการเปลี่ยน Status หรือแค่ Update Comment
-                // (ใช้ Logic: ถ้า status เป็น Success/In Progress จะบอกว่าตรวจสอบแล้ว นอกนั้นบอกว่า Update)
+            } else {
+                // --- Template สำหรับ USER ---
                 let messageTitle = "มีการอัปเดตใบงาน";
-                let messageDetail = "มีการเพิ่มรายละเอียดในใบงานของคุณ";
+                let messageDetail = `ใบงานหมายเลข ${internetNo} มีการอัปเดตข้อมูลใหม่`;
                 let themeColor = "blue";
+                let bgColor = "bg-blue-50/50";
+                let textColor = "text-blue-600";
 
+                // แยกประเภทข้อความตามสถานะ
                 if (data.status === "Success" || data.status === "In Progress") {
                     messageTitle = "ใบงานได้รับการตรวจสอบแล้ว";
-                    messageDetail = `ใบงานหมายเลข ${internetNo} ได้รับการตรวจสอบและปรับปรุงสถานะเรียบร้อย`;
+                    messageDetail = `ใบงานหมายเลข ${internetNo} ได้รับการตรวจสอบและปรับสถานะเป็น ${data.status} เรียบร้อย`;
                     themeColor = "emerald";
+                    bgColor = "bg-emerald-50/50";
+                    textColor = "text-emerald-600";
                 } else {
                     messageTitle = "มีการ Update ใบงานแล้ว";
-                    messageDetail = `แอดมินได้เพิ่มข้อมูลหรือหมายเหตุในใบงาน ${internetNo}`;
+                    messageDetail = `แอดมินได้เพิ่มหมายเหตุหรือข้อมูลในใบงานหมายเลข ${internetNo}`;
                 }
 
                 html += `
                     <div onclick="window.location.href='dashboard.html'" 
-                         class="p-4 border-b border-slate-50 hover:bg-${themeColor}-50 transition cursor-pointer group">
-                        <div class="font-bold text-${themeColor}-600 text-xs mb-1">🔔 ${messageTitle}</div>
-                        <div class="text-slate-700 font-medium text-[11px] leading-snug italic">"${topic}"</div>
-                        <div class="text-slate-500 text-[10px] mt-1 line-clamp-2">${messageDetail}</div>
+                         class="p-4 border-b border-slate-50 hover:${bgColor} transition cursor-pointer group">
+                        <div class="font-bold ${textColor} text-xs mb-1 flex items-center gap-1">
+                            <span>🔔</span> ${messageTitle}
+                        </div>
+                        <div class="text-slate-700 font-bold text-[11px] leading-snug mb-1">"${topic}"</div>
+                        <div class="text-slate-500 text-[10px] leading-relaxed line-clamp-2">${messageDetail}</div>
                     </div>`;
             }
         });
 
-        if (hasNewChange) {
-            notiList.innerHTML = html || notiList.innerHTML; 
-            if (notiDot) notiDot.classList.remove('hidden');
+        // ✅ 3. อัปเดต UI
+        notiList.innerHTML = html;
+        if (hasNewChange && notiDot) {
+            notiDot.classList.remove('hidden');
         }
     });
 
+    // ✅ 4. ระบบ Dropdown
     if (notiBtn && notiDrop) {
         notiBtn.onclick = (e) => {
             e.stopPropagation();
             notiDrop.classList.toggle('hidden');
             if (notiDot) notiDot.classList.add('hidden');
         };
+        // คลิกพื้นที่อื่นเพื่อปิด
         window.addEventListener('click', () => notiDrop.classList.add('hidden'));
     }
 }
