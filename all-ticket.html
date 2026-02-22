@@ -290,8 +290,7 @@
         const sortOrderEl = document.getElementById('sortOrder');
         const [field, direction] = sortOrderEl ? sortOrderEl.value.split('-') : ['createdAt', 'desc'];
 
-        const q = query(collection(db, "tickets"), where("ownerEmail", "==", email), orderBy(field, direction));
-        unsubscribe = onSnapshot(q, (snapshot) => {
+               unsubscribe = onSnapshot(q, (snapshot) => {
             currentTickets = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTickets(currentTickets);
         });
