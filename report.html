@@ -494,13 +494,18 @@ window.showDetail = (sub) => {
             const pct = Math.round((c / total) * 100);
 
             return `
-<div class="border rounded-xl p-4">
+<div class="border rounded-xl p-4
+            cursor-pointer
+            hover:bg-indigo-50
+            transition"
+     onclick="showOwnerTopics('${o}')">
+
     <div class="flex justify-between font-bold">
         ${o}
         <span class="text-indigo-600">${c} (${pct}%)</span>
     </div>
 </div>`;
-        }).join("");
+}).join("");
 
     // ===== DETAIL CHART =====
 const canvas = document.getElementById("detailChart");
