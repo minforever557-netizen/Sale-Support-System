@@ -72,16 +72,20 @@ loginForm.addEventListener('submit', async (e) => {
         await setPersistence(auth, browserLocalPersistence);
 
         // ===== 3. Login =====
-        const userCredential =
-            await signInWithEmailAndPassword(auth, userEmail, passwordInput);
+        const userCredential = await signInWithEmailAndPassword(auth, userEmail, passwordInput);
+
+        // ✅ เพิ่มตรงนี้: บังคับให้รอรับ Token ให้เสร็จชัวร์ๆ ก่อนไปต่อ
+        await userCredential.user.getIdToken(true);
 
         // ===== 4. Save session =====
         localStorage.setItem("userEmail", userEmail);
         localStorage.setItem("userRole", userRole);
         localStorage.setItem("isLogin", "true");
 
-        // ===== 5. Redirect ตาม ROLE =====
-        redirectByRole(userRole);
+        // ===== 5. Redirect ตาม ROLE (ใส่ดีเลย์นิดเดียวเพื่อให้ Session นิ่ง) =====
+        setTimeout(() => {
+            redirectByRole(userRole);
+        }, 300);
 
     } catch (error) {
         console.error(error);
