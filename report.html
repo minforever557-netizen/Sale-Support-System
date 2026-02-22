@@ -488,7 +488,7 @@ window.drillDown=(main)=>{
 
 // ================= MODAL DETAIL =================
 window.showDetail = (sub) => {
-
+    modalLevel = "OWNER";   // ✅ ใส่ตรงนี้
     selectedSub = sub;
 
     const related = filteredTickets.filter(t =>
@@ -625,6 +625,26 @@ window.closeModal=()=>{
     const modal=document.getElementById("detail-modal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
+};
+
+
+// ================= MODAL BACK =================
+let modalLevel = "OWNER";
+
+window.modalBack = () => {
+
+    // ถ้าอยู่หน้า Topic → ย้อนกลับ Owner
+    if(modalLevel === "TOPIC"){
+
+        modalLevel = "OWNER";
+
+        // render owner list ใหม่
+        showDetail(selectedSub);
+
+        document
+            .getElementById("modal-back")
+            .classList.add("hidden");
+    }
 };
 
 
